@@ -3,4 +3,6 @@ project(NetworkDesign)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(NetworkDesign main.cpp)
+include_directories(layers)
+
+add_executable(NetworkDesign main.cpp layers)
