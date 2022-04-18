@@ -2,6 +2,8 @@
 
 #include <utility>
 
+const int kFrameHeader = 0x7E;
+
 LinkLayer::LinkLayer(INetAddress address) :address(std::move(address)),socket(address.createSocket()) {}
 
 void LinkLayer::receive(const char *data, int len) const {
