@@ -6,6 +6,9 @@
 #define NETWORKDESIGN_LINKLAYER_H
 
 #include "INetAddress.h"
+#include "Frame.h"
+#include <vector>
+#include <utility>
 
 class LinkLayer {
 public:
