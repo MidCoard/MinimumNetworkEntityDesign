@@ -67,7 +67,7 @@ char* generateFrame(const char* data, int len) {
 }
 
 
-LinkLayer::LinkLayer(INetAddress address) : address(std::move(address)), socket(address.createSocket()) {}
+LinkLayer::LinkLayer(int device,int entityId, INetAddress address) : address(std::move(address)), socket(address.createSocket()), Layer(device,entityId) {}
 
 void LinkLayer::receive(const char *data, int len) const {
 	char *Frame = getFrame(data, len);

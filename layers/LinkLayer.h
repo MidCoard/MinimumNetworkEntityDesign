@@ -7,13 +7,13 @@
 
 #include "INetAddress.h"
 #include "Frame.h"
+#include "Layer.h"
 #include <vector>
 #include <utility>
 
-class LinkLayer {
+class LinkLayer : public Layer{
 public:
-	explicit LinkLayer(INetAddress address);
-
+	LinkLayer(int device, int entityId, INetAddress address);
 	void send(char *data, int len) const;
 	void receive(const char *data, int len) const;
 
