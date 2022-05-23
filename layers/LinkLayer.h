@@ -20,6 +20,9 @@ public:
 private:
 	const INetAddress address;
 	const Socket socket;
+
+	void sendARP() const;
+
 };
 
 

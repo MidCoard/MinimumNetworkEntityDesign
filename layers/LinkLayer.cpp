@@ -100,4 +100,24 @@ void LinkLayer::send(char *data, int len) const {
 	this->socket.send(data, len);
 }
 
+std::string mac;
+
+//send Address Resolution Protocol packet
+void LinkLayer::sendARP() const {
+	std::string head = "ARP";
+	std::string broadcast = "ff:ff:ff:ff:ff:ff";
+	std::vector<char> bytes = std::vector<char>();
+	char* string = const_cast<char *>(head.c_str());
+	for (int i = 0;i<head.size();i++)
+		bytes.push_back(string[i]);
+	string = const_cast<char *>(broadcast.c_str());
+	for (int i = 0;i<broadcast.size();i++)
+		bytes.push_back(string[i]);
+	string = const_cast<char *>(mac.c_str());
+	for (int i = 0;i<mac.size();i++)
+		bytes.push_back(string[i]);
+	char * b = toCharArray(bytes);
+	this->socket.send(b, strlen(b));
+}
+
 
