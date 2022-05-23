@@ -18,6 +18,10 @@ namespace util {
 	bool contains(const std::string &str, const std::string &substr);
 	std::vector<std::string> split(const std::string &str, const std::string &delimiter);
 	bool isNumber(const std::string &str);
+	bool equalsIgnoreCase(const std::string &str1, const std::string &str2);
+	bool endWith(const std::string &str, const std::string &suffix);
+
+	std::vector<std::string> subVector(const std::vector<std::string> &vec, unsigned long start, unsigned long end);
 }
 
 #endif //NETWORKDESIGN_UTIL_H

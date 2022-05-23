@@ -6,17 +6,25 @@
 #define NETWORKDESIGN_INETADDRESS_H
 #include "string"
 #include "Socket.h"
+#include "IP.h"
 
 class INetAddress {
 public:
-	INetAddress(std::string ip, int port);
-	std::string getIp() const;
+	INetAddress(IP * ip, int port);
+	const IP* getIp() const;
 	int getPort() const;
 	Socket createSocket() const;
 private:
-	const std::string ip;
+	const IP * ip;
 	const int port;
 };
+
+INetAddress * createINetAddress(const std::string& ip) {
+	auto vector = util::split(ip, ":");
+	if (vector.size() != 2)
+		return nullptr;
+	return new INetAddress(new IP(vector[0]), std::stoi(vector[1]));
+}
 
 
 #endif //NETWORKDESIGN_INETADDRESS_H

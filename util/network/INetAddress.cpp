@@ -6,10 +6,10 @@
 
 #include <utility>
 
-INetAddress::INetAddress(std::string ip, int port) : port(port), ip(std::move(ip)) {}
+INetAddress::INetAddress(IP * ip, int port) : port(port), ip(ip) {}
 
-std::string INetAddress::getIp() const {
-	return ip;
+const IP * INetAddress::getIp() const {
+	return this->ip;
 }
 
 int INetAddress::getPort() const {

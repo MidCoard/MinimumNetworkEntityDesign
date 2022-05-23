@@ -6,7 +6,7 @@
 #define NETWORKDESIGN_FRAME_H
 
 #include "vector"
-#include "INetAddress.h"
+#include "network/INetAddress.h"
 const char kFrameHeader = 0;
 const char kFrameFooter = 0;
 const char kFrameEscape = '\\';

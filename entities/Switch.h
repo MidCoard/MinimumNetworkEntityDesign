@@ -6,7 +6,7 @@
 #define NETWORKDESIGN_SWITCH_H
 
 
-class Switch {
+class Switch : public NetworkEntity{
 
 };
 

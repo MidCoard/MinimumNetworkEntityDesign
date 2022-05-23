@@ -3,3 +3,9 @@
 //
 
 #include "PC.h"
+#include "network/IP.h"
+#include "network/INetAddress.h"
+
+PC::PC(IP *ip, IP *gateway, struct MAC *mac, INetAddress *physicalAddress) {
+
+}

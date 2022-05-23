@@ -9,7 +9,7 @@
 #include "NetworkEntity.h"
 #include "NetworkLayer.h"
 
-class Router : NetworkEntity {
+class Router : public NetworkEntity {
 
 
 

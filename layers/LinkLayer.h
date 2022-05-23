@@ -5,7 +5,7 @@
 #ifndef NETWORKDESIGN_LINKLAYER_H
 #define NETWORKDESIGN_LINKLAYER_H
 
-#include "INetAddress.h"
+#include "network/INetAddress.h"
 #include "Frame.h"
 #include "Layer.h"
 #include <vector>

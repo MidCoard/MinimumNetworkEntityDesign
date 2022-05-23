@@ -6,4 +6,6 @@ set(CMAKE_CXX_STANDARD 14)
 include_directories(layers)
 include_directories(util)
 
-add_executable(NetworkDesign main.cpp layers util entities)
+set(NETWORK_CPP Network.h Network.cpp)
+
+add_executable(NetworkDesign main.cpp layers util entities ${NETWORK_CPP})
