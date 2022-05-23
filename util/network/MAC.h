@@ -8,6 +8,8 @@
 #include "string"
 
 
+// new class will not be deleted in the whole process
+
 class MAC {
 public:
 	MAC(std::string mac);

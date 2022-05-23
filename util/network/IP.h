@@ -9,6 +9,8 @@
 #include "Util.h"
 #include <utility>
 
+// new class will not be deleted in the whole process
+
 class IP {
 
 public:

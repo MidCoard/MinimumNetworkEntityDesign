@@ -3,9 +3,11 @@
 //
 
 #include "PC.h"
-#include "network/IP.h"
-#include "network/INetAddress.h"
 
-PC::PC(IP *ip, IP *gateway, struct MAC *mac, INetAddress *physicalAddress) {
-
+PC::PC(IP *ip, IP *gateway, MAC *mac, INetAddress *physicalAddress) : NetworkEntity(mac,physicalAddress) {
+	this->layer = new AppLayer();
+	auto *networkLayer = new NetworkLayer(ip, gateway);
+	this->layer(networkLayer);
+	auto *linkLayer = new LinkLayer(mac);
+	auto *physicalLayer = new PhysicalLayer(physicalAddress);
 }

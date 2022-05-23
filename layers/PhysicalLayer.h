@@ -6,11 +6,15 @@
 #define NETWORKDESIGN_PHYSICALLAYER_H
 
 #include "Layer.h"
+#include "network/INetAddress.h"
 
 
 class PhysicalLayer : public Layer {
 public:
-	PhysicalLayer(int device,int entityId);
+	explicit PhysicalLayer(INetAddress * iNetAddress);
+	std::string getName() override;
+private:
+	const INetAddress *iNetAddress;
 };
 
 

@@ -4,5 +4,17 @@
 
 #include "Layer.h"
 
+void Layer::addLowerLayer(Layer * layer) {
+	this->lowerLayers->push_back(layer);
+	layer->upperLayers->push_back(this);
+}
 
-Layer::Layer(int device, int entityId) : device(device), entityId(entityId){}
+Layer::Layer() {
+	this->lowerLayers = new std::vector<Layer*>();
+	this->upperLayers = new std::vector<Layer*>();
+}
+
+Layer::~Layer() {
+	delete this->lowerLayers;
+	delete this->upperLayers;
+}

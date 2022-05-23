@@ -4,5 +4,10 @@
 
 #include "PhysicalLayer.h"
 
+PhysicalLayer::PhysicalLayer(INetAddress *iNetAddress) {
+	this->iNetAddress = iNetAddress;
+}
 
-PhysicalLayer::PhysicalLayer(int device,int entityId) : Layer(device,entityId) {}
+std::string PhysicalLayer::getName() {
+	return "PHY";
+}

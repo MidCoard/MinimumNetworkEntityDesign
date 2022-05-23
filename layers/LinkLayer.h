@@ -8,20 +8,17 @@
 #include "network/INetAddress.h"
 #include "Frame.h"
 #include "Layer.h"
+#include "network/MAC.h"
 #include <vector>
 #include <utility>
 
 class LinkLayer : public Layer{
 public:
-	LinkLayer(int device, int entityId, INetAddress address);
-	void send(char *data, int len) const;
-	void receive(const char *data, int len) const;
+	explicit LinkLayer(MAC * mac);
+	std::string getName() override;
 
 private:
-	const INetAddress address;
-	const Socket socket;
-
-	void sendARP() const;
+	const MAC * mac;
 
 };
 

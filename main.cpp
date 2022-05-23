@@ -40,7 +40,7 @@ NetworkEntity *createEntity(const std::string &name, std::vector<std::string> ve
 		IP * ip = nullptr;
 		IP * gateway = nullptr;
 		MAC * mac = nullptr;
-		INetAddress * physicalAddress = nullptr;
+		INetAddress physicalAddress = static_cast<INetAddress &&>(nullptr);
 		if (!vector.empty() && vector[0] != "-") {
 			auto parts = util::split(vector[0], "(");
 			ip = new IP(parts[0]);

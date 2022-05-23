@@ -5,14 +5,18 @@
 #ifndef NETWORKDESIGN_LAYER_H
 #define NETWORKDESIGN_LAYER_H
 
+#include "string"
+#include "vector"
 
 class Layer {
 public:
-	Layer(int device,int entityId);
-
-private:
-	const int device;
-	const int entityId;
+	Layer();
+	virtual std::string getName() = 0;
+	void addLowerLayer(Layer *layer);
+	~Layer();
+protected:
+	std::vector<Layer*> * lowerLayers;
+	std::vector<Layer*> * upperLayers;
 };
 
 
