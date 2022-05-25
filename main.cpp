@@ -1,22 +1,17 @@
 #include <iostream>
 #include <utility>
 #include <vector>
-#include <fstream>
 #include "Util.h"
 #include "Layer.h"
 #include "PhysicalLayer.h"
-#include "AppLayer.h"
 #include "PC.h"
 #include "Switch.h"
 #include "Router.h"
 #include "Root.h"
 #include "network/IP.h"
 #include "network/MAC.h"
+#include "network/INetAddress.h"
 #include "Network.h"
-
-int getPort(int device, int layer, int entityId) {
-	return 10000 + device * 1000 + layer * 100 + entityId;
-}
 
 std::vector<std::string>
 availableLine(std::vector<std::string>::iterator begin, std::vector<std::string>::iterator end) {
@@ -79,7 +74,7 @@ std::pair<int, int> loadNodePort(const std::string &node) {
 	return {std::stoi(node), -1};
 }
 
-Network *loadNetwork(const std::string &networkFile) {
+Network *loadNetwork(const std::string &networkFile, const std::string& graphFile) {
 	std::vector<std::string> lines = util::readFile(networkFile);
 	auto begin = lines.begin();
 	auto nodesAndLinks = availableLine(begin, lines.end());
@@ -118,24 +113,23 @@ Network *loadNetwork(const std::string &networkFile) {
 		network->addLink(port.first, port2.first, {port.second, port2.second});
 		network->addLink(port2.first, port.first, {port2.second, port.second});
 	}
-	network->build();
+	network->build(graphFile);
 	return network;
 }
 
 
-void initialize(const std::string &networkFile) {
-	Network *network = loadNetwork(networkFile);
+void initialize(const std::string &networkFile, const std::string& graphFile) {
+	Network *network = loadNetwork(networkFile, graphFile);
 	// why ?
 	if (network == nullptr) {
 		std::cerr << "Network file is not valid" << std::endl;
 		return;
 	}
-	network->generateGraph();
 }
 
 
 void initialize() {
-	initialize("network.in");
+	initialize("network.in", "ne.txt");
 }
 
 int main() {

@@ -30,18 +30,16 @@ public:
 
 	void addNode(NetworkEntity *entity);
 
-	void build();
-
-	void generateGraph(const std::string &filename);
+	void build(const std::string& graphFile);
 
 private:
 	std::vector<NetworkEntity *> nodes;
 	std::vector<Link *> links;
 	std::vector<int> heads;
 
-	void dfs(int node, std::vector<bool> &visited);
+	void dfs(int node, std::vector<bool> * visited, std::vector<std::string> * lines);
 
-	void dfs2(int node, std::vector<bool> &visited);
+	void dfs2(int node, std::vector<bool> *visited, std::vector<std::string> *lines);
 };
 
 #endif //NETWORKDESIGN_NETWORK_H

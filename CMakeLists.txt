@@ -7,6 +7,6 @@ include_directories(layers)
 include_directories(util)
 include_directories(entities)
 
-set(NETWORK_CPP Network.h Network.cpp)
+file(GLOB SOURCES "entities/*.*" "layers/*.*" "util/*.*" "util/network/*.*" "Network.h" "Network.cpp")
 
-add_executable(NetworkDesign main.cpp layers util entities ${NETWORK_CPP})
+add_executable(NetworkDesign main.cpp ${SOURCES})

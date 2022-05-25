@@ -20,12 +20,19 @@ public:
 
 	std::string getName();
 
+	std::vector<std::string> generateGraph(int node);
+
 protected:
 	std::vector<Layer *> *lowerLayers;
 	std::vector<Layer *> *upperLayers;
 private:
 	int id;
+
+	void
+	dfsGenerate(int node, Layer *layer, std::vector<std::string> *lines, const std::string& suffix, bool first);
 };
+
+
 
 
 #endif //NETWORKDESIGN_LAYER_H

@@ -22,13 +22,13 @@ Network::Network() {
 	this->heads = {};
 }
 
-void Network::dfs(int node, std::vector<bool> &visited) {
-	visited[node] = true;
+void Network::dfs(int node, std::vector<bool> *visited, std::vector<std::string> * lines) {
+	visited->at(node) = true;
 	std::vector<Link *> subLinks = {};
 	for (int i = this->heads[node]; i != -1; i = this->links[i]->next) {
 		subLinks.push_back(this->links[i]);
-		if (!visited[this->links[i]->node])
-			dfs(this->links[i]->node, visited);
+		if (!visited->at(this->links[i]->node))
+			dfs(this->links[i]->node, visited, lines);
 	}
 	std::sort(subLinks.begin(), subLinks.end(), [](Link *a, Link *b) {
 		return a->weight.first < b->weight.first;
@@ -50,35 +50,38 @@ void Network::dfs(int node, std::vector<bool> &visited) {
 	std::transform(subLinks.begin(), subLinks.end(), std::back_inserter(ids), [](Link *a) {
 		return a->weight.first;
 	});
-	this->nodes[node]->createLayers(node, ids);
+	auto l = this->nodes[node]->createLayers(node, ids);
+	lines->insert(lines->end(), l.begin(), l.end());
 }
 
-void Network::build() {
-	std::vector<bool> visited(this->nodes.size(), false);
-	for (int i = 0; i < this->nodes.size(); i++)
-		if (!visited[i])
-			this->dfs(i, visited);
-}
-
-void Network::generateGraph(const std::string &filename) {
+void Network::build(const std::string& graphFile) {
 	std::vector<std::string> lines = {};
-	for (auto &node: this->nodes) {
-		auto l = node->generateGraph();
-		lines.insert(lines.end(), l.begin(), l.end());
-	}
 	std::vector<bool> visited(this->nodes.size(), false);
 	for (int i = 0; i < this->nodes.size(); i++)
 		if (!visited[i])
-			this->dfs2(i, visited);
-	util::writeFile(filename, lines);
+			this->dfs(i, &visited, &lines);
+	visited = std::vector<bool>(this->nodes.size(), false);
+	for (int i = 0; i < this->nodes.size(); i++)
+		if (!visited[i])
+			this->dfs2(i, &visited, &lines);
+	util::writeFile(graphFile, lines);
 }
 
-void Network::dfs2(int node, std::vector<bool> &visited) {
-	visited[node] = true;
+void Network::dfs2(int node, std::vector<bool> *visited, std::vector<std::string> *lines) {
+	visited->at(node) = true;
+	std::vector<Link *> subLinks = {};
 	for (int i = this->heads[node]; i != -1; i = this->links[i]->next) {
-		if (!visited[this->links[i]->node])
-			dfs2(this->links[i]->node, visited);
+		subLinks.push_back(this->links[i]);
+		if (!visited->at(this->links[i]->node))
+			dfs2(this->links[i]->node, visited, lines);
 	}
+	for (auto &link: subLinks) {
+		if (link->weight.first == -1 || link->weight.second == -1)
+			throw std::invalid_argument("invalid network");
+		lines->push_back(std::to_string(node) + "," + std::to_string(link->weight.first) + "--"
+			+ std::to_string(link->node) + "," + std::to_string(link->weight.second));
+	}
+
 }
 
 Link::Link(int next, int self, std::pair<int, int> weight) {

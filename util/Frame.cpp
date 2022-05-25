@@ -9,7 +9,7 @@ Frame::Frame(unsigned int sequenceNumber, const INetAddress &address, unsigned s
 		sequenceNumber), address(address), size(size) {
 	this->data = new char[kFrameSize];
 	this->length = 22 + (size * 13 % 8 == 0 ? size * 13 / 8 : size * 13 / 8 + 1);
-	this->data[0] =
+//	this->data[0] =
 }
 
 Frame::~Frame() {

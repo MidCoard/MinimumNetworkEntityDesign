@@ -7,10 +7,6 @@
 #include "AppLayer.h"
 #include "Router.h"
 
-const MAC *kRootMAC = new MAC("ee:ee:ee:ee:ee:ee");
-const IP *kRootIP = new IP("0.0.0.0");
-const IP *kRootMask = new IP("0.0.0.0");
-
 class Root : public NetworkEntity {
 
 public:

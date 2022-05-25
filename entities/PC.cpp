@@ -1,7 +1,3 @@
-//
-// Created by 周蜀杰 on 2022/5/21.
-//
-
 #include "PC.h"
 
 PC::PC(int node, IP *ip, IP *gateway, MAC *mac, INetAddress *physicalAddress) : NetworkEntity(node, new AppLayer()) {
@@ -31,5 +27,6 @@ std::vector<std::string> PC::createLayers(int node, std::vector<int> ids) {
 		physicalAddress = new INetAddress(generatePhysicalAddress(node, ids[0]));
 	auto *physicalLayer = new PhysicalLayer(ids[0], physicalAddress);
 	linkLayer->addLowerLayer(physicalLayer);
+	return this->layer->generateGraph(node);
 }
 

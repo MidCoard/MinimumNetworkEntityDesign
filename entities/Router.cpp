@@ -12,6 +12,7 @@ std::vector<std::string> Router::createLayers(int node, std::vector<int> ids) {
 		linkLayer->addLowerLayer(physicalLayer);
 		this->layer->addLowerLayer(linkLayer);
 	}
+	return this->layer->generateGraph(node);
 }
 
 RouterNetworkLayer::RouterNetworkLayer(IP *segment, IP *mask) : NetworkLayer(segment, mask) {

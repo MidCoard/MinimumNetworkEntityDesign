@@ -1,5 +1,9 @@
 #include "Root.h"
 
+const MAC *kRootMAC = new MAC("ee:ee:ee:ee:ee:ee");
+const IP *kRootIP = new IP("0.0.0.0");
+const IP *kRootMask = new IP("0.0.0.0");
+
 Root::Root() : NetworkEntity(0, new RootAppLayer()) {
 }
 
@@ -12,4 +16,5 @@ std::vector<std::string> Root::createLayers(int node, std::vector<int> ids) {
 		linkLayer->addLowerLayer(physicalLayer);
 		networkLayer->addLowerLayer(linkLayer);
 	}
+	return this->layer->generateGraph(node);
 }
