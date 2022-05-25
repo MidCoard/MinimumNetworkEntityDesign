@@ -15,7 +15,7 @@ MAC generateMAC() {
 	std::uniform_int_distribution<int> u(0, 255);
 	std::string mac;
 	for (int i = 0; i < 6; ++i) {
-		mac += std::to_string(u(e));
+		mac += util::toHex(u(e));
 		if (i != 5)
 			mac += ":";
 	}

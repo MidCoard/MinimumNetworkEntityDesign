@@ -8,14 +8,15 @@
 #include "algorithm"
 #include "iostream"
 #include "vector"
+#include "map"
 #include "entities/NetworkEntity.h"
 
 
 class Link {
 
 public:
-	Link(int next, int self, std::pair<int, int> weight);
-
+	Link(int next, int self, int undirected, std::pair<int, int> weight);
+	int undirected;
 	int node;
 	int next;
 	std::pair<int, int> weight;
@@ -26,7 +27,7 @@ class Network {
 public:
 	Network();
 
-	void addLink(int node1, int node2, std::pair<int, int> weight);
+	void addUndirectedLink(int node1, int node2, std::pair<int, int> weight);
 
 	void addNode(NetworkEntity *entity);
 
@@ -37,7 +38,7 @@ private:
 	std::vector<Link *> links;
 	std::vector<int> heads;
 
-	void dfs(int node, std::vector<bool> * visited, std::vector<std::string> * lines);
+	void dfs(int node, std::vector<bool> * visited, std::map<int, std::vector<std::string>> *all);
 
 	void dfs2(int node, std::vector<bool> *visited, std::vector<std::string> *lines);
 };

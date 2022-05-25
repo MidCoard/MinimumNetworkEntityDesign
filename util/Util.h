@@ -31,6 +31,8 @@ namespace util {
 	std::vector<std::string> subVector(const std::vector<std::string> &vec, unsigned long start, unsigned long end);
 
 	void writeFile(const std::string &filename, const std::vector<std::string> &lines);
+
+	std::string toHex(unsigned char c);
 }
 
 #endif //NETWORKDESIGN_UTIL_H

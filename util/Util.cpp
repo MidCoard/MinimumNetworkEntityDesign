@@ -69,3 +69,9 @@ void util::writeFile(const std::string &filename, const std::vector<std::string>
 	for (const auto &line: lines)
 		file << line << std::endl;
 }
+
+std::string util::toHex(unsigned char c) {
+	std::stringstream ss;
+	ss << std::hex << (int)c;
+	return ss.str();
+}

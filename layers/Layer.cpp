@@ -40,11 +40,11 @@ Layer::dfsGenerate(int node, Layer *layer, std::vector<std::string> *lines, cons
 		dfsGenerate(node, layer->lowerLayers->at(0), lines, " " + layer->getName() + suffix, first);
 		for (int i = 1; i < layer->lowerLayers->size(); i++)
 			if (layer->lowerLayers->at(i - 1)->id != layer->lowerLayers->at(i)->id)
-				dfsGenerate(node, layer->lowerLayers->at(i), lines, " " + layer->getName() + suffix, false);
+				dfsGenerate(node, layer->lowerLayers->at(i), lines, "", false);
 	}
 	else {
 		if (first)
-			lines->push_back(std::to_string(node) + " " + layer->getName() + suffix);
+			lines->push_back(std::to_string(node + 1) + " " + layer->getName() + suffix);
 		else lines->push_back(" " + layer->getName() + suffix);
 	}
 }

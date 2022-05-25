@@ -14,10 +14,10 @@
 #include "Network.h"
 
 std::vector<std::string>
-availableLine(std::vector<std::string>::iterator begin, std::vector<std::string>::iterator end) {
-	while (begin != end) {
-		std::string trim = util::trim(*begin);
-		begin++;
+availableLine(std::vector<std::string>::iterator *begin, std::vector<std::string>::iterator end) {
+	while (*begin != end) {
+		std::string trim = util::trim(**begin);
+		(*begin)++;
 		if (trim.length() == 0)
 			continue;
 		if (util::startWith(trim, "#"))
@@ -40,7 +40,7 @@ NetworkEntity *createEntity(int node, const std::string &name, std::vector<std::
 			auto parts = util::split(vector[0], "(");
 			ip = new IP(parts[0]);
 			if (parts.size() == 2)
-				gateway = new IP(vector[1].substr(0, vector[1].length() - 1));
+				gateway = new IP(parts[1].substr(0, parts[1].length() - 1));
 		}
 		if (vector.size() >= 2 && vector[1] != "-")
 			mac = new MAC(vector[1]);
@@ -77,7 +77,7 @@ std::pair<int, int> loadNodePort(const std::string &node) {
 Network *loadNetwork(const std::string &networkFile, const std::string& graphFile) {
 	std::vector<std::string> lines = util::readFile(networkFile);
 	auto begin = lines.begin();
-	auto nodesAndLinks = availableLine(begin, lines.end());
+	auto nodesAndLinks = availableLine(&begin, lines.end());
 	if (nodesAndLinks.size() != 2)
 		return nullptr;
 	auto *network = new Network();
@@ -85,7 +85,7 @@ Network *loadNetwork(const std::string &networkFile, const std::string& graphFil
 	int nodes = std::stoi(nodesAndLinks[0]);
 	int links = std::stoi(nodesAndLinks[1]);
 	for (int i = 1; i <= nodes; i++) {
-		auto entity = availableLine(begin, lines.end());
+		auto entity = availableLine(&begin, lines.end());
 		if (entity.empty()) {
 			delete network;
 			return nullptr;
@@ -97,21 +97,18 @@ Network *loadNetwork(const std::string &networkFile, const std::string& graphFil
 			return nullptr;
 		}
 		network->addNode(entityObj);
-		if (util::endWith(name, "D") || util::endWith(name, "d")) {
-			network->addLink(0, i, {-1, -1});
-			network->addLink(i, 0, {-1, -1});
-		}
+		if (util::endWith(name, "D") || util::endWith(name, "d"))
+			network->addUndirectedLink(0, i, {-1, -1});
 	}
 	for (int i = 0; i < links; i++) {
-		auto link = availableLine(begin, lines.end());
+		auto link = availableLine(&begin, lines.end());
 		if (link.size() != 2) {
 			delete network;
 			return nullptr;
 		}
 		std::pair<int, int> port = loadNodePort(link[0]);
 		std::pair<int, int> port2 = loadNodePort(link[1]);
-		network->addLink(port.first, port2.first, {port.second, port2.second});
-		network->addLink(port2.first, port.first, {port2.second, port.second});
+		network->addUndirectedLink(port.first, port2.first, {port.second, port2.second});
 	}
 	network->build(graphFile);
 	return network;
