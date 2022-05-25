@@ -11,14 +11,15 @@
 #include "network/MAC.h"
 #include <vector>
 #include <utility>
+#include <utility>
 
 class LinkLayer : public Layer{
 public:
-	explicit LinkLayer(MAC * mac);
+	explicit LinkLayer(MAC mac);
 	std::string getName() override;
 
 private:
-	const MAC * mac;
+	const MAC mac;
 
 };
 

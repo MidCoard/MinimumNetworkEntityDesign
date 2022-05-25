@@ -4,10 +4,9 @@
 
 #include "PC.h"
 
-PC::PC(IP *ip, IP *gateway, MAC *mac, INetAddress *physicalAddress) : NetworkEntity(mac,physicalAddress) {
-	this->layer = new AppLayer();
-	auto *networkLayer = new NetworkLayer(ip, gateway);
-	this->layer(networkLayer);
-	auto *linkLayer = new LinkLayer(mac);
-	auto *physicalLayer = new PhysicalLayer(physicalAddress);
+PC::PC(IP* ip, IP* gateway, MAC* mac, INetAddress* physicalAddress) : NetworkEntity(mac,physicalAddress) ,ip(ip), gateway(gateway) {}
+
+PC::~PC() {
+	delete ip;
+	delete gateway;
 }

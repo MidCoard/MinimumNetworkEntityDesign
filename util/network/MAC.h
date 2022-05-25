@@ -6,17 +6,20 @@
 #define NETWORKDESIGN_MAC_H
 
 #include "string"
-
+#include <utility>
+#include "random"
 
 // new class will not be deleted in the whole process
 
 class MAC {
 public:
-	MAC(std::string mac);
+	explicit MAC(std::string mac);
 
 private:
-	const std::string mac;
+	std::string mac;
 };
+
+MAC generateMAC();
 
 
 #endif //NETWORKDESIGN_MAC_H

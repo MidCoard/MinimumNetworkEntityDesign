@@ -12,13 +12,14 @@
 // new class will not be deleted in the whole process
 
 class IP {
-
 public:
 	explicit IP(std::string ip);
 private:
 	std::string ip;
-	int bytes[4]{};
+	unsigned char bytes[4]{};
 };
+
+extern IP localhost;
 
 
 #endif //NETWORKDESIGN_IP_H

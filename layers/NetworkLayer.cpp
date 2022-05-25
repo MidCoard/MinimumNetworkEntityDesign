@@ -1,11 +1,12 @@
 #include "NetworkLayer.h"
 
-NetworkLayer::NetworkLayer(IP *ip, IP *gateway) {
-	this->ip = ip;
-	this->gateway = gateway;
+#include <utility>
+
+NetworkLayer::NetworkLayer(IP ip, IP gateway) : ip(std::move(ip)), gateway(std::move(gateway)) {
 }
 
-NetworkLayer::NetworkLayer() = default;
+NetworkLayer::NetworkLayer() : NetworkLayer(NULL_IP, NULL_IP) {
+}
 
 std::string NetworkLayer::getName() {
 	return "NET";

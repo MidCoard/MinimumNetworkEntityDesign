@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 include_directories(layers)
 include_directories(util)
+include_directories(entities)
 
 set(NETWORK_CPP Network.h Network.cpp)
 

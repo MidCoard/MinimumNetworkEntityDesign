@@ -27,10 +27,12 @@ public:
 	Network();
 	void addLink(int node1, int node2, double weight);
 	void addNode(NetworkEntity * entity);
+	void build();
+
 private:
-	int nodes;
-	std::vector<Link *>  * links;
-	std::vector<int> *heads;
+	std::vector<NetworkEntity *> nodes;
+	std::vector<Link *>  links;
+	std::vector<int> heads;
 };
 
 #endif //NETWORKDESIGN_NETWORK_H

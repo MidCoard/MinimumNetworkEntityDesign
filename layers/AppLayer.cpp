@@ -3,3 +3,7 @@
 //
 
 #include "AppLayer.h"
+
+std::string AppLayer::getName() {
+	return "APP";
+}

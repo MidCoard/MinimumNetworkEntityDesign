@@ -5,9 +5,15 @@
 #ifndef NETWORKDESIGN_SWITCH_H
 #define NETWORKDESIGN_SWITCH_H
 
+#include "NetworkEntity.h"
+#include "network/MAC.h"
+#include "network/INetAddress.h"
+
 
 class Switch : public NetworkEntity{
 
+public:
+	Switch(MAC* mac, INetAddress* physicalAddress);
 };
 
 

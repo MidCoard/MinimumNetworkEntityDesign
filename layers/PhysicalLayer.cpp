@@ -4,8 +4,9 @@
 
 #include "PhysicalLayer.h"
 
-PhysicalLayer::PhysicalLayer(INetAddress *iNetAddress) {
-	this->iNetAddress = iNetAddress;
+#include <utility>
+
+PhysicalLayer::PhysicalLayer(INetAddress iNetAddress) :iNetAddress(std::move(iNetAddress)) {
 }
 
 std::string PhysicalLayer::getName() {

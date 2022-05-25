@@ -15,7 +15,11 @@
 class PC : public NetworkEntity {
 
 public:
-	PC(IP *ip, IP *gateway, MAC *mac, INetAddress *physicalAddress);
+	PC(IP* ip, IP* gateway, MAC* mac, INetAddress* physicalAddress);
+	~PC();
+private:
+	IP* ip;
+	IP* gateway;
 };
 
 

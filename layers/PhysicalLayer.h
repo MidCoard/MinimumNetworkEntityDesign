@@ -11,10 +11,10 @@
 
 class PhysicalLayer : public Layer {
 public:
-	explicit PhysicalLayer(INetAddress * iNetAddress);
+	explicit PhysicalLayer(INetAddress iNetAddress);
 	std::string getName() override;
 private:
-	const INetAddress *iNetAddress;
+	const INetAddress iNetAddress;
 };
 
 

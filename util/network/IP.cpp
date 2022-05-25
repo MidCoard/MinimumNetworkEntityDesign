@@ -15,3 +15,5 @@ IP::IP(std::string ip) : ip(std::move(ip)){
 		this->bytes[i] = part;
 	}
 }
+
+IP localhost = IP("127.0.0.1");

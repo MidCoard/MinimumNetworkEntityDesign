@@ -9,10 +9,10 @@
 #include "NetworkLayer.h"
 #include "AppLayer.h"
 #include "Network.h"
-#include "entities/PC.h"
-#include "entities/Switch.h"
-#include "entities/Router.h"
-#include "entities/Root.h"
+#include "PC.h"
+#include "Switch.h"
+#include "Router.h"
+#include "Root.h"
 #include "network/IP.h"
 #include "network/MAC.h"
 
@@ -36,11 +36,12 @@ std::vector<std::string> availableLine(std::vector<std::string>::iterator begin,
 
 // not necessary for the sub vector and made the process slow, however, I prefer!
 NetworkEntity *createEntity(const std::string &name, std::vector<std::string> vector) {
+	NetworkEntity *entity = nullptr;
 	if (util::equalsIgnoreCase(name,"PC") || util::equalsIgnoreCase(name, "PCD")) {
-		IP * ip = nullptr;
-		IP * gateway = nullptr;
-		MAC * mac = nullptr;
-		INetAddress physicalAddress = static_cast<INetAddress &&>(nullptr);
+		IP* ip = nullptr;
+		IP* gateway = nullptr;
+		MAC* mac = nullptr;
+		INetAddress* physicalAddress = nullptr;
 		if (!vector.empty() && vector[0] != "-") {
 			auto parts = util::split(vector[0], "(");
 			ip = new IP(parts[0]);
@@ -50,14 +51,42 @@ NetworkEntity *createEntity(const std::string &name, std::vector<std::string> ve
 		if (vector.size() >= 2 && vector[1] != "-")
 			mac = new MAC(vector[1]);
 		if (vector.size() >= 3 && vector[2] != "-")
-			physicalAddress = createINetAddress(vector[2]);
-		return new PC(ip, gateway, mac, physicalAddress);
+			physicalAddress = new INetAddress(createINetAddress(vector[2]));
+		entity = new PC(ip, gateway, mac, physicalAddress);
 	} else if (util::equalsIgnoreCase(name, "SWITCH") || util::equalsIgnoreCase(name, "SWITCHD")) {
-		return new Switch();
+		MAC* mac = nullptr;
+		INetAddress* physicalAddress = nullptr;
+		if (!vector.empty() && vector[0] != "-")
+			mac = new MAC(vector[0]);
+		if (vector.size() >= 2 && vector[1] != "-")
+			physicalAddress = new INetAddress(createINetAddress(vector[1]));
+		return new Switch(mac, physicalAddress);
 	} else if (util::equalsIgnoreCase(name, "ROUTER") || util::equalsIgnoreCase(name, "ROUTERD")) {
-		return new Router();
+		IP* segment = nullptr;
+		IP* mask = nullptr;
+		MAC* mac = nullptr;
+		INetAddress* physicalAddress = nullptr;
+		if (!vector.empty() && vector[0] != "-")
+			segment = new IP(vector[0]);
+		if (vector.size() >= 2 && vector[1] != "-")
+			mask = new IP(vector[1]);
+		if (vector.size() >= 3 && vector[2] != "-")
+			mac = new MAC(vector[2]);
+		if (vector.size() >= 4 && vector[3] != "-")
+			physicalAddress = new INetAddress(createINetAddress(vector[3]));
+		return new Router(segment, mask, mac, physicalAddress);
 	}
-	return nullptr;
+	return entity;
+}
+
+std::pair<int,int> loadNodePort(const std::string& node) {
+	if (util::startWith(node, "(") && util::endWith(node, ")")) {
+		auto parts = util::split(node.substr(1,node.length() - 1),",");
+		if (parts.size() != 2)
+			throw std::invalid_argument("invalid node port");
+		return {std::stoi(parts[0]),std::stoi(parts[1])};
+	}
+	return {std::stoi(node),-1};
 }
 
 Network* loadNetwork(const std::string& networkFile) {
@@ -83,15 +112,30 @@ Network* loadNetwork(const std::string& networkFile) {
 			return nullptr;
 		}
 		network->addNode(entityObj);
-		if (util::endWith(name, "D") || util::endWith(name, "d"))
-			network->addLink(0, i, 0);
+		if (util::endWith(name, "D") || util::endWith(name, "d")) {
+			network->addLink(0, i, -1);
+			network->addLink(i,0,-1);
+		}
 	}
+	for (int i = 0;i < links; i++) {
+		auto link = availableLine(begin, lines.end());
+		if (link.size() != 2) {
+			delete network;
+			return nullptr;
+		}
+		std::pair<int,int> port = loadNodePort(link[0]);
+		std::pair<int,int> port2 = loadNodePort(link[1]);
+		network->addLink(port.first, port2.first, port.second);
+		network->addLink(port2.first, port.first, port2.second);
+	}
+	network->build();
 	return network;
 }
 
 
 void initialize(const std::string& networkFile) {
 	Network * network = loadNetwork(networkFile);
+	// why ?
 	if (network == nullptr) {
 		std::cerr << "Network file is not valid" << std::endl;
 		return;

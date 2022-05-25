@@ -12,7 +12,6 @@ class Root : public NetworkEntity {
 
 public:
 	Root();
-
 };
 
 

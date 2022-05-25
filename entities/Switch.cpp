@@ -4,4 +4,9 @@
 
 #include "Switch.h"
 
+#include <utility>
 
+
+Switch::Switch(MAC* mac, INetAddress* physicalAddress) : NetworkEntity(mac, physicalAddress) {
+
+}

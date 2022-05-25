@@ -4,14 +4,15 @@
 
 #include "network/MAC.h"
 #include "network/INetAddress.h"
-#include "layers/Layer.h"
+#include "Layer.h"
 
 class NetworkEntity {
 public:
-	NetworkEntity(MAC mac, INetAddress physicalAddress);
+	NetworkEntity(MAC* mac, INetAddress* physicalAddress);
+	~NetworkEntity();
 protected:
-	const MAC mac;
-	const INetAddress physicalAddress;
+	const MAC* mac;
+	const INetAddress* physicalAddress;
 	Layer * layer = nullptr;
 };
 

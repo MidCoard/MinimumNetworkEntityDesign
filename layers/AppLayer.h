@@ -5,9 +5,12 @@
 #ifndef NETWORKDESIGN_APPLAYER_H
 #define NETWORKDESIGN_APPLAYER_H
 
+#include "Layer.h"
 
-class AppLayer {
+class AppLayer : public Layer{
 
+public:
+	std::string getName() override;
 };
 
 

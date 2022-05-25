@@ -6,17 +6,18 @@
 #define NETWORKDESIGN_NETWORKLAYER_H
 
 #include "network/IP.h"
+#include "Layer.h"
 
 
 class NetworkLayer : public Layer{
 
 public:
-	NetworkLayer(IP * ip, IP * gateway);
+	NetworkLayer(IP ip, IP gateway);
 	NetworkLayer();
 	std::string getName() override;
 private:
-	IP *ip{};
-	IP *gateway{};
+	IP ip;
+	IP gateway;
 };
 
 

@@ -1,14 +1,8 @@
-//
-// Created by 周蜀杰 on 2022/4/18.
-//
-
 #include "INetAddress.h"
 
-#include <utility>
+INetAddress::INetAddress(IP  ip, int port) : port(port), ip(std::move(ip)) {}
 
-INetAddress::INetAddress(IP * ip, int port) : port(port), ip(ip) {}
-
-const IP * INetAddress::getIp() const {
+IP INetAddress::getIp() const {
 	return this->ip;
 }
 
@@ -18,4 +12,16 @@ int INetAddress::getPort() const {
 
 Socket INetAddress::createSocket() const {
 	//todo create socket
+}
+
+INetAddress createINetAddress(const std::string& ip){
+	auto vector = util::split(ip, ":");
+	if (vector.size() != 2)
+		throw std::invalid_argument("invalid IP address and port");
+	return {IP(vector[0]), std::stoi(vector[1])};
+}
+
+
+INetAddress generatePhysicalAddress(int entityId, int id) {
+	return {localhost, 10000 + entityId * 1000 + 100 + id};
 }

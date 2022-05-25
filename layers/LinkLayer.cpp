@@ -1,4 +1,5 @@
 #include "LinkLayer.h"
+
 //
 //
 ////返回帧内容 字符填充法
@@ -121,7 +122,7 @@
 //}
 
 
-LinkLayer::LinkLayer(MAC *mac) : mac(mac) {
+LinkLayer::LinkLayer(MAC mac) : mac(std::move(mac)) {
 }
 
 std::string LinkLayer::getName() {

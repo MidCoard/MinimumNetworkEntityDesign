@@ -10,15 +10,11 @@
 #include "NetworkLayer.h"
 
 class Router : public NetworkEntity {
-
-
-
+public:
+	Router(IP* segment, IP* mask, MAC* mac, INetAddress* address);
 };
 
 class RouterNetworkLayer: public NetworkLayer {
-
-
-
 };
 
 

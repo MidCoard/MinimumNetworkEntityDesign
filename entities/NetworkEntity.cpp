@@ -1,6 +1,9 @@
 #include "NetworkEntity.h"
 
-#include <utility>
+NetworkEntity::NetworkEntity(MAC* mac, INetAddress* physicalAddress)  :mac(mac), physicalAddress(physicalAddress) {
+}
 
-NetworkEntity::NetworkEntity(MAC mac, INetAddress physicalAddress)  :mac(std::move(mac)), physicalAddress(std::move(physicalAddress)) {
+NetworkEntity::~NetworkEntity() {
+	delete mac;
+	delete physicalAddress;
 }

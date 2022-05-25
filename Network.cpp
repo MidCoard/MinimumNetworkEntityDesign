@@ -5,21 +5,30 @@
 #include "Network.h"
 
 void Network::addNode(NetworkEntity *entity) {
-	this->nodes++;
-	this->heads->push_back(-1);
+	this->nodes.push_back(entity);
+	this->heads.push_back(-1);
 }
 
 // add node1 -> node2 edge i.e. PC -> SWITCH
 void Network::addLink(int node1, int node2, double weight) {
-	Link * link = new Link(this->heads->operator[](node1),node2,weight);
-	this->links->push_back(link);
-	this->heads->operator[](node1) = this->links->size() - 1;
+	Link * link = new Link(this->heads[node1],node2,weight);
+	this->links.push_back(link);
+	this->heads[node1] = this->links.size() - 1;
 }
 
 Network::Network() {
-	this->nodes = 0;
-	this->links = new std::vector<Link*>();
-	this->heads = new std::vector<int>();
+	this->nodes = {};
+	this->links = {};
+	this->heads = {};
+}
+
+void Network::build() {
+	std::vector<bool> visited(this->nodes.size(), false);
+	for (int i = 0; i < this->nodes.size(); i++) {
+		if (!visited[i]) {
+			this->dfs(i, visited);
+		}
+	}
 }
 
 Link::Link(int next, int self, double weight) {
