@@ -63,3 +63,9 @@ std::vector<std::string> util::subVector(const std::vector<std::string> &vec, un
 		subVec.push_back(vec[i]);
 	return subVec;
 }
+
+void util::writeFile(const std::string &filename, const std::vector<std::string> &lines) {
+	std::ofstream file(filename);
+	for (const auto &line: lines)
+		file << line << std::endl;
+}

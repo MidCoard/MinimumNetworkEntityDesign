@@ -14,6 +14,7 @@
 class IP {
 public:
 	explicit IP(std::string ip);
+
 private:
 	std::string ip;
 	unsigned char bytes[4]{};

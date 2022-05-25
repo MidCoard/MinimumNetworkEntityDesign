@@ -7,6 +7,7 @@
 
 #include "vector"
 #include "network/INetAddress.h"
+
 const char kFrameHeader = 0;
 const char kFrameFooter = 0;
 const char kFrameEscape = '\\';
@@ -38,7 +39,9 @@ class Frame {
 public:
 
 	Frame(unsigned int sequenceNumber, const INetAddress &address, unsigned short size);
+
 	~Frame();
+
 	unsigned int getLength() const;
 
 	unsigned int getSize() const;
@@ -53,7 +56,8 @@ private:
 	unsigned int length;
 };
 
-std::vector<Frame> createFrames(unsigned int sequenceNumber,const char *data, unsigned int len, const INetAddress &address);
+std::vector<Frame>
+createFrames(unsigned int sequenceNumber, const char *data, unsigned int len, const INetAddress &address);
 
 
 #endif //NETWORKDESIGN_FRAME_H

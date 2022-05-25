@@ -1,14 +1,14 @@
 #include "Router.h"
 
-Router::Router(IP* segment, IP* mask) : NetworkEntity(new RouterNetworkLayer(segment,mask)) {
+Router::Router(int node, IP *segment, IP *mask) : NetworkEntity(node, new RouterNetworkLayer(segment, mask)) {
 	this->segment = segment;
 	this->mask = mask;
 }
 
-void Router::createLayers(int node, std::vector<int> ids) {
-	for (int id : ids) {
-		auto * linkLayer = new LinkLayer(new MAC(generateMAC()));
-		auto * physicalLayer = new PhysicalLayer(new INetAddress(generatePhysicalAddress(node, id)));
+std::vector<std::string> Router::createLayers(int node, std::vector<int> ids) {
+	for (int id: ids) {
+		auto *linkLayer = new LinkLayer(new MAC(generateMAC()));
+		auto *physicalLayer = new PhysicalLayer(new INetAddress(generatePhysicalAddress(node, id)));
 		linkLayer->addLowerLayer(physicalLayer);
 		this->layer->addLowerLayer(linkLayer);
 	}

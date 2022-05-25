@@ -2,9 +2,9 @@
 
 #include <utility>
 
-NetworkLayer::NetworkLayer(IP* ip, IP* gateway) : NetworkLayer(-1, ip, gateway) {}
+NetworkLayer::NetworkLayer(IP *ip, IP *gateway) : NetworkLayer(-1, ip, gateway) {}
 
-std::string NetworkLayer::getName() {
+std::string NetworkLayer::getRawName() {
 	return "NET";
 }
 

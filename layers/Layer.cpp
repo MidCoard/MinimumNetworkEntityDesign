@@ -4,16 +4,21 @@
 
 #include "Layer.h"
 
-void Layer::addLowerLayer(Layer * layer) {
+void Layer::addLowerLayer(Layer *layer) {
 	this->lowerLayers->push_back(layer);
 	layer->upperLayers->push_back(this);
 }
+
 Layer::~Layer() {
 	delete this->lowerLayers;
 	delete this->upperLayers;
 }
 
-Layer::Layer(int id) : id(id){
-	this->lowerLayers = new std::vector<Layer*>();
-	this->upperLayers = new std::vector<Layer*>();
+Layer::Layer(int id) : id(id) {
+	this->lowerLayers = new std::vector<Layer *>();
+	this->upperLayers = new std::vector<Layer *>();
+}
+
+std::string Layer::getName() {
+	return this->getRawName() + std::to_string(this->id == -1 ? 0 : this->id);
 }

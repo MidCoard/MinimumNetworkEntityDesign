@@ -6,10 +6,10 @@
 
 #include <utility>
 
-PhysicalLayer::PhysicalLayer(INetAddress* iNetAddress) : PhysicalLayer(-1, iNetAddress) {
+PhysicalLayer::PhysicalLayer(INetAddress *iNetAddress) : PhysicalLayer(-1, iNetAddress) {
 }
 
-std::string PhysicalLayer::getName() {
+std::string PhysicalLayer::getRawName() {
 	return "PHY";
 }
 

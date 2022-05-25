@@ -11,30 +11,37 @@
 #include "entities/NetworkEntity.h"
 
 
-
 class Link {
 
 public:
-	Link(int next,int self,std::pair<int,int> weight);
+	Link(int next, int self, std::pair<int, int> weight);
+
 	int node;
 	int next;
-	std::pair<int,int> weight;
+	std::pair<int, int> weight;
 };
 
 class Network {
 
 public:
 	Network();
-	void addLink(int node1, int node2, std::pair<int,int> weight);
-	void addNode(NetworkEntity * entity);
+
+	void addLink(int node1, int node2, std::pair<int, int> weight);
+
+	void addNode(NetworkEntity *entity);
+
 	void build();
+
+	void generateGraph(const std::string &filename);
 
 private:
 	std::vector<NetworkEntity *> nodes;
-	std::vector<Link *>  links;
+	std::vector<Link *> links;
 	std::vector<int> heads;
 
-	void dfs(int node, std::vector<bool>& visited);
+	void dfs(int node, std::vector<bool> &visited);
+
+	void dfs2(int node, std::vector<bool> &visited);
 };
 
 #endif //NETWORKDESIGN_NETWORK_H

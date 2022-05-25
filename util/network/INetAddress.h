@@ -4,6 +4,7 @@
 
 #ifndef NETWORKDESIGN_INETADDRESS_H
 #define NETWORKDESIGN_INETADDRESS_H
+
 #include "string"
 #include "Socket.h"
 #include "IP.h"
@@ -15,15 +16,19 @@
 class INetAddress {
 public:
 	INetAddress(IP ip, int port);
+
 	IP getIp() const;
+
 	int getPort() const;
+
 	Socket createSocket() const;
+
 private:
 	IP ip;
 	int port;
 };
 
-INetAddress createINetAddress(const std::string& ip);
+INetAddress createINetAddress(const std::string &ip);
 
 INetAddress generatePhysicalAddress(int entityId, int id);
 

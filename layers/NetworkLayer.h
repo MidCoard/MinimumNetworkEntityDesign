@@ -9,15 +9,18 @@
 #include "Layer.h"
 
 
-class NetworkLayer : public Layer{
+class NetworkLayer : public Layer {
 
 public:
-	NetworkLayer(IP* ip, IP* gateway);
-	NetworkLayer(int id, IP* ip, IP* gateway);
-	std::string getName() override;
+	NetworkLayer(IP *ip, IP *gateway);
+
+	NetworkLayer(int id, IP *ip, IP *gateway);
+
+	std::string getRawName() override;
+
 private:
-	IP* ip;
-	IP* gateway;
+	IP *ip;
+	IP *gateway;
 };
 
 

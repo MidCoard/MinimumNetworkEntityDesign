@@ -7,15 +7,16 @@
 #include "AppLayer.h"
 #include "Router.h"
 
-const MAC * kRootMAC = new MAC("ee:ee:ee:ee:ee:ee");
-const IP * kRootIP = new IP("0.0.0.0");
-const IP * kRootMask = new IP("0.0.0.0");
+const MAC *kRootMAC = new MAC("ee:ee:ee:ee:ee:ee");
+const IP *kRootIP = new IP("0.0.0.0");
+const IP *kRootMask = new IP("0.0.0.0");
 
 class Root : public NetworkEntity {
 
 public:
 	Root();
-	void createLayers(int node, std::vector<int> ids) override;
+
+	std::vector<std::string> createLayers(int node, std::vector<int> ids) override;
 };
 
 class RootAppLayer : public AppLayer {

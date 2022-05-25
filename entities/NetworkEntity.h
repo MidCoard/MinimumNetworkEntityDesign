@@ -8,12 +8,15 @@
 
 class NetworkEntity {
 public:
-	explicit NetworkEntity(Layer * layer);
-	~NetworkEntity();
+	NetworkEntity(int node, Layer *layer);
 
-	virtual void createLayers(int node, std::vector<int> ids) = 0;
+	virtual ~NetworkEntity();
+
+	virtual std::vector<std::string> createLayers(int node, std::vector<int> ids) = 0;
+
 protected:
-	Layer * layer;
+	Layer *layer;
+	int node;
 };
 
 

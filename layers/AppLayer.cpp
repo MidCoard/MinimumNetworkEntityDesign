@@ -4,10 +4,10 @@
 
 #include "AppLayer.h"
 
-std::string AppLayer::getName() {
+std::string AppLayer::getRawName() {
 	return "APP";
 }
 
-AppLayer::AppLayer() :Layer(-1) {
+AppLayer::AppLayer() : Layer(-1) {
 
 }

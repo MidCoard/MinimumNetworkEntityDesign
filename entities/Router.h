@@ -13,19 +13,20 @@
 
 class Router : public NetworkEntity {
 public:
-	Router(IP* segment, IP* mask);
-	void createLayers(int node, std::vector<int> ids) override;
+	Router(int node, IP *segment, IP *mask);
+
+	std::vector<std::string> createLayers(int node, std::vector<int> ids) override;
+
 private:
 	IP *segment;
 	IP *mask;
 };
 
-class RouterNetworkLayer: public NetworkLayer {
+class RouterNetworkLayer : public NetworkLayer {
 
 public:
-	RouterNetworkLayer(IP * segment, IP * mask);
+	RouterNetworkLayer(IP *segment, IP *mask);
 };
-
 
 
 #endif //NETWORKDESIGN_ROUTER_H

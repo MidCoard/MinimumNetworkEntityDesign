@@ -5,7 +5,7 @@
 #include "MAC.h"
 
 
-MAC::MAC(std::string mac) :mac(std::move(mac)) {
+MAC::MAC(std::string mac) : mac(std::move(mac)) {
 
 }
 

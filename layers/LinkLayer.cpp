@@ -122,10 +122,10 @@
 //}
 
 
-LinkLayer::LinkLayer(MAC* mac) : LinkLayer(-1,mac){
+LinkLayer::LinkLayer(MAC *mac) : LinkLayer(-1, mac) {
 }
 
-std::string LinkLayer::getName() {
+std::string LinkLayer::getRawName() {
 	return "LNK";
 }
 

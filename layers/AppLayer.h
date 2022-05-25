@@ -7,11 +7,12 @@
 
 #include "Layer.h"
 
-class AppLayer : public Layer{
+class AppLayer : public Layer {
 
 public:
 	AppLayer();
-	std::string getName() override;
+
+	std::string getRawName() override;
 };
 
 

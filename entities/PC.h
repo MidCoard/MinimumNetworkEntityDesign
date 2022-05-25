@@ -15,12 +15,15 @@
 class PC : public NetworkEntity {
 
 public:
-	PC(IP* ip, IP* gateway, MAC* mac, INetAddress* physicalAddress);
-	~PC();
-	void createLayers(int node, std::vector<int> ids) override;
+	PC(int node, IP *ip, IP *gateway, MAC *mac, INetAddress *physicalAddress);
+
+	~PC() override;
+
+	std::vector<std::string> createLayers(int node, std::vector<int> ids) override;
+
 private:
-	IP* ip;
-	IP* gateway;
+	IP *ip;
+	IP *gateway;
 	MAC *mac;
 	INetAddress *physicalAddress;
 };

@@ -1,6 +1,6 @@
 #include "INetAddress.h"
 
-INetAddress::INetAddress(IP  ip, int port) : port(port), ip(std::move(ip)) {}
+INetAddress::INetAddress(IP ip, int port) : port(port), ip(std::move(ip)) {}
 
 IP INetAddress::getIp() const {
 	return this->ip;
@@ -14,7 +14,7 @@ Socket INetAddress::createSocket() const {
 	//todo create socket
 }
 
-INetAddress createINetAddress(const std::string& ip){
+INetAddress createINetAddress(const std::string &ip) {
 	auto vector = util::split(ip, ":");
 	if (vector.size() != 2)
 		throw std::invalid_argument("invalid IP address and port");

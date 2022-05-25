@@ -13,11 +13,12 @@
 #include <utility>
 
 
-class Switch : public NetworkEntity{
+class Switch : public NetworkEntity {
 
 public:
-	explicit Switch(MAC* mac);
-	void createLayers(int node, std::vector<int> ids) override;
+	Switch(int node, MAC *mac);
+
+	std::vector<std::string> createLayers(int node, std::vector<int> ids) override;
 };
 
 

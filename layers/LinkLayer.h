@@ -13,14 +13,16 @@
 #include <utility>
 #include <utility>
 
-class LinkLayer : public Layer{
+class LinkLayer : public Layer {
 public:
-	explicit LinkLayer(MAC* mac);
-	LinkLayer(int id,MAC* mac);
-	std::string getName() override;
+	explicit LinkLayer(MAC *mac);
+
+	LinkLayer(int id, MAC *mac);
+
+	std::string getRawName() override;
 
 private:
-	const MAC* mac;
+	const MAC *mac;
 
 };
 

@@ -5,9 +5,9 @@
 #include "Switch.h"
 
 
-Switch::Switch(MAC* mac) : NetworkEntity(new LinkLayer(mac)) {}
+Switch::Switch(int node, MAC *mac) : NetworkEntity(node, new LinkLayer(mac)) {}
 
-void Switch::createLayers(int node, std::vector<int> ids) {
-	for (int id : ids)
-		this->layer->addLowerLayer(new PhysicalLayer(node,new INetAddress(generatePhysicalAddress(node, id))));
+std::vector<std::string> Switch::createLayers(int node, std::vector<int> ids) {
+	for (int id: ids)
+		this->layer->addLowerLayer(new PhysicalLayer(node, new INetAddress(generatePhysicalAddress(node, id))));
 }

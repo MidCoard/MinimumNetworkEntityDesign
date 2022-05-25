@@ -4,7 +4,7 @@
 
 #include "PC.h"
 
-PC::PC(IP* ip, IP* gateway, MAC* mac, INetAddress* physicalAddress) :NetworkEntity(new AppLayer())  {
+PC::PC(int node, IP *ip, IP *gateway, MAC *mac, INetAddress *physicalAddress) : NetworkEntity(node, new AppLayer()) {
 	this->ip = ip;
 	this->gateway = gateway;
 	this->mac = mac;
@@ -14,19 +14,22 @@ PC::PC(IP* ip, IP* gateway, MAC* mac, INetAddress* physicalAddress) :NetworkEnti
 PC::~PC() {
 	delete ip;
 	delete gateway;
+	delete mac;
+	delete physicalAddress;
 }
 
-void PC::createLayers(int node, std::vector<int> ids) {
+std::vector<std::string> PC::createLayers(int node, std::vector<int> ids) {
 	if (ids.size() != 1)
 		throw std::invalid_argument("PC port size != 1");
-	auto* networkLayer = new NetworkLayer(node,ip,gateway);
+	auto *networkLayer = new NetworkLayer(ids[0], ip, gateway);
 	this->layer->addLowerLayer(networkLayer);
 	if (mac == nullptr)
 		mac = new MAC(generateMAC());
-	auto* linkLayer = new LinkLayer(node ,mac);
+	auto *linkLayer = new LinkLayer(ids[0], mac);
 	networkLayer->addLowerLayer(linkLayer);
 	if (physicalAddress == nullptr)
 		physicalAddress = new INetAddress(generatePhysicalAddress(node, ids[0]));
-	auto* physicalLayer = new PhysicalLayer(node ,physicalAddress);
+	auto *physicalLayer = new PhysicalLayer(ids[0], physicalAddress);
 	linkLayer->addLowerLayer(physicalLayer);
 }
+
