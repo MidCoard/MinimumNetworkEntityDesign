@@ -7,6 +7,7 @@
 
 Switch::Switch(MAC* mac) : NetworkEntity(new LinkLayer(mac)) {}
 
-void Switch::createLayers(std::vector<int> ids) {
-
+void Switch::createLayers(int node, std::vector<int> ids) {
+	for (int id : ids)
+		this->layer->addLowerLayer(new PhysicalLayer(node,new INetAddress(generatePhysicalAddress(node, id))));
 }

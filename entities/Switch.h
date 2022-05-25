@@ -9,6 +9,7 @@
 #include "network/MAC.h"
 #include "network/INetAddress.h"
 #include "LinkLayer.h"
+#include "PhysicalLayer.h"
 #include <utility>
 
 
@@ -16,7 +17,7 @@ class Switch : public NetworkEntity{
 
 public:
 	explicit Switch(MAC* mac);
-	void createLayers(std::vector<int> ids) override;
+	void createLayers(int node, std::vector<int> ids) override;
 };
 
 

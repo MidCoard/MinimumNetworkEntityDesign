@@ -46,7 +46,11 @@ void Network::dfs(int node, std::vector<bool>& visited) {
 			link->weight.first = allocatedPort;
 			allocatedPort++;
 		}
-	this->nodes[node]->createLayers();
+	std::vector<int> ids = {};
+	std::transform(subLinks.begin(), subLinks.end(), std::back_inserter(ids), [](Link* a) {
+		return a->weight.first;
+	});
+	this->nodes[node]->createLayers(node, ids);
 }
 
 void Network::build() {

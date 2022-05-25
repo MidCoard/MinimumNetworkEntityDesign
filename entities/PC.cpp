@@ -16,12 +16,17 @@ PC::~PC() {
 	delete gateway;
 }
 
-void PC::createLayers(std::vector<int> ids) {
+void PC::createLayers(int node, std::vector<int> ids) {
 	if (ids.size() != 1)
 		throw std::invalid_argument("PC port size != 1");
-	auto* networkLayer = new NetworkLayer(ids[0],ip,gateway);
+	auto* networkLayer = new NetworkLayer(node,ip,gateway);
 	this->layer->addLowerLayer(networkLayer);
-	auto* linkLayer = new LinkLayer(*mac);
+	if (mac == nullptr)
+		mac = new MAC(generateMAC());
+	auto* linkLayer = new LinkLayer(node ,mac);
 	networkLayer->addLowerLayer(linkLayer);
-
+	if (physicalAddress == nullptr)
+		physicalAddress = new INetAddress(generatePhysicalAddress(node, ids[0]));
+	auto* physicalLayer = new PhysicalLayer(node ,physicalAddress);
+	linkLayer->addLowerLayer(physicalLayer);
 }

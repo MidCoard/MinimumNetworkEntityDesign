@@ -11,7 +11,7 @@ public:
 	explicit NetworkEntity(Layer * layer);
 	~NetworkEntity();
 
-	virtual void createLayers(std::vector<int> ids) = 0;
+	virtual void createLayers(int node, std::vector<int> ids) = 0;
 protected:
 	Layer * layer;
 };

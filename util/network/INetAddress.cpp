@@ -21,7 +21,8 @@ INetAddress createINetAddress(const std::string& ip){
 	return {IP(vector[0]), std::stoi(vector[1])};
 }
 
-
 INetAddress generatePhysicalAddress(int entityId, int id) {
+	//because our entityId starts from 0, we need to add 1 to the entityId
+	entityId++;
 	return {localhost, 10000 + entityId * 1000 + 100 + id};
 }
