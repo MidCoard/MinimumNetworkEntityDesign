@@ -10,13 +10,15 @@
 
 class Layer {
 public:
-	Layer();
+	explicit Layer(int id);
 	virtual std::string getName() = 0;
 	void addLowerLayer(Layer *layer);
-	~Layer();
+	virtual ~Layer();
 protected:
 	std::vector<Layer*> * lowerLayers;
 	std::vector<Layer*> * upperLayers;
+private:
+	int id;
 };
 
 

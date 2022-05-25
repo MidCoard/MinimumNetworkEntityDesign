@@ -11,7 +11,10 @@
 
 class Router : public NetworkEntity {
 public:
-	Router(IP* segment, IP* mask, MAC* mac, INetAddress* address);
+	Router(IP* segment, IP* mask);
+private:
+	IP *segment;
+	IP *mask;
 };
 
 class RouterNetworkLayer: public NetworkLayer {

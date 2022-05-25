@@ -1,9 +1,7 @@
 #include "NetworkEntity.h"
 
-NetworkEntity::NetworkEntity(MAC* mac, INetAddress* physicalAddress)  :mac(mac), physicalAddress(physicalAddress) {
-}
+NetworkEntity::NetworkEntity(Layer *layer) :layer(layer) {}
 
 NetworkEntity::~NetworkEntity() {
-	delete mac;
-	delete physicalAddress;
+	delete layer;
 }

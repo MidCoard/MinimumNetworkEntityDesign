@@ -12,12 +12,12 @@
 class NetworkLayer : public Layer{
 
 public:
-	NetworkLayer(IP ip, IP gateway);
-	NetworkLayer();
+	NetworkLayer(IP* ip, IP* gateway);
+	NetworkLayer(int id, IP* ip, IP* gateway);
 	std::string getName() override;
 private:
-	IP ip;
-	IP gateway;
+	IP* ip;
+	IP* gateway;
 };
 
 

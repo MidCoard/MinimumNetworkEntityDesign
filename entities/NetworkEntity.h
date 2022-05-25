@@ -8,12 +8,12 @@
 
 class NetworkEntity {
 public:
-	NetworkEntity(MAC* mac, INetAddress* physicalAddress);
+	explicit NetworkEntity(Layer * layer);
 	~NetworkEntity();
+
+	virtual void createLayers(std::vector<int> ids) = 0;
 protected:
-	const MAC* mac;
-	const INetAddress* physicalAddress;
-	Layer * layer = nullptr;
+	Layer * layer;
 };
 
 

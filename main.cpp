@@ -5,16 +5,14 @@
 #include "Util.h"
 #include "Layer.h"
 #include "PhysicalLayer.h"
-#include "LinkLayer.h"
-#include "NetworkLayer.h"
 #include "AppLayer.h"
-#include "Network.h"
 #include "PC.h"
 #include "Switch.h"
 #include "Router.h"
 #include "Root.h"
 #include "network/IP.h"
 #include "network/MAC.h"
+#include "Network.h"
 
 int getPort(int device, int layer, int entityId) {
 	return 10000 + device * 1000 + layer * 100 + entityId;
@@ -55,26 +53,17 @@ NetworkEntity *createEntity(const std::string &name, std::vector<std::string> ve
 		entity = new PC(ip, gateway, mac, physicalAddress);
 	} else if (util::equalsIgnoreCase(name, "SWITCH") || util::equalsIgnoreCase(name, "SWITCHD")) {
 		MAC* mac = nullptr;
-		INetAddress* physicalAddress = nullptr;
 		if (!vector.empty() && vector[0] != "-")
 			mac = new MAC(vector[0]);
-		if (vector.size() >= 2 && vector[1] != "-")
-			physicalAddress = new INetAddress(createINetAddress(vector[1]));
-		return new Switch(mac, physicalAddress);
+		return new Switch(mac);
 	} else if (util::equalsIgnoreCase(name, "ROUTER") || util::equalsIgnoreCase(name, "ROUTERD")) {
 		IP* segment = nullptr;
 		IP* mask = nullptr;
-		MAC* mac = nullptr;
-		INetAddress* physicalAddress = nullptr;
 		if (!vector.empty() && vector[0] != "-")
 			segment = new IP(vector[0]);
 		if (vector.size() >= 2 && vector[1] != "-")
 			mask = new IP(vector[1]);
-		if (vector.size() >= 3 && vector[2] != "-")
-			mac = new MAC(vector[2]);
-		if (vector.size() >= 4 && vector[3] != "-")
-			physicalAddress = new INetAddress(createINetAddress(vector[3]));
-		return new Router(segment, mask, mac, physicalAddress);
+		return new Router(segment, mask);
 	}
 	return entity;
 }
@@ -113,8 +102,8 @@ Network* loadNetwork(const std::string& networkFile) {
 		}
 		network->addNode(entityObj);
 		if (util::endWith(name, "D") || util::endWith(name, "d")) {
-			network->addLink(0, i, -1);
-			network->addLink(i,0,-1);
+			network->addLink(0, i, {-1, -1});
+			network->addLink(i, 0, {-1, -1});
 		}
 	}
 	for (int i = 0;i < links; i++) {
@@ -125,8 +114,8 @@ Network* loadNetwork(const std::string& networkFile) {
 		}
 		std::pair<int,int> port = loadNodePort(link[0]);
 		std::pair<int,int> port2 = loadNodePort(link[1]);
-		network->addLink(port.first, port2.first, port.second);
-		network->addLink(port2.first, port.first, port2.second);
+		network->addLink(port.first, port2.first, {port.second,port2.second});
+		network->addLink(port2.first, port.first, {port2.second,port.second});
 	}
 	network->build();
 	return network;

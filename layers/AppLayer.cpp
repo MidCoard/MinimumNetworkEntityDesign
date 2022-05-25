@@ -7,3 +7,7 @@
 std::string AppLayer::getName() {
 	return "APP";
 }
+
+AppLayer::AppLayer() :Layer(-1) {
+
+}

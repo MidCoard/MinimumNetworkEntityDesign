@@ -122,9 +122,11 @@
 //}
 
 
-LinkLayer::LinkLayer(MAC mac) : mac(std::move(mac)) {
+LinkLayer::LinkLayer(MAC* mac) : LinkLayer(-1,mac){
 }
 
 std::string LinkLayer::getName() {
 	return "LNK";
 }
+
+LinkLayer::LinkLayer(int id, MAC *mac) : Layer(id), mac(mac) {}

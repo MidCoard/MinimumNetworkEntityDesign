@@ -4,9 +4,9 @@
 
 #include "Switch.h"
 
-#include <utility>
 
+Switch::Switch(MAC* mac) : NetworkEntity(new LinkLayer(mac)) {}
 
-Switch::Switch(MAC* mac, INetAddress* physicalAddress) : NetworkEntity(mac, physicalAddress) {
+void Switch::createLayers(std::vector<int> ids) {
 
 }

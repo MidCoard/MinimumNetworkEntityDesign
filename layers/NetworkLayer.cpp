@@ -2,12 +2,10 @@
 
 #include <utility>
 
-NetworkLayer::NetworkLayer(IP ip, IP gateway) : ip(std::move(ip)), gateway(std::move(gateway)) {
-}
-
-NetworkLayer::NetworkLayer() : NetworkLayer(NULL_IP, NULL_IP) {
-}
+NetworkLayer::NetworkLayer(IP* ip, IP* gateway) : NetworkLayer(-1, ip, gateway) {}
 
 std::string NetworkLayer::getName() {
 	return "NET";
 }
+
+NetworkLayer::NetworkLayer(int id, IP *ip, IP *gateway) : Layer(id), ip(ip), gateway(gateway) {}

@@ -99,6 +99,7 @@
 //}
 
 
-Router::Router(IP* segment, IP* mask, MAC* mac, INetAddress* address) : NetworkEntity(mac,address) {
-
+Router::Router(IP* segment, IP* mask) : NetworkEntity(new RouterNetworkLayer()) {
+	this->segment = segment;
+	this->mask = mask;
 }

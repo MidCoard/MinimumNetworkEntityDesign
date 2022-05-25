@@ -10,6 +10,7 @@
 class AppLayer : public Layer{
 
 public:
+	AppLayer();
 	std::string getName() override;
 };
 
