@@ -7,20 +7,24 @@
 
 #include "network/IP.h"
 #include "Layer.h"
+#include "map"
 
 
 class NetworkLayer : public Layer {
 
 public:
-	NetworkLayer(IP *ip, IP *gateway);
+	NetworkLayer();
 
-	NetworkLayer(int id, IP *ip, IP *gateway);
+	explicit NetworkLayer(int id);
+
+	void setIP(int id, IP *ip, IP *mask, IP *gateway);
 
 	std::string getRawName() override;
 
 private:
-	IP *ip;
-	IP *gateway;
+	std::map<int, IP*> ips;
+	std::map<int, IP*> masks;
+	std::map<int, IP*> gateways;
 };
 
 

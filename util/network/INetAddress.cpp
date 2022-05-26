@@ -17,7 +17,7 @@ Socket INetAddress::createSocket() const {
 INetAddress createINetAddress(const std::string &ip) {
 	auto vector = util::split(ip, ":");
 	if (vector.size() != 2)
-		throw std::invalid_argument("invalid IP address and port");
+		throw std::invalid_argument("invalid IP address and port " + ip);
 	return {IP(vector[0]), std::stoi(vector[1])};
 }
 

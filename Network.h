@@ -5,12 +5,14 @@
 #ifndef NETWORKDESIGN_NETWORK_H
 #define NETWORKDESIGN_NETWORK_H
 
+class Network;
+
 #include "algorithm"
 #include "iostream"
 #include "vector"
 #include "map"
-#include "entities/NetworkEntity.h"
-
+#include "NetworkEntity.h"
+#include "ISP.h"
 
 class Link {
 
@@ -33,11 +35,18 @@ public:
 
 	void build(const std::string& graphFile);
 
+	~Network();
+
+	std::vector<NetworkEntity *> getNodes();
+	std::vector<Link *> getLinks();
+	std::vector<int> getHeads();
+
+	ISP * getRoot();
+
 private:
 	std::vector<NetworkEntity *> nodes;
 	std::vector<Link *> links;
 	std::vector<int> heads;
-
 	void dfs(int node, std::vector<bool> * visited, std::map<int, std::vector<std::string>> *all);
 
 	void dfs2(int node, std::vector<bool> *visited, std::vector<std::string> *lines);

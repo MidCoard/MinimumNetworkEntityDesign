@@ -122,11 +122,18 @@
 //}
 
 
-LinkLayer::LinkLayer(MAC *mac) : LinkLayer(-1, mac) {
+LinkLayer::LinkLayer() : LinkLayer(-1) {
 }
 
 std::string LinkLayer::getRawName() {
 	return "LNK";
 }
 
-LinkLayer::LinkLayer(int id, MAC *mac) : Layer(id), mac(mac) {}
+
+LinkLayer::LinkLayer(int id) : Layer(id) {
+
+}
+
+void LinkLayer::setMAC(int id, MAC *mac) {
+	macTable.insert({id, mac});
+}

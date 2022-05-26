@@ -11,18 +11,21 @@
 #include "network/MAC.h"
 #include <vector>
 #include <utility>
-#include <utility>
+#include "map"
 
 class LinkLayer : public Layer {
 public:
-	explicit LinkLayer(MAC *mac);
+	LinkLayer();
 
-	LinkLayer(int id, MAC *mac);
+	explicit LinkLayer(int id);
+
+	void setMAC(int id, MAC *mac);
 
 	std::string getRawName() override;
 
 private:
-	const MAC *mac;
+
+	std::map<int, MAC *> macTable;
 
 };
 

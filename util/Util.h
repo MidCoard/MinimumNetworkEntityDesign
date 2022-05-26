@@ -33,6 +33,8 @@ namespace util {
 	void writeFile(const std::string &filename, const std::vector<std::string> &lines);
 
 	std::string toHex(unsigned char c);
+
+	std::string completeWith(std::string str, int length, char c);
 }
 
 #endif //NETWORKDESIGN_UTIL_H

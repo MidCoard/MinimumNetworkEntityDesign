@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 14)
 include_directories(layers)
 include_directories(util)
 include_directories(entities)
+include_directories(.)
 
 file(GLOB SOURCES "entities/*.*" "layers/*.*" "util/*.*" "util/network/*.*" "Network.h" "Network.cpp")
 

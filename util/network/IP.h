@@ -14,6 +14,19 @@
 class IP {
 public:
 	explicit IP(std::string ip);
+	explicit IP(unsigned char bytes[]);
+	explicit IP(unsigned int ip);
+	IP(unsigned char a, unsigned char b, unsigned char c, unsigned char d);
+
+	IP operator &(IP &ip);
+
+	bool operator ==(IP &ip);
+
+	bool operator !=(IP &ip);
+
+	std::string str();
+
+	IP getMask();
 
 private:
 	std::string ip;

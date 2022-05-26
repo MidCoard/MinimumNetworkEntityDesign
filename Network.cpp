@@ -40,6 +40,12 @@ void Network::dfs(int node, std::vector<bool> *visited, std::map<int, std::vecto
 	for (auto &link: subLinks)
 		if (link->weight.first != -1)
 			allocated.push_back(link->weight.first);
+	if (this->nodes[node]->isRouter()) {
+		int wan = 0;
+		if (!allocated.empty() && allocated[0] != 0)
+			wan = -1;
+		((Router *) this->nodes[node])->setWAN(wan);
+	}
 	int allocatedPort = 0;
 	int pos = 0;
 	for (auto &link: subLinks)
@@ -56,7 +62,7 @@ void Network::dfs(int node, std::vector<bool> *visited, std::map<int, std::vecto
 	std::transform(subLinks.begin(), subLinks.end(), std::back_inserter(ids), [](Link *a) {
 		return a->weight.first;
 	});
-	all->operator[](node) = this->nodes[node]->createLayers(node, ids);
+	all->insert(std::make_pair(node, this->nodes[node]->createLayers(node, ids)));
 }
 
 void Network::build(const std::string& graphFile) {
@@ -91,6 +97,29 @@ void Network::dfs2(int node, std::vector<bool> *visited, std::vector<std::string
 			+ std::to_string(link->node + 1) + "," + std::to_string(link->weight.second));
 	}
 
+}
+
+Network::~Network() {
+	for (auto &link: this->links)
+		delete link;
+	for (auto &node: this->nodes)
+		delete node;
+}
+
+std::vector<NetworkEntity *> Network::getNodes() {
+	return this->nodes;
+}
+
+std::vector<Link *> Network::getLinks() {
+	return this->links;
+}
+
+std::vector<int> Network::getHeads() {
+	return this->heads;
+}
+
+ISP *Network::getRoot() {
+	return dynamic_cast<ISP *>(this->nodes[0]);
 }
 
 Link::Link(int next, int self,int undirected, std::pair<int, int> weight) {

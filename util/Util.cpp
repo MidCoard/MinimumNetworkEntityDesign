@@ -75,3 +75,7 @@ std::string util::toHex(unsigned char c) {
 	ss << std::hex << (int)c;
 	return ss.str();
 }
+
+std::string util::completeWith(std::string str, int length, char c) {
+	return str.append(length - str.size(), c);
+}
