@@ -57,10 +57,10 @@ NetworkEntity *createEntity(Network *network, int node, const std::string &name,
 		int size = -1;
 		if (!vector.empty() && vector[0] != "-" && util::isNumber(vector[0]))
 			size = std::stoi(vector[0]);
-		std::map<int, SwitchConfiguration> switchConfigurations;
+		std::map<int, SwitchConfiguration *> switchConfigurations;
 		for (int i = 0; i < size; i++) {
 			std::vector<std::string> subVector = availableLine(begin, end);
-			MAC * mac = nullptr;
+			MAC *mac = nullptr;
 			INetAddress *linkAddress = nullptr;
 			INetAddress *physicalAddress = nullptr;
 			if (!subVector.empty() && subVector[0] != "-")
@@ -69,25 +69,25 @@ NetworkEntity *createEntity(Network *network, int node, const std::string &name,
 				linkAddress = new INetAddress(createINetAddress(subVector[1]));
 			if (subVector.size() >= 3 && subVector[2] != "-")
 				physicalAddress = new INetAddress(createINetAddress(subVector[2]));
-			switchConfigurations.insert(std::map< int, SwitchConfiguration >::value_type(i, SwitchConfiguration(mac,
-			                                                                                                    linkAddress,
-			                                                                                                    physicalAddress)));
+			switchConfigurations.insert({i, new SwitchConfiguration(mac,
+			                                                        linkAddress,
+			                                                        physicalAddress)});
 		}
-		return new Switch(network,node, switchConfigurations);
+		return new Switch(network, node, switchConfigurations);
 	} else if (util::equalsIgnoreCase(name, "ROUTER") || util::equalsIgnoreCase(name, "ROUTERI")) {
 		int size = -1;
 		if (!vector.empty() && vector[0] != "-" && util::isNumber(vector[0]))
 			size = std::stoi(vector[0]);
-		IP* segment0 = nullptr;
-		IP* mask0 = nullptr;
-		IP* gateway0 = nullptr;
-		MAC* mac = nullptr;
-		INetAddress* linkAddress = nullptr;
-		INetAddress* physicalAddress = nullptr;
+		IP *segment0 = nullptr;
+		IP *mask0 = nullptr;
+		IP *gateway0 = nullptr;
+		MAC *mac = nullptr;
+		INetAddress *linkAddress = nullptr;
+		INetAddress *physicalAddress = nullptr;
 		bool flag = false;
-		IP* segment = nullptr;
-		IP* mask = nullptr;
-		IP* gateway = nullptr;
+		IP *segment = nullptr;
+		IP *mask = nullptr;
+		IP *gateway = nullptr;
 		std::vector<std::string> lines = availableLine(begin, end);
 		if (!lines.empty() && lines[0] != "-")
 			segment0 = new IP(lines[0]);
@@ -109,15 +109,15 @@ NetworkEntity *createEntity(Network *network, int node, const std::string &name,
 			mask = new IP(lines[8]);
 		if (lines.size() >= 10 && lines[9] != "-")
 			gateway = new IP(lines[9]);
-		std::map<int, RouterConfiguration> routerConfigurations;
-		routerConfigurations.insert({0, RouterConfiguration(segment0, mask0, gateway0, mac, linkAddress,
-		                                                    physicalAddress)});
+		std::map<int, RouterConfiguration *> routerConfigurations;
+		routerConfigurations.insert({0, new RouterConfiguration(segment0, mask0, gateway0, mac, linkAddress,
+		                                                        physicalAddress)});
 		for (int i = 0; i < size; i++) {
 			std::vector<std::string> subVector = availableLine(begin, end);
-			IP* segmenti = nullptr;
-			IP* maski = nullptr;
-			IP* gatewayi = nullptr;
-			MAC * maci = nullptr;
+			IP *segmenti = nullptr;
+			IP *maski = nullptr;
+			IP *gatewayi = nullptr;
+			MAC *maci = nullptr;
 			INetAddress *linkAddress0 = nullptr;
 			INetAddress *physicalAddress0 = nullptr;
 			if (!subVector.empty() && subVector[0] != "-")
@@ -132,8 +132,8 @@ NetworkEntity *createEntity(Network *network, int node, const std::string &name,
 				linkAddress0 = new INetAddress(createINetAddress(subVector[4]));
 			if (subVector.size() >= 6 && subVector[5] != "-")
 				physicalAddress0 = new INetAddress(createINetAddress(subVector[5]));
-			routerConfigurations.insert(std::map< int, RouterConfiguration >::value_type(i+1, RouterConfiguration(
-					segmenti, maski, gatewayi, maci,linkAddress0, physicalAddress0)));
+			routerConfigurations.insert({i + 1, new RouterConfiguration(
+					segmenti, maski, gatewayi, maci, linkAddress0, physicalAddress0)});
 		}
 		if (!flag)
 			return (NetworkEntity *) new DefaultRouter(network, node, routerConfigurations);
@@ -151,14 +151,14 @@ std::pair<int, int> loadNodePort(const std::string &node) {
 	return {std::stoi(node), -1};
 }
 
-Network *loadNetwork(const std::string &networkFile, const std::string& graphFile) {
+Network *loadNetwork(const std::string &networkFile, const std::string &graphFile) {
 	std::vector<std::string> lines = util::readFile(networkFile);
 	auto begin = lines.begin();
 	auto nodesAndLinks = availableLine(&begin, lines.end());
 	if (nodesAndLinks.size() != 2)
 		return nullptr;
 	auto *network = new Network();
-	network->addNode((NetworkEntity * )new ISP(network));
+	network->addNode((NetworkEntity *) new ISP(network));
 	int nodes = std::stoi(nodesAndLinks[0]);
 	int links = std::stoi(nodesAndLinks[1]);
 	for (int i = 1; i <= nodes; i++) {
@@ -193,27 +193,27 @@ Network *loadNetwork(const std::string &networkFile, const std::string& graphFil
 }
 
 
-Network * initialize(const std::string &networkFile, const std::string& graphFile) {
+Network *initialize(const std::string &networkFile, const std::string &graphFile) {
 	Network *network = loadNetwork(networkFile, graphFile);
 	if (network == nullptr) {
 		std::cerr << "Network file is not valid" << std::endl;
 		return nullptr;
 	}
-	for (auto node : network->getNodes())
+	for (auto node: network->getNodes())
 		if (node->isRouter())
-			((Router*)node)->generateIP();
-	for (auto node : network->getNodes())
+			((Router *) node)->generateIP();
+	for (auto node: network->getNodes())
 		node->start();
 	return network;
 }
 
 
-Network * initialize() {
+Network *initialize() {
 	return initialize("network.in", "ne.txt");
 }
 
 int main() {
-	Network* network = initialize();
+	Network *network = initialize();
 	if (network != nullptr) {
 		// join
 		for (auto node: network->getNodes())

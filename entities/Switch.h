@@ -30,11 +30,13 @@ private:
 class Switch : public NetworkEntity {
 
 public:
-	Switch(Network * network, int node, std::map<int, SwitchConfiguration> switchConfigurations);
+	Switch(Network * network, int node, std::map<int, SwitchConfiguration*> switchConfigurations);
+
+	~Switch() override;
 
 	std::vector<std::string> createLayers(int node, std::vector<int> ids) override;
 private:
-	std::map<int, SwitchConfiguration> switchConfigurations;
+	std::map<int, SwitchConfiguration*> switchConfigurations;
 };
 
 #endif //NETWORKDESIGN_SWITCH_H

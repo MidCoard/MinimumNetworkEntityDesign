@@ -12,7 +12,9 @@ std::vector<std::string> PC::createLayers(int node, std::vector<int> ids) {
 	if (ids.size() != 1)
 		throw std::invalid_argument("PC network interface size should be 1");
 	auto *networkLayer = new NetworkLayer(ids[0], this);
-	networkLayer->setIPConfiguration(ids[0], new IP(*this->ip), new IP(*this->mask), new IP(*this->gateway));
+	networkLayer->setIPConfiguration(ids[0], this->ip,
+									this->mask,
+									 this->gateway);
 	this->layer->addLowerLayer(networkLayer);
 	auto *linkLayer = new LinkLayer(ids[0], this);
 	if (mac == nullptr)

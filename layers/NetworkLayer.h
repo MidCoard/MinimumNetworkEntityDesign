@@ -22,6 +22,8 @@ public:
 
 	void setIPConfiguration(int id, IP *segment, IP *mask, IP *gateway);
 
+	IPConfiguration getIPConfiguration(int id);
+
 	std::string getRawName() override;
 
 	void dealReceive(int id, Block block) override;

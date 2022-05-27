@@ -14,6 +14,11 @@ void NetworkLayer::setIPConfiguration(int id, IP *segment, IP *mask, IP *gateway
 	configurations.insert_or_assign(id, IPConfiguration(segment, mask, gateway));
 }
 
+IPConfiguration NetworkLayer::getIPConfiguration(int id) {
+	return this->configurations.at(id);
+}
+
+
 void NetworkLayer::dealReceive(int id, Block block) {
 
 }

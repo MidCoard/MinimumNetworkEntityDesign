@@ -36,7 +36,9 @@ private:
 
 class Router : public NetworkEntity {
 public:
-	Router(Network* network, int node,std::map<int, RouterConfiguration> routerConfigurations);
+	Router(Network* network, int node,std::map<int, RouterConfiguration*> routerConfigurations);
+
+	~Router() override;
 
 	std::vector<std::string> createLayers(int node, std::vector<int> ids) override;
 
@@ -48,8 +50,14 @@ public:
 
 	std::vector<IPConfiguration> getIPConfiguration() override = 0;
 protected:
-	std::map<int, RouterConfiguration> routerConfigurations;
+	std::map<int, RouterConfiguration*> routerConfigurations;
 	bool generatedIP = false;
+
+	// first set in generateIP
+	// second set in DHCP server ( this time should delete the first set )
+	IP* segment = nullptr;
+	IP* mask = nullptr;
+	IP* gateway = nullptr;
 };
 
 class RouterNetworkLayer : public NetworkLayer {
@@ -57,8 +65,6 @@ public:
 	explicit RouterNetworkLayer(NetworkEntity * networkEntity);
 
 	RouterNetworkLayer(int id, NetworkEntity * networkEntity);
-
-	IPConfiguration getIPConfiguration(int id);
 
 	unsigned long size();
 };

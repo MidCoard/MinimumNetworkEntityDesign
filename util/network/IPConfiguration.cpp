@@ -22,9 +22,3 @@ IP* IPConfiguration::getGateway() {
 bool IPConfiguration::isConfigurable() {
 	return this->segment != nullptr || this->mask != nullptr || this->gateway != nullptr;
 }
-
-IPConfiguration::~IPConfiguration() {
-	delete this->segment;
-	delete this->mask;
-	delete this->gateway;
-}

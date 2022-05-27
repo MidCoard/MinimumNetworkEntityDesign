@@ -27,7 +27,10 @@ void DefaultRouter::generateIP() {
 			defaultIP = defaultIP & (*configuration.getSegment() & *configuration.getMask());
 			defaultMask = defaultMask & *configuration.getMask();
 		}
-	((RouterNetworkLayer *) this->layer)->setIPConfiguration(kWanPort, new IP(defaultIP),new IP(defaultMask), new IP(*((RouterNetworkLayer *) this->layer)->getIPConfiguration(kWanPort).getGateway()));
+	this->segment = new IP(defaultIP);
+	this->mask = new IP(defaultMask);
+	this->gateway = ((RouterNetworkLayer *) this->layer)->getIPConfiguration(kWanPort).getGateway() == nullptr ? nullptr : new IP(*((RouterNetworkLayer *) this->layer)->getIPConfiguration(kWanPort).getGateway());
+	((RouterNetworkLayer *) this->layer)->setIPConfiguration(kWanPort, this->segment, this->mask, this->gateway);
 	generatedIP = true;
 }
 
@@ -49,7 +52,7 @@ void DefaultRouter::dfsAllocateIP(int node, std::vector<bool> *visited, std::vec
 	}
 }
 
-DefaultRouter::DefaultRouter(Network *network, int node,std::map<int, RouterConfiguration> routerConfigurations) : Router(network, node, std::move(routerConfigurations)) {}
+DefaultRouter::DefaultRouter(Network *network, int node,std::map<int, RouterConfiguration*> routerConfigurations) : Router(network, node, std::move(routerConfigurations)) {}
 
 std::vector<IPConfiguration> DefaultRouter::getIPConfiguration() {
 	generateIP();

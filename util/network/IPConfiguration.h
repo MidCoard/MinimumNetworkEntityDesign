@@ -10,7 +10,6 @@
 class IPConfiguration {
 public:
 	IPConfiguration(IP* segment, IP* mask, IP* gateway);
-	~IPConfiguration();
 	IP* getSegment();
 	IP* getMask();
 	IP* getGateway();
