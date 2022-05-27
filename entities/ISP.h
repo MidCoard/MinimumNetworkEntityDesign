@@ -17,8 +17,9 @@ public:
 
 class RootAppLayer : public AppLayer {
 public:
-
+	explicit RootAppLayer(NetworkEntity* networkEntity);
 };
+
 
 
 #endif //NETWORKDESIGN_ISP_H

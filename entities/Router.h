@@ -54,9 +54,9 @@ protected:
 
 class RouterNetworkLayer : public NetworkLayer {
 public:
-	RouterNetworkLayer();
+	explicit RouterNetworkLayer(NetworkEntity * networkEntity);
 
-	explicit RouterNetworkLayer(int id);
+	RouterNetworkLayer(int id, NetworkEntity * networkEntity);
 
 	IPConfiguration getIPConfiguration(int id);
 

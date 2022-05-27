@@ -1,6 +1,6 @@
 #include "Router.h"
 
-Router::Router(Network* network, int node,std::map<int,RouterConfiguration> routerConfigurations) : NetworkEntity(network,node, new RouterNetworkLayer()), routerConfigurations(std::move(routerConfigurations)) {
+Router::Router(Network* network, int node,std::map<int,RouterConfiguration> routerConfigurations) : NetworkEntity(network,node, new RouterNetworkLayer(this)), routerConfigurations(std::move(routerConfigurations)) {
 }
 
 std::vector<std::string> Router::createLayers(int node, std::vector<int> ids) {
@@ -10,21 +10,21 @@ std::vector<std::string> Router::createLayers(int node, std::vector<int> ids) {
 			((RouterNetworkLayer *) this->layer)->setIPConfiguration(id, new IP(*routerConfiguration.getSegment()),
 			                                                         new IP(*routerConfiguration.getMask()),
 			                                                         new IP(*routerConfiguration.getGateway()));
-			auto *linkLayer = new LinkLayer(id);
+			auto *linkLayer = new LinkLayer(id,this);
 			if (routerConfiguration.getMAC() != nullptr)
 				linkLayer->setMAC(id, *routerConfiguration.getMAC());
 			else
 				linkLayer->setMAC(id, generateMAC());
 			this->layer->addLowerLayer(linkLayer);
-			auto* physicalLayer = new PhysicalLayer(id, routerConfiguration.getLinkAddress() == nullptr ? generateLinkAddress(node, id) : *routerConfiguration.getLinkAddress()
+			auto* physicalLayer = new PhysicalLayer(id, this,routerConfiguration.getLinkAddress() == nullptr ? generateLinkAddress(node, id) : *routerConfiguration.getLinkAddress()
 															 , routerConfiguration.getPhysicalAddress() == nullptr ? generatePhysicalAddress(node ,id) : *routerConfiguration.getPhysicalAddress());
 			linkLayer->addLowerLayer(physicalLayer);
 		} else {
 			((RouterNetworkLayer *) this->layer)->setIPConfiguration(id, nullptr, nullptr, nullptr);
-			auto *linkLayer = new LinkLayer(id);
+			auto *linkLayer = new LinkLayer(id, this);
 			linkLayer->setMAC(id, generateMAC());
 			this->layer->addLowerLayer(linkLayer);
-			auto *physicalLayer = new PhysicalLayer(id, generateLinkAddress(node ,id), generatePhysicalAddress(node, id));
+			auto *physicalLayer = new PhysicalLayer(id,this, generateLinkAddress(node ,id), generatePhysicalAddress(node, id));
 			linkLayer->addLowerLayer(physicalLayer);
 		}
 	}
@@ -75,9 +75,9 @@ RouterConfiguration::~RouterConfiguration() {
 	delete physicalAddress;
 }
 
-RouterNetworkLayer::RouterNetworkLayer() : NetworkLayer() {}
+RouterNetworkLayer::RouterNetworkLayer(NetworkEntity * networkEntity) : NetworkLayer(networkEntity) {}
 
-RouterNetworkLayer::RouterNetworkLayer(int id) : NetworkLayer(id) {}
+RouterNetworkLayer::RouterNetworkLayer(int id, NetworkEntity * networkEntity) : NetworkLayer(id, networkEntity) {}
 
 IPConfiguration RouterNetworkLayer::getIPConfiguration(int id) {
 	return this->configurations.at(id);

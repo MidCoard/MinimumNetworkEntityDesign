@@ -3,3 +3,7 @@
 //
 
 #include "RouteTable.h"
+
+int RouteTable::lookup(IP ip) {
+	return 0;
+}
