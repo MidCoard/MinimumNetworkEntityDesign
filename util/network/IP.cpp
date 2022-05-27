@@ -16,7 +16,7 @@ IP::IP(std::string ip) : ip(std::move(ip)) {
 	}
 }
 
-IP IP::operator&(IP ip) {
+IP IP::operator&(IP ip) const {
 	unsigned char result[4];
 	for (int i = 0; i < 4; i++)
 		result[i] = this->bytes[i] & ip.bytes[i];
@@ -29,18 +29,18 @@ IP::IP(unsigned char bytes[]) {
 	this->ip = std::to_string(bytes[0]) + "." + std::to_string(bytes[1]) + "." + std::to_string(bytes[2]) + "." + std::to_string(bytes[3]);
 }
 
-bool IP::operator==(IP ip) {
+bool IP::operator==(IP ip) const {
 	for (int i = 0; i < 4; i++)
 		if (this->bytes[i] != ip.bytes[i])
 			return false;
 	return true;
 }
 
-bool IP::operator!=(IP &ip) {
+bool IP::operator!=(IP &ip) const {
 	return !(*this == ip);
 }
 
-std::string IP::str() {
+std::string IP::str() const {
 	return this->ip;
 }
 
@@ -52,7 +52,7 @@ IP::IP(unsigned char a, unsigned char b, unsigned char c, unsigned char d) {
 	this->ip = std::to_string(a) + "." + std::to_string(b) + "." + std::to_string(c) + "." + std::to_string(d);
 }
 
-IP IP::getMask() {
+IP IP::getMask() const {
 	unsigned int raw = this->intValue();
 	unsigned int defaultIP = 0xFFFFFFFFu;
 	// find raw lowest 1
@@ -70,11 +70,11 @@ IP::IP(unsigned int ip) {
 	this->ip = std::to_string(this->bytes[0]) + "." + std::to_string(this->bytes[1]) + "." + std::to_string(this->bytes[2]) + "." + std::to_string(this->bytes[3]);
 }
 
-unsigned int IP::intValue() {
+unsigned int IP::intValue() const {
 	return (this->bytes[0] << 24) + (this->bytes[1] << 16) + (this->bytes[2] << 8) + this->bytes[3];
 }
 
-unsigned char IP::get(int index) {
+unsigned char IP::get(int index) const {
 	return this->bytes[index];
 }
 

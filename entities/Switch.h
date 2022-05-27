@@ -14,7 +14,9 @@ class Network;
 
 class SwitchConfiguration {
 public:
+	// pointer to present null
 	SwitchConfiguration(MAC *mac, INetAddress *linkAddress, INetAddress *physicalAddress);
+	~SwitchConfiguration();
 	MAC * getMAC();
 	INetAddress * getPhysicalAddress();
 	INetAddress * getLinkAddress();

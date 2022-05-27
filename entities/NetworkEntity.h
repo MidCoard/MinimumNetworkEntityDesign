@@ -13,15 +13,13 @@ extern const Executor kExecutor;
 
 class NetworkEntity {
 public:
-	NetworkEntity(Network* network,int node, Layer *layer);
+	NetworkEntity(Network* network,int node, Layer* layer);
 
 	virtual ~NetworkEntity();
 
 	virtual std::vector<std::string> createLayers(int node, std::vector<int> ids) = 0;
 
 	virtual bool isRouter();
-
-	virtual bool isRouterMaster();
 
 	virtual bool isIPAvailable();
 
@@ -32,9 +30,9 @@ public:
 	virtual void stop() = 0;
 
 protected:
-	Layer *layer;
+	Layer * layer;
 	int node;
-	Network *network;
+	Network * network;
 	bool isStarted = false;
 	bool isStopped = false;
 };

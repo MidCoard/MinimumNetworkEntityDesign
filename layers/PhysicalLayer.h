@@ -13,9 +13,9 @@
 
 class PhysicalLayer : public Layer {
 public:
-	PhysicalLayer(INetAddress* linkAddress, INetAddress * physicalAddress);
+	PhysicalLayer(INetAddress linkAddress, INetAddress physicalAddress);
 
-	PhysicalLayer(int id, INetAddress* linkAddress, INetAddress * physicalAddress);
+	PhysicalLayer(int id, INetAddress linkAddress, INetAddress physicalAddress);
 
 	std::string getRawName() override;
 
@@ -28,10 +28,13 @@ public:
 	void dealSend(Block *block) override;
 
 private:
-	INetAddress *physicalAddress;
-	INetAddress *linkAddress;
+	INetAddress physicalAddress;
+	INetAddress linkAddress;
 
-	Socket *socket;
+
+	// why use pointer?
+	// because we need to know the socket is used or not(nullptr)
+	Socket *socket = nullptr;
 };
 
 

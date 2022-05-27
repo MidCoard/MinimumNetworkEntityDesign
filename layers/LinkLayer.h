@@ -19,7 +19,7 @@ public:
 
 	explicit LinkLayer(int id);
 
-	void setMAC(int id, MAC *mac);
+	void setMAC(int id, const MAC& mac);
 
 	std::string getRawName() override;
 
@@ -28,8 +28,10 @@ public:
 	void dealReceive(int id, Block *block) override;
 
 private:
+	// not use pointer to avoid unnecessary delete operation
+	std::map<MAC, int> macTable;
 
-	std::map<int, MAC *> macTable;
+	std::map<int, MAC> idMacMap;
 
 };
 

@@ -44,14 +44,14 @@ void Socket::listen(PhysicalLayer *physicalLayer) {
 	this->thread = new std::thread(&Socket::run, this, physicalLayer);
 }
 
-void Socket::send(INetAddress *address, Block * block) const {
+void Socket::send(const INetAddress& address, Block * block) {
 	int client = socket(AF_INET, SOCK_STREAM, 0);
 	if (client == -1)
 		throw std::runtime_error("create socket failed");
 	struct sockaddr_in addr{};
 	addr.sin_family = AF_INET;
-	addr.sin_port = htons(address->getPort());
-	addr.sin_addr.s_addr = htonl(address->getIp().intValue());
+	addr.sin_port = htons(address.getPort());
+	addr.sin_addr.s_addr = htonl(address.getIp().intValue());
 	if (connect(client, (struct sockaddr *) &addr, sizeof(addr)))
 		throw std::runtime_error("connect socket failed");
 	while (block->getRemaining() > 0) {

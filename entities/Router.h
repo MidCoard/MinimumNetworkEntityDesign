@@ -18,7 +18,7 @@ class RouterConfiguration {
 public:
 	RouterConfiguration(IP *segment, IP *mask, IP *gateway, MAC *mac, INetAddress *physicalAddress,
 	                    INetAddress *pAddress);
-
+	~RouterConfiguration();
 	IP* getSegment();
 	IP* getMask();
 	IP* getGateway();
@@ -41,8 +41,6 @@ public:
 	std::vector<std::string> createLayers(int node, std::vector<int> ids) override;
 
 	bool isRouter() override;
-
-	bool isRouterMaster() override;
 
 	virtual void generateIP() = 0;
 

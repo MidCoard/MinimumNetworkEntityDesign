@@ -18,19 +18,19 @@ public:
 	explicit IP(unsigned int ip);
 	IP(unsigned char a, unsigned char b, unsigned char c, unsigned char d);
 
-	IP operator &(IP ip);
+	IP operator &(IP ip) const;
 
-	bool operator ==(IP ip);
+	bool operator ==(IP ip) const;
 
-	bool operator !=(IP &ip);
+	bool operator !=(IP &ip) const;
 
-	std::string str();
+	std::string str() const;
 
-	unsigned int intValue();
+	unsigned int intValue() const;
 
-	IP getMask();
+	IP getMask() const;
 
-	unsigned char get(int index);
+	unsigned char get(int index) const;
 
 private:
 	std::string ip;

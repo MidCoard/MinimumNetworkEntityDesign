@@ -14,10 +14,6 @@ public:
 
 	std::vector<std::string> createLayers(int node, std::vector<int> ids) override;
 
-	bool isRouterMaster() override;
-
-	IP *allocateSegment(int node, IP segment, IP *pIp);
-
 	void start() override;
 };
 

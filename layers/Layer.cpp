@@ -77,7 +77,12 @@ void Layer::start() {
 	});
 }
 
+// make sure this method is called before deleting
 void Layer::stop() {
+	if (shouldStop) {
+		error("layer already stopped");
+		return;
+	}
 	shouldStop = true;
 	if (this->sendThread == nullptr || this->receiveThread == nullptr)
 		error("threads should not be null");
@@ -104,3 +109,5 @@ void Layer::error(const std::string& message) {
 int Layer::getID() const {
 	return this->id;
 }
+
+Layer::~Layer() = default;

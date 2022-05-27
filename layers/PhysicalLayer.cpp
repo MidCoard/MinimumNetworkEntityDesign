@@ -6,17 +6,17 @@
 
 #include <utility>
 
-PhysicalLayer::PhysicalLayer(INetAddress *linkAddress,INetAddress * physicalAddress) : PhysicalLayer(-1,linkAddress,physicalAddress) {}
+PhysicalLayer::PhysicalLayer(INetAddress linkAddress,INetAddress physicalAddress) : PhysicalLayer(-1,std::move(linkAddress),std::move(physicalAddress)) {}
 
 std::string PhysicalLayer::getRawName() {
 	return "PHY";
 }
 
-PhysicalLayer::PhysicalLayer(int id,INetAddress* linkAddress, INetAddress * physicalAddress) : Layer(id), linkAddress(linkAddress), physicalAddress(physicalAddress), socket(nullptr){}
+PhysicalLayer::PhysicalLayer(int id,INetAddress linkAddress, INetAddress physicalAddress) : Layer(id), linkAddress(std::move(linkAddress)), physicalAddress(std::move(physicalAddress)){}
 
 void PhysicalLayer::start() {
 	Layer::start();
-	this->socket = new Socket(this->linkAddress->createSocket());
+	this->socket = new Socket(this->linkAddress.createSocket());
 	socket->listen(this);
 }
 
@@ -37,6 +37,7 @@ void PhysicalLayer::dealReceive(int id, Block *block) {
 }
 
 void PhysicalLayer::dealSend(Block *block) {
-	this->socket->send(this->physicalAddress, block);
+	if (this->socket != nullptr)
+		Socket::send(this->physicalAddress, block);
 	delete block;
 }

@@ -219,5 +219,6 @@ int main() {
 		for (auto node: network->getNodes())
 			node->stop();
 	}
+	delete network;
 	return 0;
 }

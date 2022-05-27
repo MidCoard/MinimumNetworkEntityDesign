@@ -27,7 +27,7 @@ void DefaultRouter::generateIP() {
 			defaultIP = defaultIP & (*configuration.getSegment() & *configuration.getMask());
 			defaultMask = defaultMask & *configuration.getMask();
 		}
-	((RouterNetworkLayer *) this->layer)->setIPConfiguration(kWanPort, new IP(defaultIP),new IP(defaultMask), ((RouterNetworkLayer *) this->layer)->getIPConfiguration(kWanPort).getGateway());
+	((RouterNetworkLayer *) this->layer)->setIPConfiguration(kWanPort, new IP(defaultIP),new IP(defaultMask), new IP(*((RouterNetworkLayer *) this->layer)->getIPConfiguration(kWanPort).getGateway()));
 	generatedIP = true;
 }
 

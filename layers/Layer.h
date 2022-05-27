@@ -15,6 +15,8 @@ class Layer {
 public:
 	explicit Layer(int id);
 
+	virtual ~Layer();
+
 	virtual std::string getRawName() = 0;
 
 	void addLowerLayer(Layer *layer);
@@ -48,6 +50,7 @@ protected:
 	code_machina::BlockingQueue<std::pair<int,Block *>> sendBlockQueue;
 	code_machina::BlockingQueue<std::pair<int,Block *>> receiveBlockQueue;
 private:
+	// this two pointer will be deleted when closing
 	std::thread *sendThread = nullptr;
 	std::thread *receiveThread = nullptr;
 	bool shouldStop = false;
