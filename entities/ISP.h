@@ -13,8 +13,6 @@ public:
 	explicit ISP(Network* network);
 
 	std::vector<std::string> createLayers(int node, std::vector<int> ids) override;
-
-	void start() override;
 };
 
 class RootAppLayer : public AppLayer {

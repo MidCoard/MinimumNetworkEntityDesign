@@ -5,6 +5,8 @@
 #ifndef NETWORKDESIGN_LAYER_H
 #define NETWORKDESIGN_LAYER_H
 
+class NetworkEntity;
+
 #include "string"
 #include "vector"
 #include "iostream"
@@ -13,7 +15,7 @@
 
 class Layer {
 public:
-	explicit Layer(int id);
+	Layer(int id, NetworkEntity* networkEntity);
 
 	virtual ~Layer();
 
@@ -58,6 +60,8 @@ private:
 
 	void
 	dfsGenerate(int node, Layer *layer, std::vector<std::string> *lines, const std::string& suffix, bool first);
+
+	NetworkEntity *networkEntity;
 };
 
 

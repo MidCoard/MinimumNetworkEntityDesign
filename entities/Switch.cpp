@@ -24,12 +24,6 @@ std::vector<std::string> Switch::createLayers(int node, std::vector<int> ids) {
 	return this->layer->generateGraph(node);
 }
 
-void Switch::start() {
-	if (this->isStarted)
-		return;
-	this->isStarted = true;
-}
-
 SwitchConfiguration::SwitchConfiguration(MAC *mac, INetAddress *linkAddress, INetAddress *physicalAddress)
 		: mac(mac), linkAddress(linkAddress), physicalAddress(physicalAddress) {}
 

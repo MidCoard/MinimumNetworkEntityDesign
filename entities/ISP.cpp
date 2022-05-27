@@ -20,7 +20,3 @@ std::vector<std::string> ISP::createLayers(int node, std::vector<int> ids) {
 	}
 	return this->layer->generateGraph(node);
 }
-
-void ISP::start() {
-
-}

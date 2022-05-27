@@ -25,9 +25,9 @@ public:
 
 	virtual std::vector<IPConfiguration> getIPConfiguration();
 
-	virtual void start() = 0;
+	void start();
 
-	virtual void stop() = 0;
+	void stop();
 
 protected:
 	Layer * layer;

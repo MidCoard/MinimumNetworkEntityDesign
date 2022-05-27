@@ -2,13 +2,13 @@
 
 #include <utility>
 
-NetworkLayer::NetworkLayer() : NetworkLayer(-1) {}
+NetworkLayer::NetworkLayer(NetworkEntity * networkEntity) : NetworkLayer(-1, networkEntity) {}
 
 std::string NetworkLayer::getRawName() {
 	return "NET";
 }
 
-NetworkLayer::NetworkLayer(int id) : Layer(id) {}
+NetworkLayer::NetworkLayer(int id, NetworkEntity * networkEntity) : Layer(id, networkEntity) {}
 
 void NetworkLayer::setIPConfiguration(int id, IP *segment, IP *mask, IP *gateway) {
 	configurations.insert_or_assign(id, IPConfiguration(segment, mask, gateway));

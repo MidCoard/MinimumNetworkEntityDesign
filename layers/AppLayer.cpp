@@ -8,7 +8,7 @@ std::string AppLayer::getRawName() {
 	return "APP";
 }
 
-AppLayer::AppLayer() : Layer(0) {
+AppLayer::AppLayer(NetworkEntity *networkEntity) : Layer(0,networkEntity) {
 }
 
 void AppLayer::dealSend(Block block) {

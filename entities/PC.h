@@ -27,8 +27,6 @@ public:
 
 	std::vector<IPConfiguration> getIPConfiguration() override;
 
-	void start() override;
-
 private:
 	IP *ip;
 	IP *mask;

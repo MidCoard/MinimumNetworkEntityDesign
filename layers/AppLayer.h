@@ -10,7 +10,7 @@
 class AppLayer : public Layer {
 
 public:
-	AppLayer();
+	explicit AppLayer(NetworkEntity * networkEntity);
 
 	std::string getRawName() override;
 

@@ -12,8 +12,7 @@ void Layer::addLowerLayer(Layer *layer) {
 	});
 }
 
-Layer::Layer(int id) : id(id) {
-}
+Layer::Layer(int id, NetworkEntity * networkEntity) : id(id), networkEntity(networkEntity) {}
 
 std::string Layer::getName() {
 	return this->getRawName() + std::to_string( this->id);
@@ -51,6 +50,8 @@ void Layer::receive(int id, const Block& block) {
 }
 
 void Layer::start() {
+	for (auto layer : this->lowerLayers)
+		layer->start();
 	this->sendThread = new std::thread([this]() {
 		while (true) {
 			if (shouldStop)
@@ -93,6 +94,8 @@ void Layer::stop() {
 		delete this->receiveThread;
 		this->receiveThread = nullptr;
 	}
+	for (auto layer : this->lowerLayers)
+		layer->stop();
 }
 
 void Layer::log(const std::string& message) {

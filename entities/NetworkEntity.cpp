@@ -22,3 +22,11 @@ bool NetworkEntity::isIPAvailable() {
 std::vector<IPConfiguration> NetworkEntity::getIPConfiguration() {
 	return {};
 }
+
+void NetworkEntity::start() {
+	this->layer->start();
+}
+
+void NetworkEntity::stop() {
+	this->layer->stop();
+}

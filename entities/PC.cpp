@@ -39,10 +39,6 @@ std::vector<IPConfiguration> PC::getIPConfiguration() {
 	return {};
 }
 
-void PC::start() {
-
-}
-
 PC::~PC() {
 	delete this->ip;
 	delete this->mask;
@@ -51,4 +47,3 @@ PC::~PC() {
 	delete this->linkAddress;
 	delete this->physicalAddress;
 }
-

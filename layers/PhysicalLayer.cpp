@@ -6,13 +6,13 @@
 
 #include <utility>
 
-PhysicalLayer::PhysicalLayer(INetAddress linkAddress,INetAddress physicalAddress) : PhysicalLayer(-1,std::move(linkAddress),std::move(physicalAddress)) {}
+PhysicalLayer::PhysicalLayer(NetworkEntity * networkEntity, INetAddress linkAddress,INetAddress physicalAddress) : PhysicalLayer(-1,networkEntity,std::move(linkAddress),std::move(physicalAddress)) {}
 
 std::string PhysicalLayer::getRawName() {
 	return "PHY";
 }
 
-PhysicalLayer::PhysicalLayer(int id,INetAddress linkAddress, INetAddress physicalAddress) : Layer(id), linkAddress(std::move(linkAddress)), physicalAddress(std::move(physicalAddress)){}
+PhysicalLayer::PhysicalLayer(int id, NetworkEntity * networkEntity, INetAddress linkAddress, INetAddress physicalAddress) : Layer(id, networkEntity), linkAddress(std::move(linkAddress)), physicalAddress(std::move(physicalAddress)){}
 
 void PhysicalLayer::start() {
 	Layer::start();

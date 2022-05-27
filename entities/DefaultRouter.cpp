@@ -58,7 +58,3 @@ std::vector<IPConfiguration> DefaultRouter::getIPConfiguration() {
 		return {ipConfiguration};
 	return {};
 }
-
-void DefaultRouter::start() {
-
-}

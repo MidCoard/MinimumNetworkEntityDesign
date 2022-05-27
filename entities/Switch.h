@@ -33,8 +33,6 @@ public:
 	Switch(Network * network, int node, std::map<int, SwitchConfiguration> switchConfigurations);
 
 	std::vector<std::string> createLayers(int node, std::vector<int> ids) override;
-
-	void start() override;
 private:
 	std::map<int, SwitchConfiguration> switchConfigurations;
 };

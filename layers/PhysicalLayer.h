@@ -13,9 +13,9 @@
 
 class PhysicalLayer : public Layer {
 public:
-	PhysicalLayer(INetAddress linkAddress, INetAddress physicalAddress);
+	PhysicalLayer(NetworkEntity * networkEntity, INetAddress linkAddress, INetAddress physicalAddress);
 
-	PhysicalLayer(int id, INetAddress linkAddress, INetAddress physicalAddress);
+	PhysicalLayer(int id, NetworkEntity * networkEntity, INetAddress linkAddress, INetAddress physicalAddress);
 
 	std::string getRawName() override;
 

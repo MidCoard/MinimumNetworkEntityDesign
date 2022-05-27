@@ -1,6 +1,6 @@
 #include "LinkLayer.h"
 
-LinkLayer::LinkLayer() : LinkLayer(-1) {
+LinkLayer::LinkLayer(NetworkEntity* networkEntity) : LinkLayer(-1, networkEntity) {
 }
 
 std::string LinkLayer::getRawName() {
@@ -8,7 +8,7 @@ std::string LinkLayer::getRawName() {
 }
 
 
-LinkLayer::LinkLayer(int id) : Layer(id) {
+LinkLayer::LinkLayer(int id, NetworkEntity * networkEntity) : Layer(id, networkEntity) {
 
 }
 

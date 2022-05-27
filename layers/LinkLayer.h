@@ -15,9 +15,9 @@
 
 class LinkLayer : public Layer {
 public:
-	LinkLayer();
+	explicit LinkLayer(NetworkEntity * networkEntity);
 
-	explicit LinkLayer(int id);
+	LinkLayer(int id, NetworkEntity * networkEntity);
 
 	void setMAC(int id, const MAC& mac);
 

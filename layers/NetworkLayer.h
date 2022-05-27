@@ -16,9 +16,9 @@
 class NetworkLayer : public Layer {
 
 public:
-	NetworkLayer();
+	explicit NetworkLayer(NetworkEntity * networkEntity);
 
-	explicit NetworkLayer(int id);
+	NetworkLayer(int id, NetworkEntity * networkEntity);
 
 	void setIPConfiguration(int id, IP *segment, IP *mask, IP *gateway);
 
