@@ -23,9 +23,9 @@ public:
 
 	std::vector<std::string> generateGraph(int node);
 
-	void send(Block * block);
+	void send(int id, Block * block);
 
-	void receive(Block * block);
+	void receive(int id, Block * block);
 
 	virtual void start();
 
@@ -33,22 +33,20 @@ public:
 
 	virtual void dealSend(Block * block) = 0;
 
-	virtual void dealReceive(Block * block) = 0;
+	virtual void dealReceive(int id, Block * block) = 0;
 
 	void log(const std::string& message);
 
 	void error(const std::string& message);
 
+	int getID() const;
+
 protected:
 	std::vector<Layer *> lowerLayers;
 	std::vector<Layer *> upperLayers;
 
-	std::condition_variable cv;
-	std::mutex mutex;
-	std::unique_lock<std::mutex> uniqueLock = std::unique_lock<std::mutex>(mutex);
-
-	code_machina::BlockingQueue<Block *> sendBlockQueue;
-	code_machina::BlockingQueue<Block *> receiveBlockQueue;
+	code_machina::BlockingQueue<std::pair<int,Block *>> sendBlockQueue;
+	code_machina::BlockingQueue<std::pair<int,Block *>> receiveBlockQueue;
 private:
 	std::thread *sendThread = nullptr;
 	std::thread *receiveThread = nullptr;

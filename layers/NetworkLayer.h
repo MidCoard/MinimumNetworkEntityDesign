@@ -9,6 +9,8 @@
 #include "Layer.h"
 #include "map"
 #include "network/IPConfiguration.h"
+#include "RouteTable.h"
+#include "network/MAC.h"
 
 
 class NetworkLayer : public Layer {
@@ -22,8 +24,15 @@ public:
 
 	std::string getRawName() override;
 
+	void dealReceive(int id, Block *block) override;
+
+	void dealSend(Block *block) override;
+
 protected:
 	std::map<int, IPConfiguration> configurations;
+	RouteTable routeTable;
+	bool isIPValid = false;
+	std::map<IP, MAC> ipMacMap;
 };
 
 

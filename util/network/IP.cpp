@@ -29,7 +29,7 @@ IP::IP(unsigned char bytes[]) {
 	this->ip = std::to_string(bytes[0]) + "." + std::to_string(bytes[1]) + "." + std::to_string(bytes[2]) + "." + std::to_string(bytes[3]);
 }
 
-bool IP::operator==(IP &ip) {
+bool IP::operator==(IP ip) {
 	for (int i = 0; i < 4; i++)
 		if (this->bytes[i] != ip.bytes[i])
 			return false;
@@ -72,6 +72,10 @@ IP::IP(unsigned int ip) {
 
 unsigned int IP::intValue() {
 	return (this->bytes[0] << 24) + (this->bytes[1] << 16) + (this->bytes[2] << 8) + this->bytes[3];
+}
+
+unsigned char IP::get(int index) {
+	return this->bytes[index];
 }
 
 IP localhost = IP("127.0.0.1");

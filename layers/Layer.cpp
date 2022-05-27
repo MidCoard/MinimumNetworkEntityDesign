@@ -16,7 +16,7 @@ Layer::Layer(int id) : id(id) {
 }
 
 std::string Layer::getName() {
-	return this->getRawName() + std::to_string(this->id == -1 ? 0 : this->id);
+	return this->getRawName() + std::to_string( this->id);
 }
 
 std::vector<std::string> Layer::generateGraph(int node) {
@@ -42,40 +42,36 @@ Layer::dfsGenerate(int node, Layer *layer, std::vector<std::string> *lines, cons
 	}
 }
 
-void Layer::send(Block * block) {
-	this->sendBlockQueue.emplace(block);
+void Layer::send(int id, Block * block) {
+	this->sendBlockQueue.emplace(std::make_pair(id, block));
 }
 
-void Layer::receive(Block * block) {
-	this->receiveBlockQueue.emplace(block);
+void Layer::receive(int id, Block * block) {
+	this->receiveBlockQueue.emplace(std::make_pair(id, block));
 }
 
 void Layer::start() {
 	this->sendThread = new std::thread([this]() {
 		while (true) {
-			if (this->sendBlockQueue.is_empty())
-				cv.wait(this->uniqueLock);
 			if (shouldStop)
 				break;
-			Block *block;
-			code_machina::BlockingCollectionStatus status = this->sendBlockQueue.try_take(block);
+			std::pair<int,Block *> pair;
+			code_machina::BlockingCollectionStatus status = this->sendBlockQueue.try_take(pair, std::chrono::milliseconds(1));
 			if (status == code_machina::BlockingCollectionStatus::Ok) {
-				this->dealSend(block);
-				delete block;
+				this->dealSend(pair.first, pair.second);
+				delete pair.second;
 			}
 		}
 	});
 	this->receiveThread = new std::thread([this]() {
 		while (true) {
-			if (this->receiveBlockQueue.is_empty())
-				cv.wait(this->uniqueLock);
 			if (shouldStop)
 				break;
-			Block * block;
-			code_machina::BlockingCollectionStatus status = this->receiveBlockQueue.try_take(block);
+			std::pair<int,Block *> pair;
+			code_machina::BlockingCollectionStatus status = this->receiveBlockQueue.try_take(pair, std::chrono::milliseconds(1));
 			if (status == code_machina::BlockingCollectionStatus::Ok) {
-				this->dealReceive(block);
-				delete block;
+				this->dealReceive(pair.first,pair.second);
+				delete pair.second;
 			}
 		}
 	});
@@ -103,4 +99,8 @@ void Layer::log(const std::string& message) {
 
 void Layer::error(const std::string& message) {
 	std::cerr << "Layer " << this->getName() << ": " << message << std::endl;
+}
+
+int Layer::getID() const {
+	return this->id;
 }

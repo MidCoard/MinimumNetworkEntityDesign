@@ -5,12 +5,6 @@ PC::PC(Network *network, int node, IP *ip, IP *mask, IP *gateway, MAC *mac, INet
 		: NetworkEntity(network, node, new AppLayer()), ip(ip), mask(mask), gateway(gateway), mac(mac),linkAddress(linkAddress), physicalAddress(physicalAddress) {}
 
 PC::~PC() {
-	delete ip;
-	delete mask;
-	delete gateway;
-	delete mac;
-	delete linkAddress;
-	delete physicalAddress;
 }
 
 std::vector<std::string> PC::createLayers(int node, std::vector<int> ids) {

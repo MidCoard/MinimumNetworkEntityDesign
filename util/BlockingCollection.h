@@ -1905,7 +1905,7 @@ namespace code_machina {
 
         static void wait(CONDITION_VARIABLE& cond_var,
         std::unique_lock<WIN32_SRWLOCK>& lock) {
-            SleepConditionVariableSRW(&cond_var, &lock.mutex()->native_handle(),
+            SleepConditionVariableSRW(&cond_var, &lock.sendMutex()->native_handle(),
             INFINITE, 0);
         }
 
@@ -1915,7 +1915,7 @@ namespace code_machina {
             DWORD milliseconds = static_cast<DWORD>(rel_time.count());
 
             if (!SleepConditionVariableSRW(&cond_var,
-            &lock.mutex()->native_handle(), milliseconds, 0)) {
+            &lock.sendMutex()->native_handle(), milliseconds, 0)) {
                 if (GetLastError() == ERROR_TIMEOUT)
                     return true;
             }
@@ -1940,7 +1940,7 @@ namespace code_machina {
 
         static void wait(CONDITION_VARIABLE& cond_var,
         std::unique_lock<WIN32_CRITICAL_SECTION>& lock) {
-            SleepConditionVariableCS(&cond_var, &lock.mutex()->native_handle(),
+            SleepConditionVariableCS(&cond_var, &lock.sendMutex()->native_handle(),
             INFINITE);
         }
 
@@ -1951,7 +1951,7 @@ namespace code_machina {
             DWORD milliseconds = static_cast<DWORD>(rel_time.count());
 
             if (!SleepConditionVariableCS(&cond_var,
-            &lock.mutex()->native_handle(), milliseconds)) {
+            &lock.sendMutex()->native_handle(), milliseconds)) {
                 if (GetLastError() == ERROR_TIMEOUT)
                     return true;
             }

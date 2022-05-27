@@ -5,6 +5,7 @@ const Executor kExecutor(10);
 NetworkEntity::NetworkEntity(Network* network, int node, Layer *layer) : network(network), node(node), layer(layer) {}
 
 NetworkEntity::~NetworkEntity() {
+	delete this->layer;
 }
 
 bool NetworkEntity::isRouter() {

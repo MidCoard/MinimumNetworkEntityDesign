@@ -12,7 +12,7 @@ std::string PhysicalLayer::getRawName() {
 	return "PHY";
 }
 
-PhysicalLayer::PhysicalLayer(int id,INetAddress* linkAddress, INetAddress * physicalAddress) : Layer(id), linkAddress(linkAddress), physicalAddress(physicalAddress), socket(nullptr), sendThread(nullptr){}
+PhysicalLayer::PhysicalLayer(int id,INetAddress* linkAddress, INetAddress * physicalAddress) : Layer(id), linkAddress(linkAddress), physicalAddress(physicalAddress), socket(nullptr){}
 
 void PhysicalLayer::start() {
 	Layer::start();
@@ -29,6 +29,14 @@ void PhysicalLayer::stop() {
 	}
 }
 
-void PhysicalLayer::deal(Block *pBlock) {
+void PhysicalLayer::dealReceive(int id, Block *block) {
+	if (this->upperLayers.size() == 1)
+		this->upperLayers[0]->receive(id, block);
+	else
+		throw std::invalid_argument("physical layer must have one upper layer");
+}
 
+void PhysicalLayer::dealSend(Block *block) {
+	this->socket->send(this->physicalAddress, block);
+	delete block;
 }

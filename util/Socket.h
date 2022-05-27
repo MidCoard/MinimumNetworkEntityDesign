@@ -17,8 +17,6 @@ class Socket {
 public:
 	explicit Socket(int port);
 
-	~Socket();
-
 	void send(INetAddress *address, Block * block) const;
 
 	void listen(PhysicalLayer* physicalLayer);
@@ -27,6 +25,7 @@ public:
 
 private:
 	int internal;
+
 	std::thread * thread = nullptr;
 
 	void run(PhysicalLayer *physicalLayer) const;

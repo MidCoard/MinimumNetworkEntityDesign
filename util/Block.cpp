@@ -36,3 +36,7 @@ void Block::read(unsigned char *data, int len) {
 		data[i] = this->data[this->pos++];
 	this->remaining -= len;
 }
+
+std::vector<unsigned char> Block::getData() {
+	return {this->data, this->data + this->remaining};
+}

@@ -31,12 +31,12 @@ void Socket::run(PhysicalLayer *physicalLayer) const {
 		int client = accept(this->internal, (struct sockaddr *) &addr, &addrlen);
 		if (client == -1)
 			break;
-		Block block;
+		auto* block = new Block();
 		int len;
 		while ((len = recv(client, kData, sizeof(kData), 0)) != 0)
-			block.write(kData, len);
-		block.flip();
-		physicalLayer->receive(block);
+			block->write(kData, len);
+		block->flip();
+		physicalLayer->receive(physicalLayer->getID(), block);
 	}
 }
 
@@ -67,9 +67,7 @@ void Socket::close() {
 	if (this->thread != nullptr) {
 		shutdown(this->internal, SHUT_RDWR);
 		this->thread->join();
+		delete this->thread;
+		this->thread = nullptr;
 	}
-}
-
-Socket::~Socket() {
-	delete this->thread;
 }

@@ -20,7 +20,7 @@ public:
 
 	IP operator &(IP ip);
 
-	bool operator ==(IP &ip);
+	bool operator ==(IP ip);
 
 	bool operator !=(IP &ip);
 
@@ -29,6 +29,8 @@ public:
 	unsigned int intValue();
 
 	IP getMask();
+
+	unsigned char get(int index);
 
 private:
 	std::string ip;

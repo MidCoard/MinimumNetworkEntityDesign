@@ -21,6 +21,8 @@ public:
 
 	void read(unsigned char *data, int len);
 
+	std::vector<unsigned char> getData();
+
 private:
 	std::vector<unsigned char> * temp;
 	unsigned char *data;

@@ -23,13 +23,15 @@ public:
 
 	void stop() override;
 
+	void dealReceive(int id, Block *block) override;
+
+	void dealSend(Block *block) override;
+
 private:
 	INetAddress *physicalAddress;
 	INetAddress *linkAddress;
 
 	Socket *socket;
-
-	void deal(Block *pBlock);
 };
 
 
