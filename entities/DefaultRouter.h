@@ -5,18 +5,21 @@
 #ifndef NETWORKDESIGN_DEFAULTROUTER_H
 #define NETWORKDESIGN_DEFAULTROUTER_H
 
+class DefaultRouter;
 
 #include "Router.h"
+#include "network/IPConfiguration.h"
 
 class DefaultRouter : public Router {
 
 public:
-	DefaultRouter(Network *network, int node, IP* ip,MAC *mac,
-	              INetAddress * physicalAddress, std::map<int, RouterConfiguration> routerConfigurations);
+	DefaultRouter(Network *network, int node,  std::map<int, RouterConfiguration> routerConfigurations);
 
-	void allocateIP() override;
+	void generateIP() override;
 
-	void dsfAllocateIP(int node, std::vector<bool> *visited, std::vector<IP *> *ips);
+	void dfsAllocateIP(int node, std::vector<bool> *visited, std::vector<IPConfiguration> *configurations);
+
+	std::vector<IPConfiguration> getIPConfiguration() override;
 };
 
 

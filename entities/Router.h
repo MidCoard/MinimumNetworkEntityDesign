@@ -1,20 +1,18 @@
 #ifndef NETWORKDESIGN_ROUTER_H
 #define NETWORKDESIGN_ROUTER_H
 
-class Router;
-class RouterConfiguration;
-class RouterNetworkLayer;
+class Network;
 
-#include "NetworkEntity.h"
 #include "NetworkLayer.h"
 #include "LinkLayer.h"
 #include "PhysicalLayer.h"
-#include "Network.h"
 #include "network/IP.h"
 #include "network/INetAddress.h"
 #include "network/MAC.h"
+#include "network/IPConfiguration.h"
 #include "map"
 #include "utility"
+#include "NetworkEntity.h"
 
 class RouterConfiguration {
 public:
@@ -35,7 +33,7 @@ private:
 
 class Router : public NetworkEntity {
 public:
-	Router(Network* network, int node,IP* ip, MAC* mac, INetAddress* physicalAddress, std::map<int, RouterConfiguration> routerConfigurations);
+	Router(Network* network, int node,std::map<int, RouterConfiguration> routerConfigurations);
 
 	std::vector<std::string> createLayers(int node, std::vector<int> ids) override;
 
@@ -43,18 +41,14 @@ public:
 
 	bool isRouterMaster() override;
 
-	virtual void allocateIP() = 0;
+	virtual void generateIP() = 0;
 
 	bool isIPAvailable() override;
 
-	void setWAN(int port);
-
+	std::vector<IPConfiguration> getIPConfiguration() override = 0;
 protected:
 	std::map<int, RouterConfiguration> routerConfigurations;
-	IP* ip;
-	MAC* mac;
-	INetAddress* physicalAddress;
-	int wan = -1;
+	bool generatedIP = false;
 };
 
 class RouterNetworkLayer : public NetworkLayer {
@@ -62,6 +56,8 @@ public:
 	RouterNetworkLayer();
 
 	explicit RouterNetworkLayer(int id);
+
+	IPConfiguration getIPConfiguration(int id);
 };
 
 

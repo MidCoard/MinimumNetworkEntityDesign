@@ -1,6 +1,8 @@
 #ifndef NETWORKDESIGN_SWITCH_H
 #define NETWORKDESIGN_SWITCH_H
 
+class Network;
+
 #include "NetworkEntity.h"
 #include "network/MAC.h"
 #include "network/INetAddress.h"

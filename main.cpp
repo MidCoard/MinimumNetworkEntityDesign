@@ -70,7 +70,9 @@ NetworkEntity *createEntity(Network *network, int node, const std::string &name,
 		int size = -1;
 		if (!vector.empty() && vector[0] != "-" && util::isNumber(vector[0]))
 			size = std::stoi(vector[0]);
-		IP* ip = nullptr;
+		IP* segment0 = nullptr;
+		IP* mask0 = nullptr;
+		IP* gateway0 = nullptr;
 		MAC* mac = nullptr;
 		INetAddress* physicalAddress = nullptr;
 		bool flag = false;
@@ -79,41 +81,46 @@ NetworkEntity *createEntity(Network *network, int node, const std::string &name,
 		IP* gateway = nullptr;
 		std::vector<std::string> lines = availableLine(begin, end);
 		if (!lines.empty() && lines[0] != "-")
-			ip = new IP(lines[0]);
+			segment0 = new IP(lines[0]);
 		if (lines.size() >= 2 && lines[1] != "-")
-			mac = new MAC(lines[1]);
+			mask0 = new IP(lines[1]);
 		if (lines.size() >= 3 && lines[2] != "-")
-			physicalAddress = new INetAddress(createINetAddress(lines[2]));
+			gateway0 = new IP(lines[2]);
 		if (lines.size() >= 4 && lines[3] != "-")
-			flag = util::equalsIgnoreCase(lines[3], "true");
+			mac = new MAC(lines[3]);
 		if (lines.size() >= 5 && lines[4] != "-")
-			segment = new IP(lines[4]);
+			physicalAddress = new INetAddress(createINetAddress(lines[4]));
 		if (lines.size() >= 6 && lines[5] != "-")
-			mask = new IP(lines[5]);
+			flag = util::equalsIgnoreCase(lines[5], "true");
 		if (lines.size() >= 7 && lines[6] != "-")
-			gateway = new IP(lines[6]);
+			segment = new IP(lines[6]);
+		if (lines.size() >= 8 && lines[7] != "-")
+			mask = new IP(lines[7]);
+		if (lines.size() >= 9 && lines[8] != "-")
+			gateway = new IP(lines[8]);
 		std::map<int, RouterConfiguration> routerConfigurations;
+		routerConfigurations.insert({0, RouterConfiguration(segment0, mask0, gateway0, mac, physicalAddress)});
 		for (int i = 0; i < size; i++) {
 			std::vector<std::string> subVector = availableLine(begin, end);
-			IP* segment0 = nullptr;
-			IP* mask0 = nullptr;
-			IP* gateway0 = nullptr;
-			MAC * mac0 = nullptr;
+			IP* segmenti = nullptr;
+			IP* maski = nullptr;
+			IP* gatewayi = nullptr;
+			MAC * maci = nullptr;
 			INetAddress *physicalAddress0 = nullptr;
 			if (!subVector.empty() && subVector[0] != "-")
-				segment0 = new IP(subVector[0]);
+				segmenti = new IP(subVector[0]);
 			if (subVector.size() >= 2 && subVector[1] != "-")
-				mask0 = new IP(subVector[1]);
+				maski = new IP(subVector[1]);
 			if (subVector.size() >= 3 && subVector[2] != "-")
-				gateway0 = new IP(subVector[2]);
+				gatewayi = new IP(subVector[2]);
 			if (subVector.size() >= 4 && subVector[3] != "-")
-				mac0 = new MAC(subVector[3]);
+				maci = new MAC(subVector[3]);
 			if (subVector.size() >= 5 && subVector[4] != "-")
 				physicalAddress0 = new INetAddress(createINetAddress(subVector[4]));
-			routerConfigurations.insert(std::map< int, RouterConfiguration >::value_type(i, RouterConfiguration(segment0, mask0, gateway0, mac0, physicalAddress0)));
+			routerConfigurations.insert(std::map< int, RouterConfiguration >::value_type(i+1, RouterConfiguration(segmenti, maski, gatewayi, maci, physicalAddress0)));
 		}
-		if (flag)
-			return (NetworkEntity *) new DefaultRouter(network, node, ip, mac, physicalAddress, routerConfigurations);
+		if (!flag)
+			return (NetworkEntity *) new DefaultRouter(network, node, routerConfigurations);
 	}
 	return nullptr;
 }
@@ -152,8 +159,8 @@ Network *loadNetwork(const std::string &networkFile, const std::string& graphFil
 			return nullptr;
 		}
 		network->addNode(entityObj);
-		if (util::endWith(name, "D") || util::endWith(name, "d"))
-			network->addUndirectedLink(0, i, {-1, -1});
+		if (util::endWith(name, "I") || util::endWith(name, "i"))
+			network->addUndirectedLink(0, i, {-1, 0});
 	}
 	for (int i = 0; i < links; i++) {
 		auto link = availableLine(&begin, lines.end());
@@ -177,12 +184,9 @@ void initialize(const std::string &networkFile, const std::string& graphFile) {
 		std::cerr << "Network file is not valid" << std::endl;
 		return;
 	}
-	for (auto node : network->getNodes()) {
-		if (node->isRouter()) {
-			auto router = dynamic_cast<Router *>(node);
-			router->allocateIP();
-		}
-	}
+	for (auto node : network->getNodes())
+		if (node->isRouter())
+			((Router*)node)->generateIP();
 }
 
 

@@ -1,4 +1,5 @@
 #include "ISP.h"
+#include "Network.h"
 
 const IP *kRootIP = new IP("0.0.0.0");
 const IP *kRootMask = new IP("0.0.0.0");
@@ -10,7 +11,7 @@ std::vector<std::string> ISP::createLayers(int node, std::vector<int> ids) {
 	auto *networkLayer = new RouterNetworkLayer();
 	this->layer->addLowerLayer(networkLayer);
 	for (int id: ids) {
-		networkLayer->setIP(id, nullptr, nullptr, nullptr);
+		networkLayer->setIPConfiguration(id, nullptr, nullptr, nullptr);
 		auto *linkLayer = new LinkLayer(id);
 		linkLayer->setMAC(id, new MAC(generateMAC()));
 		networkLayer->addLowerLayer(linkLayer);
@@ -22,14 +23,6 @@ std::vector<std::string> ISP::createLayers(int node, std::vector<int> ids) {
 
 bool ISP::isRouterMaster() {
 	return false;
-}
-
-bool ISP::isIPAvailable() {
-	return true;
-}
-
-IP *ISP::getIP() {
-	return const_cast<IP *>(kRootIP);
 }
 
 IP *ISP::allocateSegment(int node, IP segment, IP *mask) {

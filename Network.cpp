@@ -3,6 +3,7 @@
 //
 
 #include "Network.h"
+#include "Router.h"
 
 void Network::addNode(NetworkEntity *entity) {
 	this->nodes.push_back(entity);
@@ -40,12 +41,6 @@ void Network::dfs(int node, std::vector<bool> *visited, std::map<int, std::vecto
 	for (auto &link: subLinks)
 		if (link->weight.first != -1)
 			allocated.push_back(link->weight.first);
-	if (this->nodes[node]->isRouter()) {
-		int wan = 0;
-		if (!allocated.empty() && allocated[0] != 0)
-			wan = -1;
-		((Router *) this->nodes[node])->setWAN(wan);
-	}
 	int allocatedPort = 0;
 	int pos = 0;
 	for (auto &link: subLinks)
@@ -116,10 +111,6 @@ std::vector<Link *> Network::getLinks() {
 
 std::vector<int> Network::getHeads() {
 	return this->heads;
-}
-
-ISP *Network::getRoot() {
-	return dynamic_cast<ISP *>(this->nodes[0]);
 }
 
 Link::Link(int next, int self,int undirected, std::pair<int, int> weight) {

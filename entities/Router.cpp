@@ -1,13 +1,15 @@
 #include "Router.h"
 
-Router::Router(Network* network, int node,IP* ip,MAC*mac,INetAddress* physicalAddress, std::map<int,RouterConfiguration> routerConfigurations) : NetworkEntity(network,node, new RouterNetworkLayer()), routerConfigurations(std::move(routerConfigurations)),ip(ip),mac(mac),physicalAddress(physicalAddress) {
+Router::Router(Network* network, int node,std::map<int,RouterConfiguration> routerConfigurations) : NetworkEntity(network,node, new RouterNetworkLayer()), routerConfigurations(std::move(routerConfigurations)) {
 }
 
 std::vector<std::string> Router::createLayers(int node, std::vector<int> ids) {
 	for (int id: ids) {
 		if (!this->routerConfigurations.empty()) {
 			RouterConfiguration routerConfiguration = routerConfigurations.at(id);
-			((RouterNetworkLayer *) this->layer)->setIP(id, routerConfiguration.getSegment(), routerConfiguration.getMask(), routerConfiguration.getGateway());
+			((RouterNetworkLayer *) this->layer)->setIPConfiguration(id, routerConfiguration.getSegment(),
+			                                                         routerConfiguration.getMask(),
+			                                                         routerConfiguration.getGateway());
 			auto *linkLayer = new LinkLayer(id);
 			if (routerConfiguration.getMAC() != nullptr)
 				linkLayer->setMAC(id, routerConfiguration.getMAC());
@@ -21,7 +23,7 @@ std::vector<std::string> Router::createLayers(int node, std::vector<int> ids) {
 				physicalLayer = new PhysicalLayer(id, new INetAddress(generatePhysicalAddress(node ,id)));
 			linkLayer->addLowerLayer(physicalLayer);
 		} else {
-			((RouterNetworkLayer *) this->layer)->setIP(id, nullptr, nullptr, nullptr);
+			((RouterNetworkLayer *) this->layer)->setIPConfiguration(id, nullptr, nullptr, nullptr);
 			auto *linkLayer = new LinkLayer(id);
 			linkLayer->setMAC(id, new MAC(generateMAC()));
 			this->layer->addLowerLayer(linkLayer);
@@ -43,11 +45,6 @@ bool Router::isRouterMaster() {
 bool Router::isIPAvailable() {
 	return true;
 }
-
-void Router::setWAN(int port) {
-	this->wan = port;
-}
-
 RouterConfiguration::RouterConfiguration(IP *segment, IP *mask, IP *gateway, MAC *mac, INetAddress *physicalAddress) : segment(segment), mask(mask), gateway(gateway), mac(mac), physicalAddress(physicalAddress) {}
 
 IP *RouterConfiguration::getSegment() {
@@ -73,4 +70,8 @@ INetAddress* RouterConfiguration::getPhysicalAddress() {
 RouterNetworkLayer::RouterNetworkLayer() : NetworkLayer() {}
 
 RouterNetworkLayer::RouterNetworkLayer(int id) : NetworkLayer(id) {}
+
+IPConfiguration RouterNetworkLayer::getIPConfiguration(int id) {
+	return this->configurations.at(id);
+}
 

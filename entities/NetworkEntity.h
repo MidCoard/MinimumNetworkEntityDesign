@@ -1,12 +1,12 @@
 #ifndef NETWORKDESIGN_NETWORKENTITY_H
 #define NETWORKDESIGN_NETWORKENTITY_H
 
-class NetworkEntity;
+class Network;
 
 #include "network/MAC.h"
 #include "network/INetAddress.h"
 #include "Layer.h"
-#include "Network.h"
+#include "network/IPConfiguration.h"
 
 class NetworkEntity {
 public:
@@ -22,7 +22,7 @@ public:
 
 	virtual bool isIPAvailable();
 
-	virtual IP* getIP();
+	virtual std::vector<IPConfiguration> getIPConfiguration();
 
 protected:
 	Layer *layer;

@@ -9,6 +9,7 @@
 # for PC, in our design, it only has one port
 # you can specify the static ip address, mac and physical_layer_ip of the entity
 # (make sure ip address belongs to its network segment and you should provide its gateway and subnet mask)
+# you cannot only specify the ip address, the mask or the gateway, you should specify all of them
 # i.e. PC ip subnet_mask*ip gateway*ip mac physical_layer_ip
 PC 10.0.0.2 255.255.255.0 10.0.0.1
 PC 10.0.0.3 255.255.255.0 10.0.0.1
@@ -42,14 +43,15 @@ ROUTERI 2
 # mac0 physical_layer_ip0
 # mac1 physical_layer_ip1
 # mac2 physical_layer_ip2
-SWITCH 3
+SWITCH 4
 -
 -
 20:03:ff:ff:ff:02
+-
 SWITCH
 
 # you can determine the port of the entity or not
-# if you don't specify the WAN 0 port of the router, it will be automatically determined
+# you mush specify the port 0 of router(if the router does not connect to ISP)
 # use port 1 of entity 6
 1 (6,1)
 # not specified, use next port of the entity 6

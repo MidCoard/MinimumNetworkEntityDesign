@@ -10,8 +10,6 @@ std::string NetworkLayer::getRawName() {
 
 NetworkLayer::NetworkLayer(int id) : Layer(id) {}
 
-void NetworkLayer::setIP(int id, IP *ip, IP *mask, IP *gateway) {
-	ips.insert({id, ip});
-	masks.insert({id, mask});
-	gateways.insert({id, gateway});
+void NetworkLayer::setIPConfiguration(int id, IP *segment, IP *mask, IP *gateway) {
+	configurations.insert_or_assign(id, IPConfiguration(segment, mask, gateway));
 }

@@ -1,6 +1,7 @@
 #ifndef NETWORKDESIGN_PC_H
 #define NETWORKDESIGN_PC_H
 
+class Network;
 
 #include "NetworkEntity.h"
 #include "network/MAC.h"
@@ -11,7 +12,6 @@
 #include "LinkLayer.h"
 #include "PhysicalLayer.h"
 #include "Layer.h"
-#include "Network.h"
 
 class PC : public NetworkEntity {
 
@@ -24,7 +24,7 @@ public:
 
 	bool isIPAvailable() override;
 
-	IP * getIP() override;
+	std::vector<IPConfiguration> getIPConfiguration() override;
 
 private:
 	IP *ip;

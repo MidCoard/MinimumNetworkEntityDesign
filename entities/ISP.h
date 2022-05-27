@@ -1,8 +1,8 @@
 #ifndef NETWORKDESIGN_ISP_H
 #define NETWORKDESIGN_ISP_H
 
+class Network;
 
-#include "NetworkEntity.h"
 #include "network/MAC.h"
 #include "AppLayer.h"
 #include "Router.h"
@@ -15,10 +15,6 @@ public:
 	std::vector<std::string> createLayers(int node, std::vector<int> ids) override;
 
 	bool isRouterMaster() override;
-
-	bool isIPAvailable() override;
-
-	IP * getIP() override;
 
 	IP *allocateSegment(int node, IP segment, IP *pIp);
 };

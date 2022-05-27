@@ -18,6 +18,6 @@ bool NetworkEntity::isIPAvailable() {
 	return false;
 }
 
-IP *NetworkEntity::getIP() {
-	return nullptr;
+std::vector<IPConfiguration> NetworkEntity::getIPConfiguration() {
+	return {};
 }

@@ -16,7 +16,7 @@ IP::IP(std::string ip) : ip(std::move(ip)) {
 	}
 }
 
-IP IP::operator&(IP &ip) {
+IP IP::operator&(IP ip) {
 	unsigned char result[4];
 	for (int i = 0; i < 4; i++)
 		result[i] = this->bytes[i] & ip.bytes[i];
@@ -55,18 +55,19 @@ IP::IP(unsigned char a, unsigned char b, unsigned char c, unsigned char d) {
 IP IP::getMask() {
 	unsigned int raw = (this->bytes[0] << 24) + (this->bytes[1] << 16) + (this->bytes[2] << 8) + this->bytes[3];
 	unsigned int defaultIP = 0xFFFFFFFFu;
-	for (int i = 0; i < 32; i++)
-		if ((raw >> i) & 1)
-			return IP(defaultIP >> i);
-	return IP(0u);
+	// find raw lowest 1
+	int i = 0;
+	while ((raw & (1u << i)) == 0)
+		i++;
+	return IP(defaultIP & ~((1u << i) - 1));
 }
 
 IP::IP(unsigned int ip) {
-	this->ip = std::to_string(ip);
 	this->bytes[0] = (ip >> 24) & 0xFF;
 	this->bytes[1] = (ip >> 16) & 0xFF;
 	this->bytes[2] = (ip >> 8) & 0xFF;
 	this->bytes[3] = ip & 0xFF;
+	this->ip = std::to_string(this->bytes[0]) + "." + std::to_string(this->bytes[1]) + "." + std::to_string(this->bytes[2]) + "." + std::to_string(this->bytes[3]);
 }
 
 IP localhost = IP("127.0.0.1");

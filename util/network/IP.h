@@ -18,7 +18,7 @@ public:
 	explicit IP(unsigned int ip);
 	IP(unsigned char a, unsigned char b, unsigned char c, unsigned char d);
 
-	IP operator &(IP &ip);
+	IP operator &(IP ip);
 
 	bool operator ==(IP &ip);
 

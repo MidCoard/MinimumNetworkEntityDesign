@@ -1,18 +1,11 @@
-//
-// Created by 周蜀杰 on 2022/5/23.
-//
-
 #ifndef NETWORKDESIGN_NETWORK_H
 #define NETWORKDESIGN_NETWORK_H
 
-class Network;
-
+#include "NetworkEntity.h"
 #include "algorithm"
 #include "iostream"
 #include "vector"
 #include "map"
-#include "NetworkEntity.h"
-#include "ISP.h"
 
 class Link {
 
@@ -40,8 +33,6 @@ public:
 	std::vector<NetworkEntity *> getNodes();
 	std::vector<Link *> getLinks();
 	std::vector<int> getHeads();
-
-	ISP * getRoot();
 
 private:
 	std::vector<NetworkEntity *> nodes;

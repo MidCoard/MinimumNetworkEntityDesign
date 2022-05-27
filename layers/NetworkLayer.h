@@ -8,6 +8,7 @@
 #include "network/IP.h"
 #include "Layer.h"
 #include "map"
+#include "network/IPConfiguration.h"
 
 
 class NetworkLayer : public Layer {
@@ -17,14 +18,12 @@ public:
 
 	explicit NetworkLayer(int id);
 
-	void setIP(int id, IP *ip, IP *mask, IP *gateway);
+	void setIPConfiguration(int id, IP *segment, IP *mask, IP *gateway);
 
 	std::string getRawName() override;
 
-private:
-	std::map<int, IP*> ips;
-	std::map<int, IP*> masks;
-	std::map<int, IP*> gateways;
+protected:
+	std::map<int, IPConfiguration> configurations;
 };
 
 

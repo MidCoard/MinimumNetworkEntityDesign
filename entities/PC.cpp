@@ -11,10 +11,10 @@ PC::~PC() {
 }
 
 std::vector<std::string> PC::createLayers(int node, std::vector<int> ids) {
-	if (ids.size() == 1)
+	if (ids.size() != 1)
 		throw std::invalid_argument("PC network interface size should be 1");
 	auto *networkLayer = new NetworkLayer(ids[0]);
-	networkLayer->setIP(ids[0], this->ip, this->mask, this->gateway);
+	networkLayer->setIPConfiguration(ids[0], this->ip, this->mask, this->gateway);
 	this->layer->addLowerLayer(networkLayer);
 	auto *linkLayer = new LinkLayer(ids[0]);
 	if (mac == nullptr)
@@ -32,7 +32,10 @@ bool PC::isIPAvailable() {
 	return true;
 }
 
-IP *PC::getIP() {
-	return this->ip;
+std::vector<IPConfiguration> PC::getIPConfiguration() {
+	IPConfiguration ipConfiguration = {this->ip, this->mask, this->gateway};
+	if (ipConfiguration.isConfigurable())
+		return {ipConfiguration};
+	return {};
 }
 
