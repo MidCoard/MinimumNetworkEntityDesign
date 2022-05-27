@@ -29,11 +29,14 @@ public:
 
 	virtual void start() = 0;
 
+	virtual void stop() = 0;
+
 protected:
 	Layer *layer;
 	int node;
 	Network *network;
 	bool isStarted = false;
+	bool isStopped = false;
 };
 
 

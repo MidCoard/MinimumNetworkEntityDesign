@@ -21,7 +21,7 @@ private:
 class Executor {
 public:
 	explicit Executor(int size);
-
+	~Executor();
 	void run();
 
 	void stop();

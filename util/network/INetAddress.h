@@ -5,8 +5,9 @@
 #ifndef NETWORKDESIGN_INETADDRESS_H
 #define NETWORKDESIGN_INETADDRESS_H
 
+class Socket;
+
 #include "string"
-#include "Socket.h"
 #include "IP.h"
 #include <utility>
 

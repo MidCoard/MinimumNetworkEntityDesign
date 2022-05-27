@@ -26,6 +26,8 @@ public:
 
 	std::string str();
 
+	unsigned int intValue();
+
 	IP getMask();
 
 private:

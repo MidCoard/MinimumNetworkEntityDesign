@@ -5,13 +5,27 @@
 #ifndef NETWORKDESIGN_BLOCK_H
 #define NETWORKDESIGN_BLOCK_H
 
+#include "vector"
 
 class Block {
 public:
-	Block(unsigned char * data, int len);
+	Block();
+
+	~Block();
+
+	void flip();
+
+	void write(unsigned char *data, int len);
+
+	int getRemaining() const;
+
+	void read(unsigned char *data, int len);
+
 private:
+	std::vector<unsigned char> * temp;
 	unsigned char *data;
-	int len;
+	int remaining;
+	int pos;
 };
 
 

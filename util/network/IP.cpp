@@ -53,7 +53,7 @@ IP::IP(unsigned char a, unsigned char b, unsigned char c, unsigned char d) {
 }
 
 IP IP::getMask() {
-	unsigned int raw = (this->bytes[0] << 24) + (this->bytes[1] << 16) + (this->bytes[2] << 8) + this->bytes[3];
+	unsigned int raw = this->intValue();
 	unsigned int defaultIP = 0xFFFFFFFFu;
 	// find raw lowest 1
 	int i = 0;
@@ -68,6 +68,10 @@ IP::IP(unsigned int ip) {
 	this->bytes[2] = (ip >> 8) & 0xFF;
 	this->bytes[3] = ip & 0xFF;
 	this->ip = std::to_string(this->bytes[0]) + "." + std::to_string(this->bytes[1]) + "." + std::to_string(this->bytes[2]) + "." + std::to_string(this->bytes[3]);
+}
+
+unsigned int IP::intValue() {
+	return (this->bytes[0] << 24) + (this->bytes[1] << 16) + (this->bytes[2] << 8) + this->bytes[3];
 }
 
 IP localhost = IP("127.0.0.1");

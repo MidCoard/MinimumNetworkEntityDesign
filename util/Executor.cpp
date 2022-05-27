@@ -1,14 +1,10 @@
-//
-// Created by 周蜀杰 on 2022/5/27.
-//
-
 #include "Executor.h"
 
 #include <utility>
 
 Executor::Executor(int size) {
 	for (int i = 0; i < size; i++)
-		threads[i] = std::thread(&Executor::run, this);
+		threads.emplace_back(&Executor::run, this);
 }
 
 void Executor::run() {
@@ -26,6 +22,10 @@ void Executor::stop() {
 	shouldStop = true;
 	for (auto & thread : threads)
 		thread.join();
+}
+
+Executor::~Executor() {
+	this->stop();
 }
 
 

@@ -10,7 +10,7 @@
 # you can specify the static ip address, mac and physical_layer_ip of the entity
 # (make sure ip address belongs to its network segment and you should provide its gateway and subnet mask)
 # you cannot only specify the ip address, the mask or the gateway, you should specify all of them
-# i.e. PC ip subnet_mask*ip gateway*ip mac physical_layer_ip
+# i.e. PC ip subnet_mask*ip gateway*ip mac link_layer_ip physical_layer_ip
 PC 10.0.0.2 255.255.255.0 10.0.0.1
 PC 10.0.0.3 255.255.255.0 10.0.0.1
 PC - - - 0f:e0:0f:e0:0f:e0
@@ -27,9 +27,9 @@ PC
 # you can specify the mac and physical_layer_ip of the port
 # you can also set the whole router's LAN ports are in a private network with flag in the WAN port setting
 # i.e. ROUTER 2
-# ip0 mac0 physical_layer_ip0 flag(if true, the above LAN port setting is not allowed) network_segment subnet_mask gateway(the segment,mask and gateway settings are all for private network) (for WAN port)
-# network_segment1 subnet_mask1 gateway1 mac1 physical_layer_ip1 (for LAN port)
-# network_segment2 subnet_mask2 gateway2 mac2 physical_layer_ip2 (for LAN port)
+# ip0 mask0 gateway0 mac0 link_layer_ip0 physical_layer_ip0 flag(if true, the above LAN port setting is not allowed) network_segment subnet_mask gateway(the segment,mask and gateway settings are all for private network) (for WAN port)
+# network_segment1 subnet_mask1 gateway1 mac1 link_layer_ip1 physical_layer_ip1 (for LAN port)
+# network_segment2 subnet_mask2 gateway2 mac2 link_layer_ip2 physical_layer_ip2 (for LAN port)
 ROUTERI 2
 -
 10.0.0.1 - - 20:03:ff:ff:ff:01
@@ -40,9 +40,9 @@ ROUTERI 2
 # also you can ignore it(or enter 0), and all configuration will be done automatically(it will detect its connected PCs automatically)
 # you can specify the mac and physical_layer_ip of the port
 # i.e. SWITCH 3
-# mac0 physical_layer_ip0
-# mac1 physical_layer_ip1
-# mac2 physical_layer_ip2
+# mac0 link_layer_ip0 physical_layer_ip0
+# mac1 link_layer_ip1 physical_layer_ip1
+# mac2 link_layer_ip2 physical_layer_ip2
 SWITCH 4
 -
 -

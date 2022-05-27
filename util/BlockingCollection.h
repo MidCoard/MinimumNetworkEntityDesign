@@ -60,7 +60,7 @@ namespace code_machina {
     ///
     /// In addition, it implements support for attaching and detaching workers
     /// to the condition variable.
-    /// @tparam ThreadContainerType The type of thread Container.
+    /// @tparam ThreadContainerType The type of sendThread Container.
     /// @tparam SignalStrategyType The type of signal policy.
     /// @see NotEmptySignalStrategy
     /// @see NotFullSignalStrategy
@@ -180,7 +180,7 @@ namespace code_machina {
 
         /// Waits indefinitely for this condition variable to become signaled.
         /// @param lock An object of type std::unique_lock which must be locked
-        /// by the current thread.
+        /// by the current sendThread.
         void wait(std::unique_lock<LockType>& lock) {
             decrement_active();
             ConditionVarTraits<ConditionVarType, LockType>::wait(
@@ -190,7 +190,7 @@ namespace code_machina {
         /// Waits up to specified duration for this condition variable to become
         /// signaled.
         /// @param lock An object of type std::unique_lock which must be locked
-        /// by the current thread.
+        /// by the current sendThread.
         /// @param rel_time An object of type std::chrono::duration representing
         /// the maximum time to spend waiting.
         template<class Rep, class Period> bool wait_for(
@@ -261,7 +261,7 @@ namespace code_machina {
     /// This approach minimizes condition variable sleeps, wakes and lock
     /// contention. Which in turn,
     /// improves performance and makes it more predictable.
-    /// @tparam ItemsPerThread The number of items to allow per thread.
+    /// @tparam ItemsPerThread The number of items to allow per sendThread.
     /// @see ConditionVariable
     /// @see NotFullSignalStrategy
     template<size_t ItemsPerThread = 16> struct NotEmptySignalStrategy {
@@ -286,7 +286,7 @@ namespace code_machina {
     /// This approach minimizes condition variable sleeps, wakes and lock
     /// contention. Which in turn,
     /// improves performance and makes it more predictable.
-    /// @tparam ItemsPerThread The number of items to allow per thread.
+    /// @tparam ItemsPerThread The number of items to allow per sendThread.
     /// @see ConditionVariable
     /// @see NotEmptySignalStrategy
     template<size_t ItemsPerThread = 16> struct NotFullSignalStrategy {
@@ -302,7 +302,7 @@ namespace code_machina {
     /// Generates the "not full" and "not empty" condition variables for
     /// the specified ThreadContainerType.
     ///
-    /// @tparam ThreadContainerType The thread Container policy to use when
+    /// @tparam ThreadContainerType The sendThread Container policy to use when
     /// generating the condition variables.
     template<typename ThreadContainerType, typename NotFullSignalStrategy,
     typename NotEmptySignalStrategy, typename ConditionVarType,
@@ -326,16 +326,16 @@ namespace code_machina {
     };
 
     /// @class ThreadContainer
-    /// This class adds and removes the specified thread type from the
+    /// This class adds and removes the specified sendThread type from the
     /// Container.
-    /// @tparam T The thread type.
+    /// @tparam T The sendThread type.
     template<typename T> class ThreadContainer {
     public:
         ThreadContainer() {
         }
 
-        /// Adds the calling thread to the Container.
-        /// @returns True if the calling thread was added to Container.
+        /// Adds the calling sendThread to the Container.
+        /// @returns True if the calling sendThread was added to Container.
         /// Otherwise false.
         bool add() {
             T id = ThreadContainerTraits<T>::get_thread_id();
@@ -350,8 +350,8 @@ namespace code_machina {
             return true;
         }
 
-        /// Removes the calling thread from the Container.
-        /// @returns True if the calling thread was removed from Container.
+        /// Removes the calling sendThread from the Container.
+        /// @returns True if the calling sendThread was removed from Container.
         /// Otherwise false.
         bool remove() {
             if (thread_id_.erase(ThreadContainerTraits<T>::get_thread_id())
@@ -747,7 +747,7 @@ namespace code_machina {
             return not_full_condition_var_.total();
         }
 
-        /// Registers a consumer thread with this BlockingCollection<T>
+        /// Registers a consumer sendThread with this BlockingCollection<T>
         /// instance.
         /// @see TotalConsumers
         void attach_consumer() {
@@ -755,7 +755,7 @@ namespace code_machina {
             not_empty_condition_var_.attach();
         }
 
-        /// Unregisters a consumer thread with this BlockingCollection<T>
+        /// Unregisters a consumer sendThread with this BlockingCollection<T>
         /// instance.
         /// @see TotalConsumers
         void detach_consumer() {
@@ -763,7 +763,7 @@ namespace code_machina {
             not_empty_condition_var_.detach();
         }
 
-        /// Registers a producer thread with this BlockingCollection<T>
+        /// Registers a producer sendThread with this BlockingCollection<T>
         /// instance.
         /// @see TotalProducers
         void attach_producer() {
@@ -771,7 +771,7 @@ namespace code_machina {
             not_full_condition_var_.attach();
         }
 
-        /// Unregisters a producer thread with this BlockingCollection<T>
+        /// Unregisters a producer sendThread with this BlockingCollection<T>
         /// instance.
         /// @see TotalProducers
         void detach_producer() {
@@ -1156,7 +1156,7 @@ namespace code_machina {
         // the member functions below assume lock is held!
 
         /// The implementation for the Deactivate method.
-        /// This method is not thread safe.
+        /// This method is not sendThread safe.
         /// @see Deactivate
         BlockingCollectionState deactivate_i(bool pulse) {
             auto previous_state = state_;
@@ -1175,7 +1175,7 @@ namespace code_machina {
         }
 
         /// The implementation for the Activate method.
-        /// This method is not thread safe.
+        /// This method is not sendThread safe.
         /// @see Activate
         BlockingCollectionState activate_i() {
             auto previous_state = state_;
@@ -1186,7 +1186,7 @@ namespace code_machina {
         }
 
         /// The implementation for the is_full method.
-        /// This method is not thread safe.
+        /// This method is not sendThread safe.
         /// @see is_full
         bool is_full_i() {
             return bounded_capacity_ != SIZE_MAX &&
@@ -1194,21 +1194,21 @@ namespace code_machina {
         }
 
         /// The implementation for the is_empty method.
-        /// This method is not thread safe.
+        /// This method is not sendThread safe.
         /// @see is_empty
         bool is_empty_i() {
             return container_.size() == 0;
         }
 
         /// The implementation for the is_completed method.
-        /// This method is not thread safe.
+        /// This method is not sendThread safe.
         /// @see is_completed
         bool is_completed_i() {
             return is_adding_completed_ && is_empty_i();
         }
 
         /// The implementation for the is_adding_completed method.
-        /// This method is not thread safe.
+        /// This method is not sendThread safe.
         /// @see is_adding_completed
         bool is_adding_completed_i() {
             return is_adding_completed_;
@@ -1235,17 +1235,17 @@ namespace code_machina {
 
         /// The method waits on the "not full" condition variable whenever
         /// the collection becomes full.
-        /// It atomically releases lock, blocks the current executing thread,
+        /// It atomically releases lock, blocks the current executing sendThread,
         /// and adds it to the
         /// list of threads waiting on the "not full" condition variable. The
-        /// thread will be unblocked
+        /// sendThread will be unblocked
         /// when notify_all() or notify_one() is executed, or when the relative
         /// timeout rel_time expires.
         /// It may also be unblocked spuriously. When unblocked, regardless of
         /// the reason, lock is reacquired
         /// and wait_not_full_condition() exits.
         /// @param lock An object of type std::unique_lock which must be locked
-        /// by the current thread.
+        /// by the current sendThread.
         /// @param rel_time An object of type std::chrono::duration representing
         /// the maximum time to spend waiting.
         /// @return A BlockCollectionStatus code.
@@ -1300,17 +1300,17 @@ namespace code_machina {
 
         /// The method waits on the "not empty" condition variable whenever the
         /// collection becomes empty.
-        /// It atomically releases lock, blocks the current executing thread,
+        /// It atomically releases lock, blocks the current executing sendThread,
         /// and adds it to the
         /// list of threads waiting on the "not empty" condition variable. The
-        /// thread will be unblocked
+        /// sendThread will be unblocked
         /// when notify_all() or notify_one() is executed, or when the relative
         /// timeout rel_time expires.
         /// It may also be unblocked spuriously. When unblocked, regardless of
         /// the reason, lock is reacquired
         /// and wait_not_empty_condition() exits.
         /// @param lock An object of type std::unique_lock which must be locked
-        /// by the current thread.
+        /// by the current sendThread.
         /// @param rel_time An object of type std::chrono::duration representing
         /// the maximum time to spend waiting.
         /// @return A BlockCollectionStatus code.
@@ -1750,20 +1750,20 @@ namespace code_machina {
         /// Implements a strictly scope-based BlockingCollection wrapper.
         /// The class Guard is a BlockingCollection wrapper that provides a
         /// convenient RAII-style
-        /// mechanism for attaching the current thread as a producer or
+        /// mechanism for attaching the current sendThread as a producer or
         /// consumer to the BlockingCollection for the
         /// duration of the scoped block.
         ///
-        /// When a Guard object is created, it attaches the current thread as a
+        /// When a Guard object is created, it attaches the current sendThread as a
         /// producer or consumer of the
         /// BlockingCollection it is given. When control leaves the scope in
         /// which the Guard object
-        /// was created, the Guard is destructed and the current thread is
+        /// was created, the Guard is destructed and the current sendThread is
         /// detached from the BlockingCollection.
         ///
         /// The Guard class makes it simple for threads to register as producer
         /// or consumers with the BlockingCollection<T>
-        /// instance. Plus it ensures the thread will be detached from the
+        /// instance. Plus it ensures the sendThread will be detached from the
         /// BlockingCollection<T> in an
         /// exception scenario.
         ///
@@ -1961,7 +1961,7 @@ namespace code_machina {
     };
 
     using Win32ConditionVariableGenerator = ConditionVariableGenerator<
-    ThreadContainer<std::thread::id>, NotFullSignalStrategy<16>,
+    ThreadContainer<std::sendThread::id>, NotFullSignalStrategy<16>,
     NotEmptySignalStrategy<16>, CONDITION_VARIABLE, WIN32_SRWLOCK>;
 #endif
 } // namespace code_machina

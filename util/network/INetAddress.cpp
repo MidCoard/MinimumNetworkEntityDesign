@@ -1,4 +1,5 @@
 #include "INetAddress.h"
+#include "Socket.h"
 
 INetAddress::INetAddress(IP ip, int port) : port(port), ip(std::move(ip)) {}
 

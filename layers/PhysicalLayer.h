@@ -8,6 +8,7 @@
 #include "Layer.h"
 #include "network/INetAddress.h"
 #include "queue"
+#include "Socket.h"
 
 
 class PhysicalLayer : public Layer {
@@ -18,13 +19,17 @@ public:
 
 	std::string getRawName() override;
 
-	void start();
+	void start() override;
+
+	void stop() override;
 
 private:
 	INetAddress *physicalAddress;
 	INetAddress *linkAddress;
 
 	Socket *socket;
+
+	void deal(Block *pBlock);
 };
 
 

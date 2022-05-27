@@ -42,10 +42,65 @@ Layer::dfsGenerate(int node, Layer *layer, std::vector<std::string> *lines, cons
 	}
 }
 
-void Layer::send(Block block) {
+void Layer::send(Block * block) {
 	this->sendBlockQueue.emplace(block);
 }
 
-void Layer::receive(Block block) {
+void Layer::receive(Block * block) {
 	this->receiveBlockQueue.emplace(block);
+}
+
+void Layer::start() {
+	this->sendThread = new std::thread([this]() {
+		while (true) {
+			if (this->sendBlockQueue.is_empty())
+				cv.wait(this->uniqueLock);
+			if (shouldStop)
+				break;
+			Block *block;
+			code_machina::BlockingCollectionStatus status = this->sendBlockQueue.try_take(block);
+			if (status == code_machina::BlockingCollectionStatus::Ok) {
+				this->dealSend(block);
+				delete block;
+			}
+		}
+	});
+	this->receiveThread = new std::thread([this]() {
+		while (true) {
+			if (this->receiveBlockQueue.is_empty())
+				cv.wait(this->uniqueLock);
+			if (shouldStop)
+				break;
+			Block * block;
+			code_machina::BlockingCollectionStatus status = this->receiveBlockQueue.try_take(block);
+			if (status == code_machina::BlockingCollectionStatus::Ok) {
+				this->dealReceive(block);
+				delete block;
+			}
+		}
+	});
+}
+
+void Layer::stop() {
+	shouldStop = true;
+	if (this->sendThread == nullptr || this->receiveThread == nullptr)
+		error("threads should not be null");
+	if (this->sendThread != nullptr) {
+		this->sendThread->join();
+		delete this->sendThread;
+		this->sendThread = nullptr;
+	}
+	if (this->receiveThread != nullptr) {
+		this->receiveThread->join();
+		delete this->receiveThread;
+		this->receiveThread = nullptr;
+	}
+}
+
+void Layer::log(const std::string& message) {
+	std::cout << "Layer " << this->getName() << ": " << message << std::endl;
+}
+
+void Layer::error(const std::string& message) {
+	std::cerr << "Layer " << this->getName() << ": " << message << std::endl;
 }

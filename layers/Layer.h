@@ -7,6 +7,7 @@
 
 #include "string"
 #include "vector"
+#include "iostream"
 #include "Block.h"
 #include "BlockingCollection.h"
 
@@ -22,17 +23,36 @@ public:
 
 	std::vector<std::string> generateGraph(int node);
 
-	virtual void send(Block block);
+	void send(Block * block);
 
-	virtual void receive(Block block);
+	void receive(Block * block);
+
+	virtual void start();
+
+	virtual void stop();
+
+	virtual void dealSend(Block * block) = 0;
+
+	virtual void dealReceive(Block * block) = 0;
+
+	void log(const std::string& message);
+
+	void error(const std::string& message);
 
 protected:
 	std::vector<Layer *> lowerLayers;
 	std::vector<Layer *> upperLayers;
 
-	code_machina::BlockingQueue<Block> sendBlockQueue;
-	code_machina::BlockingQueue<Block> receiveBlockQueue;
+	std::condition_variable cv;
+	std::mutex mutex;
+	std::unique_lock<std::mutex> uniqueLock = std::unique_lock<std::mutex>(mutex);
+
+	code_machina::BlockingQueue<Block *> sendBlockQueue;
+	code_machina::BlockingQueue<Block *> receiveBlockQueue;
 private:
+	std::thread *sendThread = nullptr;
+	std::thread *receiveThread = nullptr;
+	bool shouldStop = false;
 	int id;
 
 	void

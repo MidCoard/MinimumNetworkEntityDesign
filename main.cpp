@@ -193,25 +193,31 @@ Network *loadNetwork(const std::string &networkFile, const std::string& graphFil
 }
 
 
-void initialize(const std::string &networkFile, const std::string& graphFile) {
+Network * initialize(const std::string &networkFile, const std::string& graphFile) {
 	Network *network = loadNetwork(networkFile, graphFile);
 	if (network == nullptr) {
 		std::cerr << "Network file is not valid" << std::endl;
-		return;
+		return nullptr;
 	}
 	for (auto node : network->getNodes())
 		if (node->isRouter())
 			((Router*)node)->generateIP();
 	for (auto node : network->getNodes())
 		node->start();
+	return network;
 }
 
 
-void initialize() {
-	initialize("network.in", "ne.txt");
+Network * initialize() {
+	return initialize("network.in", "ne.txt");
 }
 
 int main() {
-	initialize();
+	Network* network = initialize();
+	if (network != nullptr) {
+		// join
+		for (auto node: network->getNodes())
+			node->stop();
+	}
 	return 0;
 }

@@ -8,20 +8,29 @@
 class PhysicalLayer;
 
 #include <sys/socket.h>
+#include <netinet/in.h>
 #include "thread"
 #include "network/INetAddress.h"
+#include "Block.h"
 
 class Socket {
 public:
 	explicit Socket(int port);
-	void send(INetAddress* address, const char *data, int len) const;
-	//todo
+
+	~Socket();
+
+	void send(INetAddress *address, Block * block) const;
+
 	void listen(PhysicalLayer* physicalLayer);
 
+	void close();
+
 private:
-	int port;
 	int internal;
-	std::thread * thread;
+	std::thread * thread = nullptr;
+
+	void run(PhysicalLayer *physicalLayer) const;
+
 };
 
 
