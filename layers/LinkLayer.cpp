@@ -16,9 +16,9 @@ void LinkLayer::setMAC(int id, const MAC& mac) {
 	idMacMap.insert({id, mac});
 }
 
-void LinkLayer::dealSend(Block *block) {
+void LinkLayer::dealSend(Block block) {
 
 }
 
-void LinkLayer::dealReceive(int id, Block *block) {
+void LinkLayer::dealReceive(int id, Block block) {
 }

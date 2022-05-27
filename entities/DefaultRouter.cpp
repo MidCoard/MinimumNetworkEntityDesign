@@ -49,8 +49,6 @@ void DefaultRouter::dfsAllocateIP(int node, std::vector<bool> *visited, std::vec
 	}
 }
 
-
-
 DefaultRouter::DefaultRouter(Network *network, int node,std::map<int, RouterConfiguration> routerConfigurations) : Router(network, node, std::move(routerConfigurations)) {}
 
 std::vector<IPConfiguration> DefaultRouter::getIPConfiguration() {

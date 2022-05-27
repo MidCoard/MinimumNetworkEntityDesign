@@ -14,9 +14,9 @@ public:
 
 	std::string getRawName() override;
 
-	void dealReceive(int id, Block *block) override;
+	void dealReceive(int id, Block block) override;
 
-	void dealSend(Block *block) override;
+	void dealSend(Block block) override;
 };
 
 

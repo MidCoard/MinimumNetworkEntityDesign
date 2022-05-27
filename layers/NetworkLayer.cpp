@@ -14,14 +14,13 @@ void NetworkLayer::setIPConfiguration(int id, IP *segment, IP *mask, IP *gateway
 	configurations.insert_or_assign(id, IPConfiguration(segment, mask, gateway));
 }
 
-void NetworkLayer::dealReceive(int id, Block *block) {
+void NetworkLayer::dealReceive(int id, Block block) {
 
 }
 
-void NetworkLayer::dealSend(Block *block) {
+void NetworkLayer::dealSend(Block block) {
 	std::vector<unsigned char> data = block->getData();
 	// data copy is not necessary if isIPValid is false
-	delete block;
 	if (!isIPValid)
 		return;
 	if (data.size() < 4)

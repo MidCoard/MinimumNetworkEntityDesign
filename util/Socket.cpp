@@ -31,11 +31,11 @@ void Socket::run(PhysicalLayer *physicalLayer) const {
 		int client = accept(this->internal, (struct sockaddr *) &addr, &addrlen);
 		if (client == -1)
 			break;
-		auto* block = new Block();
+		Block block;
 		int len;
 		while ((len = recv(client, kData, sizeof(kData), 0)) != 0)
-			block->write(kData, len);
-		block->flip();
+			block.write(kData, len);
+		block.flip();
 		physicalLayer->receive(physicalLayer->getID(), block);
 	}
 }
@@ -44,7 +44,7 @@ void Socket::listen(PhysicalLayer *physicalLayer) {
 	this->thread = new std::thread(&Socket::run, this, physicalLayer);
 }
 
-void Socket::send(const INetAddress& address, Block * block) {
+void Socket::send(const INetAddress& address, Block block) {
 	int client = socket(AF_INET, SOCK_STREAM, 0);
 	if (client == -1)
 		throw std::runtime_error("create socket failed");
@@ -54,9 +54,8 @@ void Socket::send(const INetAddress& address, Block * block) {
 	addr.sin_addr.s_addr = htonl(address.getIp().intValue());
 	if (connect(client, (struct sockaddr *) &addr, sizeof(addr)))
 		throw std::runtime_error("connect socket failed");
-	while (block->getRemaining() > 0) {
-		int len = block->getRemaining() > sizeof(kData) ? sizeof(kData) : block->getRemaining();
-		block->read(kData, len);
+	while (block.getRemaining() > 0) {
+		int len = block.read(kData, sizeof(kData));
 		if (::send(client, kData, len, 0) == -1)
 			throw std::runtime_error("send socket failed");
 	}

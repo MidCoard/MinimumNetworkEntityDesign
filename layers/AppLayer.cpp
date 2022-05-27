@@ -11,16 +11,15 @@ std::string AppLayer::getRawName() {
 AppLayer::AppLayer() : Layer(0) {
 }
 
-void AppLayer::dealSend(Block *block) {
+void AppLayer::dealSend(Block block) {
 	if (this->lowerLayers.size() == 1)
-		this->lowerLayers[0]->send(this->getID(), block);
+		this->lowerLayers[0]->send(block);
 	else
 		throw std::invalid_argument(" app layer must have one lower layer");
 }
 
-void AppLayer::dealReceive(int id, Block *block) {
-	std::vector<unsigned char> data = block->getData();
-	delete block;
+void AppLayer::dealReceive(int id, Block block) {
+	std::vector<unsigned char> data = block.getData();
 	std::string str(data.begin(), data.end());
 	this->log("receive data: " + str);
 }

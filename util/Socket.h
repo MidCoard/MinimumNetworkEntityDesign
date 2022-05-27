@@ -17,7 +17,7 @@ class Socket {
 public:
 	explicit Socket(int port);
 
-	static void send(const INetAddress& address, Block * block) ;
+	static void send(const INetAddress& address, Block block) ;
 
 	void listen(PhysicalLayer* physicalLayer);
 

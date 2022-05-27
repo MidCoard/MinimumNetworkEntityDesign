@@ -19,12 +19,13 @@ public:
 
 	int getRemaining() const;
 
-	void read(unsigned char *data, int len);
+	int read(unsigned char *data, int len);
 
 	std::vector<unsigned char> getData();
 
 private:
-	std::vector<unsigned char> * temp;
+	// avoid use pointer
+	std::vector<unsigned char> temp;
 	unsigned char *data;
 	int remaining;
 	int pos;
