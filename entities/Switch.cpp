@@ -12,26 +12,35 @@ std::vector<std::string> Switch::createLayers(int node, std::vector<int> ids) {
 				((LinkLayer*)this->layer)->setMAC(id, switchConfiguration.getMAC());
 			else
 				((LinkLayer*)this->layer)->setMAC(id, new MAC(generateMAC()));
-			PhysicalLayer* physicalLayer;
-			if (switchConfiguration.getPhysicalAddress() != nullptr)
-				physicalLayer = new PhysicalLayer(id, switchConfiguration.getPhysicalAddress());
-			else
-				physicalLayer = new PhysicalLayer(id, new INetAddress(generatePhysicalAddress(node ,id)));
+			auto* physicalLayer = new PhysicalLayer(id,
+															 switchConfiguration.getLinkAddress() == nullptr ? new INetAddress(generateLinkAddress(node ,id)) : switchConfiguration.getLinkAddress(),
+															 switchConfiguration.getPhysicalAddress() == nullptr ? new INetAddress(generatePhysicalAddress(node ,id)) : switchConfiguration.getPhysicalAddress());
 			this->layer->addLowerLayer(physicalLayer);
 		} else {
 			((LinkLayer*)this->layer)->setMAC(id, new MAC(generateMAC()));
-			this->layer->addLowerLayer(new PhysicalLayer(id, new INetAddress(generatePhysicalAddress(node, id))));
+			this->layer->addLowerLayer(new PhysicalLayer(id, new INetAddress(generateLinkAddress(node ,id)), new INetAddress(generatePhysicalAddress(node, id))));
 		}
 	}
 	return this->layer->generateGraph(node);
 }
 
-SwitchConfiguration::SwitchConfiguration(MAC *mac, INetAddress *address) : mac(mac), address(address) {}
+void Switch::start() {
+	if (this->isStarted)
+		return;
+	this->isStarted = true;
+}
+
+SwitchConfiguration::SwitchConfiguration(MAC *mac, INetAddress *linkAddress, INetAddress *physicalAddress)
+		: mac(mac), linkAddress(linkAddress), physicalAddress(physicalAddress) {}
 
 MAC *SwitchConfiguration::getMAC() {
 	return this->mac;
 }
 
 INetAddress *SwitchConfiguration::getPhysicalAddress() {
-	return this->address;
+	return this->physicalAddress;
+}
+
+INetAddress *SwitchConfiguration::getLinkAddress() {
+	return this->linkAddress;
 }

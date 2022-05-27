@@ -14,12 +14,14 @@ class Network;
 
 class SwitchConfiguration {
 public:
-	SwitchConfiguration(MAC * mac, INetAddress * address);
+	SwitchConfiguration(MAC *mac, INetAddress *linkAddress, INetAddress *physicalAddress);
 	MAC * getMAC();
 	INetAddress * getPhysicalAddress();
+	INetAddress * getLinkAddress();
 private:
 	MAC * mac;
-	INetAddress * address;
+	INetAddress * linkAddress;
+	INetAddress * physicalAddress;
 };
 
 
@@ -29,6 +31,8 @@ public:
 	Switch(Network * network, int node, std::map<int, SwitchConfiguration> switchConfigurations);
 
 	std::vector<std::string> createLayers(int node, std::vector<int> ids) override;
+
+	void start() override;
 private:
 	std::map<int, SwitchConfiguration> switchConfigurations;
 };

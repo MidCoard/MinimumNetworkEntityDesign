@@ -7,6 +7,9 @@ class Network;
 #include "network/INetAddress.h"
 #include "Layer.h"
 #include "network/IPConfiguration.h"
+#include "Executor.h"
+
+extern const Executor kExecutor;
 
 class NetworkEntity {
 public:
@@ -24,10 +27,13 @@ public:
 
 	virtual std::vector<IPConfiguration> getIPConfiguration();
 
+	virtual void start() = 0;
+
 protected:
 	Layer *layer;
 	int node;
 	Network *network;
+	bool isStarted = false;
 };
 
 

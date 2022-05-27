@@ -16,7 +16,8 @@ class Network;
 class PC : public NetworkEntity {
 
 public:
-	PC(Network* network,int node, IP *ip, IP* mask, IP *gateway, MAC *mac, INetAddress *physicalAddress);
+	PC(Network *network, int node, IP *ip, IP *mask, IP *gateway, MAC *mac, INetAddress *physicalAddress,
+	   INetAddress *pAddress);
 
 	~PC() override;
 
@@ -26,11 +27,14 @@ public:
 
 	std::vector<IPConfiguration> getIPConfiguration() override;
 
+	void start() override;
+
 private:
 	IP *ip;
 	IP *mask;
 	IP *gateway;
 	MAC *mac;
+	INetAddress *linkAddress;
 	INetAddress *physicalAddress;
 };
 

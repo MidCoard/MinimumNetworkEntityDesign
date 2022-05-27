@@ -17,6 +17,8 @@ public:
 	bool isRouterMaster() override;
 
 	IP *allocateSegment(int node, IP segment, IP *pIp);
+
+	void start() override;
 };
 
 class RootAppLayer : public AppLayer {

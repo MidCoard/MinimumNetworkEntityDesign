@@ -1,12 +1,15 @@
 #include "PC.h"
 
-PC::PC(Network* network,int node, IP *ip, IP* mask, IP *gateway, MAC *mac, INetAddress *physicalAddress) : NetworkEntity(network, node, new AppLayer()), ip(ip), mask(mask), gateway(gateway), mac(mac), physicalAddress(physicalAddress) {}
+PC::PC(Network *network, int node, IP *ip, IP *mask, IP *gateway, MAC *mac, INetAddress *linkAddress,
+       INetAddress *physicalAddress)
+		: NetworkEntity(network, node, new AppLayer()), ip(ip), mask(mask), gateway(gateway), mac(mac),linkAddress(linkAddress), physicalAddress(physicalAddress) {}
 
 PC::~PC() {
 	delete ip;
 	delete mask;
 	delete gateway;
 	delete mac;
+	delete linkAddress;
 	delete physicalAddress;
 }
 
@@ -21,9 +24,11 @@ std::vector<std::string> PC::createLayers(int node, std::vector<int> ids) {
 		mac = new MAC(generateMAC());
 	linkLayer->setMAC(ids[0], mac);
 	networkLayer->addLowerLayer(linkLayer);
+	if (linkAddress == nullptr)
+		linkAddress = new INetAddress(generateLinkAddress(node, ids[0]));
 	if (physicalAddress == nullptr)
 		physicalAddress = new INetAddress(generatePhysicalAddress(node, ids[0]));
-	auto *physicalLayer = new PhysicalLayer(ids[0], physicalAddress);
+	auto *physicalLayer = new PhysicalLayer(ids[0], linkAddress, physicalAddress);
 	linkLayer->addLowerLayer(physicalLayer);
 	return this->layer->generateGraph(node);
 }
@@ -37,5 +42,9 @@ std::vector<IPConfiguration> PC::getIPConfiguration() {
 	if (ipConfiguration.isConfigurable())
 		return {ipConfiguration};
 	return {};
+}
+
+void PC::start() {
+
 }
 

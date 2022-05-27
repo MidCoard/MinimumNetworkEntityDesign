@@ -38,6 +38,7 @@ NetworkEntity *createEntity(Network *network, int node, const std::string &name,
 		IP *mask = nullptr;
 		IP *gateway = nullptr;
 		MAC *mac = nullptr;
+		INetAddress *linkAddress = nullptr;
 		INetAddress *physicalAddress = nullptr;
 		if (!vector.empty() && vector[0] != "-")
 			ip = new IP(vector[0]);
@@ -48,8 +49,10 @@ NetworkEntity *createEntity(Network *network, int node, const std::string &name,
 		if (vector.size() >= 4 && vector[3] != "-")
 			mac = new MAC(vector[3]);
 		if (vector.size() >= 5 && vector[4] != "-")
-			physicalAddress = new INetAddress(createINetAddress(vector[4]));
-		return new PC(network ,node, ip, mask, gateway, mac, physicalAddress);
+			linkAddress = new INetAddress(createINetAddress(vector[4]));
+		if (vector.size() >= 6 && vector[5] != "-")
+			physicalAddress = new INetAddress(createINetAddress(vector[5]));
+		return new PC(network, node, ip, mask, gateway, mac, linkAddress, physicalAddress);
 	} else if (util::equalsIgnoreCase(name, "SWITCH") || util::equalsIgnoreCase(name, "SWITCHI")) {
 		int size = -1;
 		if (!vector.empty() && vector[0] != "-" && util::isNumber(vector[0]))
@@ -58,12 +61,17 @@ NetworkEntity *createEntity(Network *network, int node, const std::string &name,
 		for (int i = 0; i < size; i++) {
 			std::vector<std::string> subVector = availableLine(begin, end);
 			MAC * mac = nullptr;
+			INetAddress *linkAddress = nullptr;
 			INetAddress *physicalAddress = nullptr;
 			if (!subVector.empty() && subVector[0] != "-")
 				mac = new MAC(subVector[0]);
 			if (subVector.size() >= 2 && subVector[1] != "-")
-				physicalAddress = new INetAddress(createINetAddress(subVector[1]));
-			switchConfigurations.insert(std::map< int, SwitchConfiguration >::value_type(i, SwitchConfiguration(mac, physicalAddress)));
+				linkAddress = new INetAddress(createINetAddress(subVector[1]));
+			if (subVector.size() >= 3 && subVector[2] != "-")
+				physicalAddress = new INetAddress(createINetAddress(subVector[2]));
+			switchConfigurations.insert(std::map< int, SwitchConfiguration >::value_type(i, SwitchConfiguration(mac,
+			                                                                                                    linkAddress,
+			                                                                                                    physicalAddress)));
 		}
 		return new Switch(network,node, switchConfigurations);
 	} else if (util::equalsIgnoreCase(name, "ROUTER") || util::equalsIgnoreCase(name, "ROUTERI")) {
@@ -74,6 +82,7 @@ NetworkEntity *createEntity(Network *network, int node, const std::string &name,
 		IP* mask0 = nullptr;
 		IP* gateway0 = nullptr;
 		MAC* mac = nullptr;
+		INetAddress* linkAddress = nullptr;
 		INetAddress* physicalAddress = nullptr;
 		bool flag = false;
 		IP* segment = nullptr;
@@ -89,23 +98,27 @@ NetworkEntity *createEntity(Network *network, int node, const std::string &name,
 		if (lines.size() >= 4 && lines[3] != "-")
 			mac = new MAC(lines[3]);
 		if (lines.size() >= 5 && lines[4] != "-")
-			physicalAddress = new INetAddress(createINetAddress(lines[4]));
+			linkAddress = new INetAddress(createINetAddress(lines[4]));
 		if (lines.size() >= 6 && lines[5] != "-")
-			flag = util::equalsIgnoreCase(lines[5], "true");
+			physicalAddress = new INetAddress(createINetAddress(lines[5]));
 		if (lines.size() >= 7 && lines[6] != "-")
-			segment = new IP(lines[6]);
+			flag = util::equalsIgnoreCase(lines[6], "true");
 		if (lines.size() >= 8 && lines[7] != "-")
-			mask = new IP(lines[7]);
+			segment = new IP(lines[7]);
 		if (lines.size() >= 9 && lines[8] != "-")
-			gateway = new IP(lines[8]);
+			mask = new IP(lines[8]);
+		if (lines.size() >= 10 && lines[9] != "-")
+			gateway = new IP(lines[9]);
 		std::map<int, RouterConfiguration> routerConfigurations;
-		routerConfigurations.insert({0, RouterConfiguration(segment0, mask0, gateway0, mac, physicalAddress)});
+		routerConfigurations.insert({0, RouterConfiguration(segment0, mask0, gateway0, mac, linkAddress,
+		                                                    physicalAddress)});
 		for (int i = 0; i < size; i++) {
 			std::vector<std::string> subVector = availableLine(begin, end);
 			IP* segmenti = nullptr;
 			IP* maski = nullptr;
 			IP* gatewayi = nullptr;
 			MAC * maci = nullptr;
+			INetAddress *linkAddress0 = nullptr;
 			INetAddress *physicalAddress0 = nullptr;
 			if (!subVector.empty() && subVector[0] != "-")
 				segmenti = new IP(subVector[0]);
@@ -116,8 +129,11 @@ NetworkEntity *createEntity(Network *network, int node, const std::string &name,
 			if (subVector.size() >= 4 && subVector[3] != "-")
 				maci = new MAC(subVector[3]);
 			if (subVector.size() >= 5 && subVector[4] != "-")
-				physicalAddress0 = new INetAddress(createINetAddress(subVector[4]));
-			routerConfigurations.insert(std::map< int, RouterConfiguration >::value_type(i+1, RouterConfiguration(segmenti, maski, gatewayi, maci, physicalAddress0)));
+				linkAddress0 = new INetAddress(createINetAddress(subVector[4]));
+			if (subVector.size() >= 6 && subVector[5] != "-")
+				physicalAddress0 = new INetAddress(createINetAddress(subVector[5]));
+			routerConfigurations.insert(std::map< int, RouterConfiguration >::value_type(i+1, RouterConfiguration(
+					segmenti, maski, gatewayi, maci,linkAddress0, physicalAddress0)));
 		}
 		if (!flag)
 			return (NetworkEntity *) new DefaultRouter(network, node, routerConfigurations);
@@ -179,7 +195,6 @@ Network *loadNetwork(const std::string &networkFile, const std::string& graphFil
 
 void initialize(const std::string &networkFile, const std::string& graphFile) {
 	Network *network = loadNetwork(networkFile, graphFile);
-	// why ?
 	if (network == nullptr) {
 		std::cerr << "Network file is not valid" << std::endl;
 		return;
@@ -187,6 +202,8 @@ void initialize(const std::string &networkFile, const std::string& graphFile) {
 	for (auto node : network->getNodes())
 		if (node->isRouter())
 			((Router*)node)->generateIP();
+	for (auto node : network->getNodes())
+		node->start();
 }
 
 

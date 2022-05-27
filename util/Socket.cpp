@@ -3,7 +3,19 @@
 //
 
 #include "Socket.h"
+#include "PhysicalLayer.h"
 
-void Socket::send(const char *data, int len) const {
-	//todo
+Socket::Socket(int port) :port(port) {
+	this->internal = socket(AF_INET, SOCK_STREAM, 0);
+
+}
+
+void Socket::listen(PhysicalLayer *physicalLayer) {
+	this->thread = new std::thread();
+
+
+}
+
+void Socket::send(INetAddress *address, const char *data, int len) const {
+//todo
 }

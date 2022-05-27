@@ -20,6 +20,8 @@ public:
 	void dfsAllocateIP(int node, std::vector<bool> *visited, std::vector<IPConfiguration> *configurations);
 
 	std::vector<IPConfiguration> getIPConfiguration() override;
+
+	void start() override;
 };
 
 

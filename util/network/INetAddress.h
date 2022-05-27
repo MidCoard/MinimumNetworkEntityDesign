@@ -32,4 +32,6 @@ INetAddress createINetAddress(const std::string &ip);
 
 INetAddress generatePhysicalAddress(int entityId, int id);
 
+INetAddress generateLinkAddress(int entityId, int id);
+
 #endif //NETWORKDESIGN_INETADDRESS_H

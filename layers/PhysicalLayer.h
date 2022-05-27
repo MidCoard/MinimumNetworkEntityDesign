@@ -7,18 +7,24 @@
 
 #include "Layer.h"
 #include "network/INetAddress.h"
+#include "queue"
 
 
 class PhysicalLayer : public Layer {
 public:
-	explicit PhysicalLayer(INetAddress *iNetAddress);
+	PhysicalLayer(INetAddress* linkAddress, INetAddress * physicalAddress);
 
-	PhysicalLayer(int id, INetAddress *iNetAddress);
+	PhysicalLayer(int id, INetAddress* linkAddress, INetAddress * physicalAddress);
 
 	std::string getRawName() override;
 
+	void start();
+
 private:
-	const INetAddress *iNetAddress;
+	INetAddress *physicalAddress;
+	INetAddress *linkAddress;
+
+	Socket *socket;
 };
 
 

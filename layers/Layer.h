@@ -7,6 +7,8 @@
 
 #include "string"
 #include "vector"
+#include "Block.h"
+#include "BlockingCollection.h"
 
 class Layer {
 public:
@@ -16,15 +18,20 @@ public:
 
 	void addLowerLayer(Layer *layer);
 
-	virtual ~Layer();
-
 	std::string getName();
 
 	std::vector<std::string> generateGraph(int node);
 
+	virtual void send(Block block);
+
+	virtual void receive(Block block);
+
 protected:
-	std::vector<Layer *> *lowerLayers;
-	std::vector<Layer *> *upperLayers;
+	std::vector<Layer *> lowerLayers;
+	std::vector<Layer *> upperLayers;
+
+	code_machina::BlockingQueue<Block> sendBlockQueue;
+	code_machina::BlockingQueue<Block> receiveBlockQueue;
 private:
 	int id;
 

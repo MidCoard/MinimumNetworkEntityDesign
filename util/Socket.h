@@ -5,11 +5,23 @@
 #ifndef NETWORKDESIGN_SOCKET_H
 #define NETWORKDESIGN_SOCKET_H
 
+class PhysicalLayer;
+
+#include <sys/socket.h>
+#include "thread"
+#include "network/INetAddress.h"
 
 class Socket {
 public:
-	void send(const char *data, int len) const;
+	explicit Socket(int port);
+	void send(INetAddress* address, const char *data, int len) const;
 	//todo
+	void listen(PhysicalLayer* physicalLayer);
+
+private:
+	int port;
+	int internal;
+	std::thread * thread;
 };
 
 

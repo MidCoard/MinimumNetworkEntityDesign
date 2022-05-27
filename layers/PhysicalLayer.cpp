@@ -6,12 +6,16 @@
 
 #include <utility>
 
-PhysicalLayer::PhysicalLayer(INetAddress *iNetAddress) : PhysicalLayer(-1, iNetAddress) {
-}
+PhysicalLayer::PhysicalLayer(INetAddress *linkAddress,INetAddress * physicalAddress) : PhysicalLayer(-1,linkAddress,physicalAddress) {}
 
 std::string PhysicalLayer::getRawName() {
 	return "PHY";
 }
 
-PhysicalLayer::PhysicalLayer(int id, INetAddress *iNetAddress) : Layer(id), iNetAddress(iNetAddress) {
+PhysicalLayer::PhysicalLayer(int id,INetAddress* linkAddress, INetAddress * physicalAddress) : Layer(id),linkAddress(linkAddress), physicalAddress(physicalAddress) {
+}
+
+void PhysicalLayer::start() {
+	this->socket = new Socket(this->linkAddress->createSocket());
+	socket->listen(this);
 }

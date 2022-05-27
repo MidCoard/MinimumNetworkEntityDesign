@@ -16,18 +16,21 @@ class Network;
 
 class RouterConfiguration {
 public:
-	RouterConfiguration(IP* segment, IP* mask, IP* gateway, MAC * mac, INetAddress * physicalAddress);
+	RouterConfiguration(IP *segment, IP *mask, IP *gateway, MAC *mac, INetAddress *physicalAddress,
+	                    INetAddress *pAddress);
 
 	IP* getSegment();
 	IP* getMask();
 	IP* getGateway();
 	MAC* getMAC();
+	INetAddress* getLinkAddress();
 	INetAddress* getPhysicalAddress();
 private:
 	IP* segment;
 	IP* mask;
 	IP* gateway;
 	MAC* mac;
+	INetAddress* linkAddress;
 	INetAddress* physicalAddress;
 };
 
@@ -46,6 +49,8 @@ public:
 	bool isIPAvailable() override;
 
 	std::vector<IPConfiguration> getIPConfiguration() override = 0;
+
+	void start() override = 0;
 protected:
 	std::map<int, RouterConfiguration> routerConfigurations;
 	bool generatedIP = false;
@@ -58,6 +63,8 @@ public:
 	explicit RouterNetworkLayer(int id);
 
 	IPConfiguration getIPConfiguration(int id);
+
+	unsigned long size();
 };
 
 

@@ -16,18 +16,15 @@ std::vector<std::string> Router::createLayers(int node, std::vector<int> ids) {
 			else
 				linkLayer->setMAC(id, new MAC(generateMAC()));
 			this->layer->addLowerLayer(linkLayer);
-			PhysicalLayer* physicalLayer;
-			if (routerConfiguration.getPhysicalAddress() != nullptr)
-				physicalLayer = new PhysicalLayer(id, routerConfiguration.getPhysicalAddress());
-			else
-				physicalLayer = new PhysicalLayer(id, new INetAddress(generatePhysicalAddress(node ,id)));
+			auto* physicalLayer = new PhysicalLayer(id, routerConfiguration.getLinkAddress() == nullptr ? new INetAddress(generateLinkAddress(node, id)) : routerConfiguration.getLinkAddress()
+															 , routerConfiguration.getPhysicalAddress() == nullptr ? new INetAddress(generatePhysicalAddress(node ,id)) : routerConfiguration.getPhysicalAddress());
 			linkLayer->addLowerLayer(physicalLayer);
 		} else {
 			((RouterNetworkLayer *) this->layer)->setIPConfiguration(id, nullptr, nullptr, nullptr);
 			auto *linkLayer = new LinkLayer(id);
 			linkLayer->setMAC(id, new MAC(generateMAC()));
 			this->layer->addLowerLayer(linkLayer);
-			auto *physicalLayer = new PhysicalLayer(id, new INetAddress(generatePhysicalAddress(node, id)));
+			auto *physicalLayer = new PhysicalLayer(id, new INetAddress(generateLinkAddress(node ,id)), new INetAddress(generatePhysicalAddress(node, id)));
 			linkLayer->addLowerLayer(physicalLayer);
 		}
 	}
@@ -45,7 +42,9 @@ bool Router::isRouterMaster() {
 bool Router::isIPAvailable() {
 	return true;
 }
-RouterConfiguration::RouterConfiguration(IP *segment, IP *mask, IP *gateway, MAC *mac, INetAddress *physicalAddress) : segment(segment), mask(mask), gateway(gateway), mac(mac), physicalAddress(physicalAddress) {}
+RouterConfiguration::RouterConfiguration(IP *segment, IP *mask, IP *gateway, MAC *mac, INetAddress *linkAddress,
+                                         INetAddress *physicalAddress)
+		: segment(segment), mask(mask), gateway(gateway), mac(mac),linkAddress(linkAddress), physicalAddress(physicalAddress) {}
 
 IP *RouterConfiguration::getSegment() {
 	return this->segment;
@@ -67,11 +66,19 @@ INetAddress* RouterConfiguration::getPhysicalAddress() {
 	return this->physicalAddress;
 }
 
+INetAddress *RouterConfiguration::getLinkAddress() {
+	return this->linkAddress;
+}
+
 RouterNetworkLayer::RouterNetworkLayer() : NetworkLayer() {}
 
 RouterNetworkLayer::RouterNetworkLayer(int id) : NetworkLayer(id) {}
 
 IPConfiguration RouterNetworkLayer::getIPConfiguration(int id) {
 	return this->configurations.at(id);
+}
+
+unsigned long RouterNetworkLayer::size() {
+	return this->configurations.size();
 }
 
