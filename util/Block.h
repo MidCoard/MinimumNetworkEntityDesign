@@ -11,8 +11,6 @@ class Block {
 public:
 	Block();
 
-	~Block();
-
 	void flip();
 
 	void write(unsigned char *data, int len);
@@ -26,7 +24,6 @@ public:
 private:
 	// avoid use pointer
 	std::vector<unsigned char> temp;
-	unsigned char *data;
 	int remaining;
 	int pos;
 };

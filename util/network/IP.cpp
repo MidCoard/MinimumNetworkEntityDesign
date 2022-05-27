@@ -79,3 +79,4 @@ unsigned char IP::get(int index) const {
 }
 
 IP localhost = IP("127.0.0.1");
+IP local0 = IP(0u);

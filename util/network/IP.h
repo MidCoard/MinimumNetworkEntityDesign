@@ -39,5 +39,7 @@ private:
 
 extern IP localhost;
 
+extern IP local0;
+
 
 #endif //NETWORKDESIGN_IP_H

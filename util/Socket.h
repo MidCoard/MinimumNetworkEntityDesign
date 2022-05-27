@@ -30,6 +30,8 @@ private:
 
 	void run(PhysicalLayer *physicalLayer) const;
 
+	int port;
+	bool shouldStop = false;
 };
 
 

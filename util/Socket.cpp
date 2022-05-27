@@ -5,7 +5,7 @@
 #include "Socket.h"
 #include "PhysicalLayer.h"
 
-Socket::Socket(int port) {
+Socket::Socket(int port) :port(port) {
 	this->internal = socket(AF_INET, SOCK_STREAM, 0);
 	if (this->internal == -1)
 		throw std::runtime_error("create socket failed");
@@ -29,8 +29,10 @@ void Socket::run(PhysicalLayer *physicalLayer) const {
 		struct sockaddr_in addr{};
 		socklen_t addrlen = sizeof(addr);
 		int client = accept(this->internal, (struct sockaddr *) &addr, &addrlen);
-		if (client == -1)
+		if (shouldStop)
 			break;
+		if (client == -1)
+			continue;
 		Block block;
 		int len;
 		while ((len = recv(client, kData, sizeof(kData), 0)) != 0)
@@ -65,6 +67,8 @@ void Socket::send(const INetAddress& address, Block block) {
 void Socket::close() {
 	if (this->thread != nullptr) {
 		shutdown(this->internal, SHUT_RDWR);
+		this->shouldStop = true;
+		send(INetAddress(local0,this->port), Block());
 		this->thread->join();
 		delete this->thread;
 		this->thread = nullptr;
