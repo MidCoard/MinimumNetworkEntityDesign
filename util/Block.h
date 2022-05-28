@@ -16,15 +16,15 @@ class Block {
 public:
 	Block();
 
-	Block(int sendCount);
+	explicit Block(int sendCount);
 
-	Block(Block *block);
+	explicit Block(Block *block);
 
 	void flip();
 
 	void write(unsigned char *data, int len);
 
-	int getRemaining() const;
+	[[nodiscard]] int getRemaining() const;
 
 	int read(unsigned char *data, int len);
 
@@ -38,7 +38,7 @@ public:
 
 	void write(const std::vector<unsigned char>& data);
 
-	void write(const unsigned char c);
+	void write(unsigned char c);
 
 	IP readIP();
 
@@ -46,7 +46,9 @@ public:
 
 	void writeHeader(Packet *packet);
 
-	int getSendCount() const;
+	[[nodiscard]] int getSendCount() const;
+
+	Block *copy();
 
 private:
 	// avoid use pointer

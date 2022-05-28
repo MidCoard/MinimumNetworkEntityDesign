@@ -28,8 +28,6 @@ public:
 
 	void handleReceive(int id, Block* block) override;
 
-	MAC getMAC();
-
 	void sendARP(const IP& ip, const IP& query);
 
 private:

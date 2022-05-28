@@ -41,3 +41,37 @@ SwitchConfiguration::~SwitchConfiguration() {
 }
 
 SwitchLinkLayer::SwitchLinkLayer(NetworkEntity *networkEntity) : LinkLayer(networkEntity) {}
+
+void SwitchLinkLayer::handleReceive(int id, Block *block) {
+	if (block->getRemaining() < 12)
+		return;
+	MAC source = block->readMAC();
+	MAC destination = block->readMAC();
+	macTable.update(source, id);
+	auto * newBlock = new Block();
+	newBlock->writeMAC(source);
+	newBlock->writeMAC(destination);
+	newBlock->writeBlock(block);
+	newBlock->flip();
+	if (destination.isBroadcast()) {
+		for (auto layer : this->lowerLayers)
+			if (layer->getID() != id) {
+				layer->send(newBlock->copy());
+			}
+	} else {
+		int interface = macTable.lookup(destination);
+		if (interface == -1) {
+			for (auto layer : this->lowerLayers)
+				if (layer->getID() != id) {
+					layer->send(newBlock->copy());
+				}
+		} else
+			this->lowerLayers.at(interface)->send(newBlock->copy());
+	}
+	delete newBlock;
+}
+
+void SwitchLinkLayer::handleSend(Block *block) {
+	// do nothing
+}
+

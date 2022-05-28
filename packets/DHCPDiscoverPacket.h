@@ -1,0 +1,14 @@
+//
+// Created by 周蜀杰 on 2022/5/29.
+//
+
+#ifndef NETWORKDESIGN_DHCPDISCOVERPACKET_H
+#define NETWORKDESIGN_DHCPDISCOVERPACKET_H
+
+
+class DHCPDiscoverPacket {
+
+};
+
+
+#endif //NETWORKDESIGN_DHCPDISCOVERPACKET_H

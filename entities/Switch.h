@@ -40,6 +40,11 @@ private:
 class SwitchLinkLayer : public LinkLayer {
 public:
 	explicit SwitchLinkLayer(NetworkEntity * networkEntity);
+
+	void handleReceive(int id, Block *block) override;
+
+	void handleSend(Block *block) override;
+
 private:
 
 	MACTable macTable;

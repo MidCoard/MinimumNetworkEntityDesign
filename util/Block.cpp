@@ -99,3 +99,12 @@ void Block::write(const unsigned char c) {
 	this->temp.push_back(c);
 }
 
+Block *Block::copy() {
+	auto *block = new Block(this->sendCount);
+	block->pos = this->pos;
+	block->remaining = this->remaining;
+	for (unsigned char i : this->temp)
+		block->temp.push_back(i);
+	return block;
+}
+

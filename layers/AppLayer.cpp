@@ -13,7 +13,7 @@ AppLayer::AppLayer(NetworkEntity *networkEntity) : Layer(0,networkEntity) {
 
 void AppLayer::handleSend(Block* block) {
 	if (this->lowerLayers.size() == 1)
-		this->lowerLayers[0]->send(block);
+		this->lowerLayers[0]->send(new Block(block));
 	else
 		throw std::invalid_argument(" app layer must have one lower layer");
 }

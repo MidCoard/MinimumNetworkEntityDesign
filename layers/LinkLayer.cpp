@@ -20,7 +20,7 @@ void LinkLayer::handleSend(Block* block) {
 	if (block->getRemaining() < 6)
 		return;
 	auto* newBlock = new Block();
-	MAC source = idMacMap.at(this->getID());
+	MAC source = idMacMap.at(0);
 	newBlock->writeMAC(source);
 	newBlock->writeBlock(block);
 	newBlock->flip();
@@ -33,7 +33,7 @@ void LinkLayer::handleReceive(int id, Block* block) {
 		return;
 	MAC source = block->readMAC();
 	MAC destination = block->readMAC();
-	if (!destination.isBroadcast() && destination != idMacMap.at(id)) {
+	if (!destination.isBroadcast() && destination != this.) {
 		return;
 	} else {
 		unsigned char header;
@@ -66,10 +66,6 @@ void LinkLayer::handleReceive(int id, Block* block) {
 				}
 		}
 	}
-}
-
-MAC LinkLayer::getMAC() {
-	return idMacMap.at(this->getID());
 }
 
 void LinkLayer::sendARP(const IP& ip, const IP& query) {
