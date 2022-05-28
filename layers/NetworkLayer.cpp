@@ -1,5 +1,6 @@
 #include "NetworkLayer.h"
-
+#include "ARPPacket.h"
+#include "ARPReplyPacket.h"
 #include <utility>
 
 NetworkLayer::NetworkLayer(NetworkEntity * networkEntity) : NetworkLayer(0, networkEntity) {}
@@ -22,8 +23,7 @@ unsigned long long NetworkLayer::size() {
 	return this->configurations.size();
 }
 
-
-void NetworkLayer::dealReceive(int id, Block* block) {
+void NetworkLayer::handleReceive(int id, Block* block) {
 	routeTable.check();
 	if (!isIPValid)
 		return;
@@ -33,20 +33,27 @@ void NetworkLayer::dealReceive(int id, Block* block) {
 	IP destination = block->readIP();
 	// ip is valid so the ipConfiguration is valid
 	IPConfiguration ipConfiguration = configurations.at(0);
-	if (destination != *ipConfiguration.getSegment())
+	if (!destination.isBroadcast() && destination != *ipConfiguration.getSegment())
 		return;
 	else {
-		auto *newBlock = new Block();
-		newBlock->writeBlock(block);
-		newBlock->flip();
-		this->upperLayers[0]->receive(this->getID(), newBlock);
+		unsigned char header;
+		block->read(&header, 1);
+		switch (header) {
+			default:
+				auto *newBlock = new Block();
+				newBlock->writeBlock(block);
+				newBlock->flip();
+				this->upperLayers[0]->receive(this->getID(), newBlock);
+				break;
+		}
 	}
-
 }
 
-void NetworkLayer::dealSend(Block* block) {
+void NetworkLayer::handleSend(Block* block) {
 	routeTable.check();
 	if (!isIPValid)
+		return;
+	if (block->getSendCount() < 0)
 		return;
 	if (block->getRemaining() < 4)
 		return;
@@ -54,44 +61,29 @@ void NetworkLayer::dealSend(Block* block) {
 	// ip is valid so the ipConfiguration is valid
 	IPConfiguration ipConfiguration = configurations.at(0);
 	// if PC route table has a route to the destination, send the block using the route
-	int targetID = this->routeTable.lookup(destination);
-	if (targetID != -1) {
-
-		newBlock->writeBlock(block);
-		this->lowerLayers[targetID]->send(newBlock);
-	}
-	else {
+	std::pair<IP, int> nextHop = this->routeTable.lookup(destination);
+	if (nextHop.second != -1) {
 		// normally PC has no route to the destination, so send to the target or gateway
 		// first check if the destination is in the same network
-
-		if (destination.isInSameNetwork(*ipConfiguration.getSegment(), *ipConfiguration.getMask())) {
+		if (nextHop.first.isInSameNetwork(*ipConfiguration.getSegment(), *ipConfiguration.getMask())) {
 			// if the destination is in the same network, send to the target
 			// get the mac address of the target
-			MAC mac = this->arpTable.lookup(destination);
+			MAC mac = this->arpTable.lookup(nextHop.first);
 			// if the mac address is not found, send ARP, later send
 			if (mac.isBroadcast()) {
-				this->sendARP(destination);
-			} else {
-				// if the mac address is found, send the block
-				auto * newBlock = new Block();
-				newBlock->writeMAC(mac);
-				newBlock->writeIP(*ipConfiguration.getSegment());
+				((LinkLayer*)this->lowerLayers[nextHop.second])->sendARP(*ipConfiguration.getSegment(),nextHop.first);
+				std::this_thread::sleep_for(std::chrono::milliseconds(200));
+				auto * newBlock = new Block(block->getSendCount() - 1);
 				newBlock->writeIP(destination);
 				newBlock->writeBlock(block);
 				newBlock->flip();
-				this->lowerLayers[0]->send(newBlock);
-			}
-		}
-		else {
-			// if the destination is not in the same network, send to the gateway
-			MAC mac = this->arpTable.lookup(*ipConfiguration.getGateway());
-			// if the mac address is not found, send ARP, later send
-			if (mac.isBroadcast()) {
-				this->sendARP(destination);
+				// wait for the ARP reply
+				this->send(newBlock);
 			} else {
 				// if the mac address is found, send the block
 				auto * newBlock = new Block();
 				newBlock->writeMAC(mac);
+				newBlock->write(0); // for ip protocol
 				newBlock->writeIP(*ipConfiguration.getSegment());
 				newBlock->writeIP(destination);
 				newBlock->writeBlock(block);
@@ -100,4 +92,14 @@ void NetworkLayer::dealSend(Block* block) {
 			}
 		}
 	}
+}
+
+IP NetworkLayer::getIP() {
+	if (!isIPValid)
+		throw std::invalid_argument("IP is not valid");
+	return *configurations.at(0).getSegment();
+}
+
+void NetworkLayer::handleARP(const IP& ip, const MAC& mac) {
+	this->arpTable.update(ip, mac);
 }

@@ -6,12 +6,10 @@
 #define NETWORKDESIGN_NETWORKLAYER_H
 
 #include "network/IP.h"
-#include "Layer.h"
-#include "map"
 #include "network/IPConfiguration.h"
 #include "RouteTable.h"
-#include "network/MAC.h"
 #include "ARPTable.h"
+#include "LinkLayer.h"
 
 
 class NetworkLayer : public Layer {
@@ -29,15 +27,20 @@ public:
 
 	std::string getRawName() override;
 
-	void dealReceive(int id, Block* block) override;
+	void handleReceive(int id, Block* block) override;
 
-	void dealSend(Block* block) override;
+	void handleSend(Block* block) override;
+
+	IP getIP();
+
+	bool isIPValid = false;
+
+	void handleARP(const IP& ip, const MAC& mac);
 
 protected:
 	std::map<int, IPConfiguration> configurations;
 	RouteTable routeTable;
 	ARPTable arpTable;
-	bool isIPValid = false;
 	std::map<IP, MAC> ipMacMap;
 };
 

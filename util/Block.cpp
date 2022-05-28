@@ -8,6 +8,7 @@ Block::Block() {
 	this->temp = {};
 	this->remaining = 0;
 	this->pos = 0;
+	this->sendCount = 5;
 }
 
 void Block::write(unsigned char *data, int len) {
@@ -82,4 +83,19 @@ Block::Block(Block *block) :Block() {
 	this->flip();
 }
 
+void Block::writeHeader(Packet *packet) {
+	this->temp.push_back(packet->getHeader());
+}
+
+Block::Block(int sendCount) : Block() {
+	this->sendCount = sendCount;
+}
+
+int Block::getSendCount() const {
+	return sendCount;
+}
+
+void Block::write(const unsigned char c) {
+	this->temp.push_back(c);
+}
 

@@ -35,9 +35,9 @@ public:
 
 	virtual void stop();
 
-	virtual void dealSend(Block* block) = 0;
+	virtual void handleSend(Block* block) = 0;
 
-	virtual void dealReceive(int id, Block* block) = 0;
+	virtual void handleReceive(int id, Block* block) = 0;
 
 	// the two handle methods should delete the block its created,
 	// the passed block should not be deleted by current method
@@ -46,7 +46,7 @@ public:
 
 	void error(const std::string& message);
 
-	int getID() const;
+	[[nodiscard]] int getID() const;
 
 protected:
 	std::vector<Layer *> lowerLayers;

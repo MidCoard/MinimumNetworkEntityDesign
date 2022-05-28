@@ -29,14 +29,14 @@ void PhysicalLayer::stop() {
 	}
 }
 
-void PhysicalLayer::dealReceive(int id, Block* block) {
+void PhysicalLayer::handleReceive(int id, Block* block) {
 	if (this->upperLayers.size() == 1)
 		this->upperLayers[0]->receive(id, new Block(block));
 	else
 		throw std::invalid_argument("physical layer must have one upper layer");
 }
 
-void PhysicalLayer::dealSend(Block* block) {
+void PhysicalLayer::handleSend(Block* block) {
 	if (this->socket != nullptr)
 		this->socket->send(this->physicalAddress, block);
 }

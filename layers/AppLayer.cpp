@@ -11,15 +11,15 @@ std::string AppLayer::getRawName() {
 AppLayer::AppLayer(NetworkEntity *networkEntity) : Layer(0,networkEntity) {
 }
 
-void AppLayer::dealSend(Block block) {
+void AppLayer::handleSend(Block* block) {
 	if (this->lowerLayers.size() == 1)
 		this->lowerLayers[0]->send(block);
 	else
 		throw std::invalid_argument(" app layer must have one lower layer");
 }
 
-void AppLayer::dealReceive(int id, Block block) {
-	std::vector<unsigned char> data = block.read();
+void AppLayer::handleReceive(int id, Block* block) {
+	std::vector<unsigned char> data = block->read();
 	std::string str(data.begin(), data.end());
 	this->log("receive data: " + str);
 }

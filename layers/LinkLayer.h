@@ -24,15 +24,21 @@ public:
 
 	std::string getRawName() override;
 
-	void dealSend(Block* block) override;
+	void handleSend(Block* block) override;
 
-	void dealReceive(int id, Block* block) override;
+	void handleReceive(int id, Block* block) override;
+
+	MAC getMAC();
+
+	void sendARP(const IP& ip, const IP& query);
 
 private:
 
 	// facing a problem when one interface have one mac, so use a map to store the mac
 	// in fact it is unnecessary for our now design
 	std::map<int, MAC> idMacMap;
+
+	void sendARPReply(int id, const MAC& mac, const IP& source, const IP& destination);
 };
 
 
