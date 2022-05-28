@@ -25,10 +25,22 @@ unsigned long long NetworkLayer::size() {
 
 void NetworkLayer::dealReceive(int id, Block* block) {
 	routeTable.check();
-	if (block.getRemaining() < 8)
+	if (!isIPValid)
 		return;
-	IP source = block.readIP();
-	IP destination = block.readIP();
+	if (block->getRemaining() < 8)
+		return;
+	IP source = block->readIP();
+	IP destination = block->readIP();
+	// ip is valid so the ipConfiguration is valid
+	IPConfiguration ipConfiguration = configurations.at(0);
+	if (destination != *ipConfiguration.getSegment())
+		return;
+	else {
+		auto *newBlock = new Block();
+		newBlock->writeBlock(block);
+		newBlock->flip();
+		this->upperLayers[0]->receive(this->getID(), newBlock);
+	}
 
 }
 
@@ -36,29 +48,56 @@ void NetworkLayer::dealSend(Block* block) {
 	routeTable.check();
 	if (!isIPValid)
 		return;
-	std::vector<unsigned char> data = block.read();
-	// data copy is not necessary if isIPValid is false
-
-	if (data.size() < 4)
-		throw std::invalid_argument("block should have target IP address");
-	Block sendBlock;
+	if (block->getRemaining() < 4)
+		return;
+	IP destination = block->readIP();
+	// ip is valid so the ipConfiguration is valid
 	IPConfiguration ipConfiguration = configurations.at(0);
-	unsigned char ipHeader[4];
-	ipHeader[0] = ipConfiguration.getSegment()->get(0);
-	ipHeader[1] = ipConfiguration.getSegment()->get(1);
-	ipHeader[2] = ipConfiguration.getSegment()->get(2);
-	ipHeader[3] = ipConfiguration.getSegment()->get(3);
-	sendBlock.write(ipHeader, 4);
-	sendBlock.write(data.data(), data.size());
-	IP ip = IP(data[0], data[1], data[2], data[3]);
-	int targetID = this->routeTable.lookup(ip);
-	if (targetID != -1)
-		this->lowerLayers[targetID]->send(sendBlock);
+	// if PC route table has a route to the destination, send the block using the route
+	int targetID = this->routeTable.lookup(destination);
+	if (targetID != -1) {
+
+		newBlock->writeBlock(block);
+		this->lowerLayers[targetID]->send(newBlock);
+	}
 	else {
-		if ((ip & *ipConfiguration.getMask()) == (*ipConfiguration.getSegment() & *ipConfiguration.getMask())) {
+		// normally PC has no route to the destination, so send to the target or gateway
+		// first check if the destination is in the same network
 
-		} else {
-
+		if (destination.isInSameNetwork(*ipConfiguration.getSegment(), *ipConfiguration.getMask())) {
+			// if the destination is in the same network, send to the target
+			// get the mac address of the target
+			MAC mac = this->arpTable.lookup(destination);
+			// if the mac address is not found, send ARP, later send
+			if (mac.isBroadcast()) {
+				this->sendARP(destination);
+			} else {
+				// if the mac address is found, send the block
+				auto * newBlock = new Block();
+				newBlock->writeMAC(mac);
+				newBlock->writeIP(*ipConfiguration.getSegment());
+				newBlock->writeIP(destination);
+				newBlock->writeBlock(block);
+				newBlock->flip();
+				this->lowerLayers[0]->send(newBlock);
+			}
+		}
+		else {
+			// if the destination is not in the same network, send to the gateway
+			MAC mac = this->arpTable.lookup(*ipConfiguration.getGateway());
+			// if the mac address is not found, send ARP, later send
+			if (mac.isBroadcast()) {
+				this->sendARP(destination);
+			} else {
+				// if the mac address is found, send the block
+				auto * newBlock = new Block();
+				newBlock->writeMAC(mac);
+				newBlock->writeIP(*ipConfiguration.getSegment());
+				newBlock->writeIP(destination);
+				newBlock->writeBlock(block);
+				newBlock->flip();
+				this->lowerLayers[0]->send(newBlock);
+			}
 		}
 	}
 }

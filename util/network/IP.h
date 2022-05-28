@@ -9,8 +9,6 @@
 #include "Util.h"
 #include <utility>
 
-// new class will not be deleted in the whole process
-
 class IP {
 public:
 	explicit IP(std::string ip);
@@ -20,26 +18,36 @@ public:
 
 	IP operator &(IP ip) const;
 
+	bool operator <(const IP& ip) const;
+
+	bool operator >(const IP& ip) const;
+
 	bool operator ==(IP ip) const;
 
 	bool operator !=(IP &ip) const;
 
-	std::string str() const;
+	[[nodiscard]] bool isBroadcast() const;
 
-	unsigned int intValue() const;
+	[[nodiscard]] std::string str() const;
 
-	IP getMask() const;
+	[[nodiscard]] unsigned int intValue() const;
 
-	unsigned char get(int index) const;
+	[[nodiscard]] IP getMask() const;
+
+	[[nodiscard]] unsigned char get(int index) const;
+
+	[[nodiscard]] bool isInSameNetwork(const IP& ip, const IP& mask) const;
 
 private:
 	std::string ip;
 	unsigned char bytes[4]{};
 };
 
-extern IP localhost;
+extern IP LOCALHOST;
 
-extern IP local0;
+extern IP LOCAL0;
+
+extern IP BROADCAST_IP;
 
 
 #endif //NETWORKDESIGN_IP_H

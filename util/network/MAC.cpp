@@ -55,6 +55,12 @@ unsigned char MAC::get(int index) const {
 	return this->bytes[index];
 }
 
+bool MAC::isBroadcast() const {
+	for (int i = 0;i<6;i++)
+		if (this->bytes[i] != 0xff)
+			return false;
+	return true;
+}
 
 MAC generateMAC() {
 	std::default_random_engine e(std::chrono::system_clock::now().time_since_epoch().count());
@@ -67,3 +73,5 @@ MAC generateMAC() {
 	}
 	return MAC(mac);
 }
+
+MAC BROADCAST_MAC = MAC(0xffu, 0xffu, 0xffu, 0xffu, 0xffu, 0xffu);

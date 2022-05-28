@@ -7,13 +7,39 @@
 
 
 #include "network/IP.h"
+#include "set"
 
 class RouteTable {
 
+	class TableItem {
+
+	public:
+		[[nodiscard]] bool match(const IP &ip) const;
+
+		TableItem(IP ip, IP mask, int cost, IP nextHop, long long time);
+
+		bool operator<(const TableItem & tableItem) const;
+
+		IP ip;
+		IP mask;
+		int cost;
+		IP nextHop;
+		long long time;
+	};
+
 public:
-	int lookup(IP ip);
+	IP lookup(const IP& ip);
+
+	IP next(const IP& ip);
+
+	void update(const IP& ip, const IP& mask, int cost, const IP& nextHop);
 
 	void check();
+
+private:
+
+	std::set<TableItem> table;
+
 };
 
 

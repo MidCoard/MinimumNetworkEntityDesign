@@ -13,6 +13,8 @@ class Block {
 public:
 	Block();
 
+	Block(Block *block);
+
 	void flip();
 
 	void write(unsigned char *data, int len);
@@ -32,6 +34,8 @@ public:
 	void write(const std::vector<unsigned char>& data);
 
 	IP readIP();
+
+	void writeIP(const IP& ip);
 
 private:
 	// avoid use pointer

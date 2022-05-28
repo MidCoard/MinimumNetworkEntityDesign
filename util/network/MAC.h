@@ -10,8 +10,6 @@
 #include "random"
 #include "Util.h"
 
-// new class will not be deleted in the whole process
-
 class MAC {
 public:
 	explicit MAC(std::string mac);
@@ -20,7 +18,9 @@ public:
 	bool operator < (const MAC& mac) const;
 	bool operator == (const MAC& mac) const;
 
-	unsigned char get(int index) const;
+	[[nodiscard]] unsigned char get(int index) const;
+
+	[[nodiscard]] bool isBroadcast() const;
 
 	MAC(unsigned char i, unsigned char i1, unsigned char i2, unsigned char i3, unsigned char i4, unsigned char i5);
 
@@ -30,6 +30,9 @@ private:
 };
 
 MAC generateMAC();
+
+
+extern MAC BROADCAST_MAC;
 
 
 #endif //NETWORKDESIGN_MAC_H

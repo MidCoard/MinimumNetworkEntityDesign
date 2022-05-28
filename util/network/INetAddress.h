@@ -11,9 +11,6 @@ class Socket;
 #include "IP.h"
 #include <utility>
 
-// new class will not be deleted in the whole process
-
-
 class INetAddress {
 public:
 	INetAddress(IP ip, int port);

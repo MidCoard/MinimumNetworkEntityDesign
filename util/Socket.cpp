@@ -68,7 +68,7 @@ void Socket::close() {
 		shutdown(this->internal, SHUT_RDWR);
 		this->shouldStop = true;
 		auto* block = new Block();
-		send(INetAddress(local0,this->port), block);
+		send(INetAddress(LOCAL0, this->port), block);
 		delete block;
 		this->thread->join();
 		delete this->thread;

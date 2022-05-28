@@ -11,6 +11,7 @@
 #include "network/IPConfiguration.h"
 #include "RouteTable.h"
 #include "network/MAC.h"
+#include "ARPTable.h"
 
 
 class NetworkLayer : public Layer {
@@ -35,6 +36,7 @@ public:
 protected:
 	std::map<int, IPConfiguration> configurations;
 	RouteTable routeTable;
+	ARPTable arpTable;
 	bool isIPValid = false;
 	std::map<IP, MAC> ipMacMap;
 };

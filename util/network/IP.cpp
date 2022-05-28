@@ -78,5 +78,25 @@ unsigned char IP::get(int index) const {
 	return this->bytes[index];
 }
 
-IP localhost = IP("127.0.0.1");
-IP local0 = IP(0u);
+bool IP::isInSameNetwork(const IP& ip, const IP& mask) const {
+	return (*this & mask) == (ip & mask);
+}
+
+bool IP::operator<(const IP& ip) const {
+	return this->intValue() < ip.intValue();
+}
+
+bool IP::isBroadcast() const {
+	for (int i = 0; i < 4; i++)
+		if (this->bytes[i] != 0xFF)
+			return false;
+	return true;
+}
+
+bool IP::operator>(const IP &ip) const {
+	return this->intValue() > ip.intValue();
+}
+
+IP LOCALHOST = IP("127.0.0.1");
+IP LOCAL0 = IP(0u);
+IP BROADCAST_IP = IP(0xffu, 0xffu, 0xffu, 0xffu);

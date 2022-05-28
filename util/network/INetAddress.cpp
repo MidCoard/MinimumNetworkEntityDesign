@@ -25,11 +25,11 @@ INetAddress createINetAddress(const std::string &ip) {
 INetAddress generatePhysicalAddress(int entityId, int id) {
 	//because our entityId starts from 0, we need to add 1 to the entityId
 	entityId++;
-	return {localhost, 10000 + entityId * 1000 + 100 + id};
+	return {LOCALHOST, 10000 + entityId * 1000 + 100 + id};
 }
 
 INetAddress generateLinkAddress(int entityId, int id) {
 	//because our entityId starts from 0, we need to add 1 to the entityId
 	entityId++;
-	return {localhost, 10000 + entityId * 1000 + 200 + id};
+	return {LOCALHOST, 10000 + entityId * 1000 + 200 + id};
 }

@@ -72,4 +72,14 @@ IP Block::readIP() {
 	return ip;
 }
 
+void Block::writeIP(const IP& ip) {
+	for (int i = 0; i < 4; i++)
+		this->temp.push_back(ip.get(i));
+}
+
+Block::Block(Block *block) :Block() {
+	this->writeBlock(block);
+	this->flip();
+}
+
 

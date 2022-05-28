@@ -20,7 +20,7 @@ public:
 	void check();
 
 private:
-	std::map<MAC, std::pair<int,long long>> macTable;
+	std::map<MAC, std::pair<int,long long>> table;
 };
 
 

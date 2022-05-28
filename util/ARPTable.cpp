@@ -2,20 +2,20 @@
 // Created by 周蜀杰 on 2022/5/28.
 //
 
-#include "MACTable.h"
+#include "ARPTable.h"
 
-int MACTable::lookup(const MAC& mac) {
-	if (this->table.find(mac) == this->table.end())
-		return -1;
-	return this->table[mac].first;
+MAC ARPTable::lookup(const IP& ip) {
+	if (this->table.find(ip) == this->table.end())
+		return BROADCAST_MAC;
+	return this->table.at(ip).first;
 }
 
-void MACTable::update(const MAC& mac, int port) {
+void ARPTable::update(const IP &ip, const MAC &mac) {
 	auto time = std::chrono::system_clock::now().time_since_epoch().count();
-	this->table.insert_or_assign(mac, std::pair{port , time + 5L * 60 * 1000 * 1000});
+	this->table.insert_or_assign(ip, std::pair{mac, time + 2L * 60 * 1000 * 1000});
 }
 
-void MACTable::check() {
+void ARPTable::check() {
 	auto time = std::chrono::system_clock::now().time_since_epoch().count();
 	for (auto it = this->table.begin(); it != this->table.end();)
 		if (it->second.second < time)
@@ -23,3 +23,5 @@ void MACTable::check() {
 		else
 			++it;
 }
+
+

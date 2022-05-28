@@ -24,7 +24,7 @@ void LinkLayer::dealSend(Block* block) {
 	newBlock->writeMAC(source);
 	newBlock->writeBlock(block);
 	newBlock->flip();
-	this->lowerLayers[this->getID()]->send(newBlock);
+	this->lowerLayers[0]->send(newBlock);
 }
 
 // the id for PC this should always be 0
@@ -39,6 +39,6 @@ void LinkLayer::dealReceive(int id, Block* block) {
 		auto* newBlock = new Block();
 		newBlock->writeBlock(block);
 		newBlock->flip();
-		this->upperLayers[this->getID()]->receive(this->getID(), newBlock);
+		this->upperLayers[0]->receive(this->getID(), newBlock);
 	}
 }
