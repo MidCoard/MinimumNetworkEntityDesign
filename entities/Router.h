@@ -49,6 +49,8 @@ public:
 	bool isIPAvailable() override;
 
 	std::vector<IPConfiguration> getIPConfiguration() override = 0;
+
+	void start() override;
 protected:
 	std::map<int, RouterConfiguration*> routerConfigurations;
 	bool generatedIP = false;
@@ -58,6 +60,8 @@ protected:
 	IP* segment = nullptr;
 	IP* mask = nullptr;
 	IP* gateway = nullptr;
+
+	// mark all
 };
 
 class RouterNetworkLayer : public NetworkLayer {
@@ -65,6 +69,10 @@ public:
 	explicit RouterNetworkLayer(NetworkEntity * networkEntity);
 
 	RouterNetworkLayer(int id, NetworkEntity * networkEntity);
+
+	void handleReceive(int id, Block *block) override;
+
+	void sendDHCP() override;
 };
 
 

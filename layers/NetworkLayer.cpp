@@ -1,6 +1,8 @@
 #include "NetworkLayer.h"
 #include "ARPPacket.h"
 #include "ARPReplyPacket.h"
+#include "DHCPDiscoverPacket.h"
+#include "DHCPRequestPacket.h"
 #include <utility>
 
 NetworkLayer::NetworkLayer(NetworkEntity * networkEntity) : NetworkLayer(0, networkEntity) {}
@@ -25,15 +27,12 @@ unsigned long long NetworkLayer::size() {
 
 void NetworkLayer::handleReceive(int id, Block* block) {
 	routeTable.check();
-	if (!isIPValid)
-		return;
 	if (block->getRemaining() < 8)
 		return;
 	IP source = block->readIP();
 	IP destination = block->readIP();
-	// ip is valid so the ipConfiguration is valid
 	IPConfiguration ipConfiguration = configurations.at(0);
-	if (!destination.isBroadcast() && destination != *ipConfiguration.getSegment())
+	if (!destination.isBroadcast() && (ipConfiguration.getSegment() == nullptr || destination != *ipConfiguration.getSegment()))
 		return;
 	else {
 		unsigned char header;
@@ -72,7 +71,7 @@ void NetworkLayer::handleSend(Block* block) {
 			// if the mac address is not found, send ARP, later send
 			if (mac.isBroadcast()) {
 				((LinkLayer*)this->lowerLayers[nextHop.second])->sendARP(*ipConfiguration.getSegment(),nextHop.first);
-				std::this_thread::sleep_for(std::chrono::milliseconds(200));
+				std::this_thread::sleep_for(std::chrono::milliseconds(500));
 				auto * newBlock = new Block(block->getSendCount() - 1);
 				newBlock->writeIP(destination);
 				newBlock->writeBlock(block);
@@ -88,7 +87,7 @@ void NetworkLayer::handleSend(Block* block) {
 				newBlock->writeIP(destination);
 				newBlock->writeBlock(block);
 				newBlock->flip();
-				this->lowerLayers[0]->send(newBlock);
+				this->lowerLayers[nextHop.second]->send(newBlock);
 			}
 		}
 	}
@@ -102,4 +101,24 @@ IP NetworkLayer::getIP() {
 
 void NetworkLayer::handleARP(const IP& ip, const MAC& mac) {
 	this->arpTable.update(ip, mac);
+}
+
+void NetworkLayer::sendDHCP0(bool useSegment) {
+	IPConfiguration ipConfiguration = configurations.at(0);
+	if (ipConfiguration.getSegment() == nullptr) {
+		auto *packet = new DHCPDiscoverPacket(useSegment);
+		Block* block = packet->createBlock();
+		delete packet;
+		this->lowerLayers[0]->send(block);
+	} else  {
+		auto *packet = new DHCPRequestPacket(*ipConfiguration.getSegment(), *ipConfiguration.getMask(), useSegment);
+		Block* block = packet->createBlock();
+		delete packet;
+		this->lowerLayers[0]->send(block);
+	}
+}
+
+
+void NetworkLayer::sendDHCP() {
+	this->sendDHCP0(false);
 }

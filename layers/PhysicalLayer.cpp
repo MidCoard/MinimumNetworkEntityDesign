@@ -15,9 +15,9 @@ std::string PhysicalLayer::getRawName() {
 PhysicalLayer::PhysicalLayer(int id, NetworkEntity * networkEntity, INetAddress linkAddress, INetAddress physicalAddress) : Layer(id, networkEntity), linkAddress(std::move(linkAddress)), physicalAddress(std::move(physicalAddress)){}
 
 void PhysicalLayer::start() {
-	Layer::start();
 	this->socket = new Socket(this->linkAddress.createSocket());
 	socket->listen(this);
+	Layer::start();
 }
 
 void PhysicalLayer::stop() {

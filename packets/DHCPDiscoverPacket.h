@@ -6,8 +6,17 @@
 #define NETWORKDESIGN_DHCPDISCOVERPACKET_H
 
 
-class DHCPDiscoverPacket {
+#include "Packet.h"
 
+class DHCPDiscoverPacket : public Packet{
+public:
+	DHCPDiscoverPacket(bool useSegment);
+
+	Block * createBlock() override;
+
+	unsigned char getHeader() override;
+private:
+	bool useSegment;
 };
 
 

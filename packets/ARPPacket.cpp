@@ -15,8 +15,9 @@ Block *ARPPacket::createBlock() {
 	block->writeIP(this->ip);
 	block->writeIP(this->query);
 	block->flip();
+	return block;
 }
 
 unsigned char ARPPacket::getHeader() {
-	return 0x86; // 0x8060
+	return 0x86; // 0x8060 for link layer
 }

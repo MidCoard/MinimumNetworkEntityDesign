@@ -97,6 +97,14 @@ bool IP::operator>(const IP &ip) const {
 	return this->intValue() > ip.intValue();
 }
 
+int IP::getRightZero() const {
+	unsigned int raw = intValue();
+	int i = 0;
+	while ((raw & (1u << i)) == 0)
+		i++;
+	return i;
+}
+
 IP LOCALHOST = IP("127.0.0.1");
 IP LOCAL0 = IP(0u);
 IP BROADCAST_IP = IP(0xffu, 0xffu, 0xffu, 0xffu);

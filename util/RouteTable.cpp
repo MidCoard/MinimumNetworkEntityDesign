@@ -27,7 +27,7 @@ void RouteTable::check() {
 
 void RouteTable::update(const IP &ip, const IP &mask, int cost, const IP &nextHop, int id) {
 	auto time = std::chrono::system_clock::now().time_since_epoch().count();
-	this->table.insert(TableItem(ip, mask, cost, nextHop,id, time + 10L * 60 * 1000 * 1000));
+	this->table.insert(TableItem(ip, mask, cost, nextHop,id, time + 10LL * 60 * 1000 * 1000));
 }
 
 std::pair<IP,int> RouteTable::next(const IP &ip) {

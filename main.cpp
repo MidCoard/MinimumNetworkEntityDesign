@@ -13,6 +13,8 @@
 #include "Network.h"
 #include "DefaultRouter.h"
 #include "NetworkEntity.h"
+#include "BlockingCollection.h"
+#include "DHCPHelper.h"
 
 std::vector<std::string>
 availableLine(std::vector<std::string>::iterator *begin, std::vector<std::string>::iterator end) {
@@ -210,12 +212,14 @@ Network *initialize() {
 
 int main() {
 	Network *network = initialize();
+	dhcp::start();
 	while(true);
 	if (network != nullptr) {
 		// join
 		for (auto node: network->getNodes())
 			node->stop();
 	}
+	dhcp::stop();
 	delete network;
 	return 0;
 }

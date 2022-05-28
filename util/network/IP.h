@@ -38,6 +38,8 @@ public:
 
 	[[nodiscard]] bool isInSameNetwork(const IP& ip, const IP& mask) const;
 
+	int getRightZero() const;
+
 private:
 	std::string ip;
 	unsigned char bytes[4]{};

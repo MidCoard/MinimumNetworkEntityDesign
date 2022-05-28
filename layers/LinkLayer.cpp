@@ -33,7 +33,7 @@ void LinkLayer::handleReceive(int id, Block* block) {
 		return;
 	MAC source = block->readMAC();
 	MAC destination = block->readMAC();
-	if (!destination.isBroadcast() && destination != this.) {
+	if (!destination.isBroadcast() && destination != this->idMacMap.at(0)) {
 		return;
 	} else {
 		unsigned char header;

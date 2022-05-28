@@ -37,6 +37,10 @@ public:
 
 	void handleARP(const IP& ip, const MAC& mac);
 
+	virtual void sendDHCP();
+
+	void sendDHCP0(bool useSegment);
+
 protected:
 	std::map<int, IPConfiguration> configurations;
 	RouteTable routeTable;

@@ -27,6 +27,8 @@ public:
 
 	std::vector<IPConfiguration> getIPConfiguration() override;
 
+	void start() override;
+
 private:
 	IP *ip;
 	IP *mask;
@@ -34,6 +36,7 @@ private:
 	MAC *mac;
 	INetAddress *linkAddress;
 	INetAddress *physicalAddress;
+	NetworkLayer * networkLayer;
 };
 
 
