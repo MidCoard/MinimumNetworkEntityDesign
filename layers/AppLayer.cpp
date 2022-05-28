@@ -19,7 +19,7 @@ void AppLayer::dealSend(Block block) {
 }
 
 void AppLayer::dealReceive(int id, Block block) {
-	std::vector<unsigned char> data = block.getData();
+	std::vector<unsigned char> data = block.read();
 	std::string str(data.begin(), data.end());
 	this->log("receive data: " + str);
 }

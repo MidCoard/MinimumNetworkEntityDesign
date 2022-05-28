@@ -6,6 +6,7 @@
 #include "PhysicalLayer.h"
 
 Socket::Socket(int port) :port(port) {
+	this->temp = new unsigned char[1024];
 	this->internal = socket(AF_INET, SOCK_STREAM, 0);
 	if (this->internal == -1)
 		throw std::runtime_error("create socket failed");
@@ -22,8 +23,6 @@ Socket::Socket(int port) :port(port) {
 		throw std::runtime_error("listen socket failed");
 }
 
-unsigned char kData[1024];
-
 void Socket::run(PhysicalLayer *physicalLayer) const {
 	while (true) {
 		struct sockaddr_in addr{};
@@ -33,11 +32,11 @@ void Socket::run(PhysicalLayer *physicalLayer) const {
 			break;
 		if (client == -1)
 			continue;
-		Block block;
+		auto* block = new Block();
 		int len;
-		while ((len = recv(client, kData, sizeof(kData), 0)) != 0)
-			block.write(kData, len);
-		block.flip();
+		while ((len = recv(client, temp, sizeof(temp), 0)) != 0)
+			block->write(temp, len);
+		block->flip();
 		physicalLayer->receive(physicalLayer->getID(), block);
 	}
 }
@@ -46,7 +45,7 @@ void Socket::listen(PhysicalLayer *physicalLayer) {
 	this->thread = new std::thread(&Socket::run, this, physicalLayer);
 }
 
-void Socket::send(const INetAddress& address, Block block) {
+void Socket::send(const INetAddress& address, Block* block) {
 	int client = socket(AF_INET, SOCK_STREAM, 0);
 	if (client == -1)
 		throw std::runtime_error("create socket failed");
@@ -56,9 +55,9 @@ void Socket::send(const INetAddress& address, Block block) {
 	addr.sin_addr.s_addr = htonl(address.getIp().intValue());
 	if (connect(client, (struct sockaddr *) &addr, sizeof(addr)))
 		throw std::runtime_error("connect socket failed");
-	while (block.getRemaining() > 0) {
-		int len = block.read(kData, sizeof(kData));
-		if (::send(client, kData, len, 0) == -1)
+	while (block->getRemaining() > 0) {
+		int len = block->read(temp, sizeof(temp));
+		if (::send(client, temp, len, 0) == -1)
 			throw std::runtime_error("send socket failed");
 	}
 	shutdown(client, SHUT_RDWR);
@@ -68,9 +67,15 @@ void Socket::close() {
 	if (this->thread != nullptr) {
 		shutdown(this->internal, SHUT_RDWR);
 		this->shouldStop = true;
-		send(INetAddress(local0,this->port), Block());
+		auto* block = new Block();
+		send(INetAddress(local0,this->port), block);
+		delete block;
 		this->thread->join();
 		delete this->thread;
 		this->thread = nullptr;
 	}
+}
+
+Socket::~Socket() {
+	delete[] this->temp;
 }

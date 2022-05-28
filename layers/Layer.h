@@ -27,17 +27,20 @@ public:
 
 	std::vector<std::string> generateGraph(int node);
 
-	void send(const Block& block);
+	void send(Block* block);
 
-	void receive(int id, const Block& block);
+	void receive(int id, Block* block);
 
 	virtual void start();
 
 	virtual void stop();
 
-	virtual void dealSend(Block block) = 0;
+	virtual void dealSend(Block* block) = 0;
 
-	virtual void dealReceive(int id, Block block) = 0;
+	virtual void dealReceive(int id, Block* block) = 0;
+
+	// the two handle methods should delete the block its created,
+	// the passed block should not be deleted by current method
 
 	void log(const std::string& message);
 
@@ -49,8 +52,8 @@ protected:
 	std::vector<Layer *> lowerLayers;
 	std::vector<Layer *> upperLayers;
 
-	code_machina::BlockingQueue<Block> sendBlockQueue;
-	code_machina::BlockingQueue<std::pair<int,Block>> receiveBlockQueue;
+	code_machina::BlockingQueue<Block*> sendBlockQueue;
+	code_machina::BlockingQueue<std::pair<int,Block*>> receiveBlockQueue;
 private:
 	// this two pointer will be deleted when closing
 	std::thread *sendThread = nullptr;

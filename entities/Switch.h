@@ -15,13 +15,11 @@ class Network;
 class SwitchConfiguration {
 public:
 	// pointer to present null
-	SwitchConfiguration(MAC *mac, INetAddress *linkAddress, INetAddress *physicalAddress);
+	SwitchConfiguration(INetAddress *linkAddress, INetAddress *physicalAddress);
 	~SwitchConfiguration();
-	MAC * getMAC();
 	INetAddress * getPhysicalAddress();
 	INetAddress * getLinkAddress();
 private:
-	MAC * mac;
 	INetAddress * linkAddress;
 	INetAddress * physicalAddress;
 };
@@ -37,6 +35,15 @@ public:
 	std::vector<std::string> createLayers(int node, std::vector<int> ids) override;
 private:
 	std::map<int, SwitchConfiguration*> switchConfigurations;
+};
+
+class SwitchLinkLayer : public LinkLayer {
+public:
+	explicit SwitchLinkLayer(NetworkEntity * networkEntity);
+private:
+
+	MACTable macTable;
+
 };
 
 #endif //NETWORKDESIGN_SWITCH_H

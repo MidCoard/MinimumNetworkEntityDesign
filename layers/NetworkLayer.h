@@ -24,11 +24,13 @@ public:
 
 	IPConfiguration getIPConfiguration(int id);
 
+	unsigned long long size();
+
 	std::string getRawName() override;
 
-	void dealReceive(int id, Block block) override;
+	void dealReceive(int id, Block* block) override;
 
-	void dealSend(Block block) override;
+	void dealSend(Block* block) override;
 
 protected:
 	std::map<int, IPConfiguration> configurations;

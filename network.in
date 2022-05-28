@@ -40,9 +40,9 @@ ROUTERI 2
 # also you can ignore it(or enter 0), and all configuration will be done automatically(it will detect its connected PCs automatically)
 # you can specify the mac and physical_layer_ip of the port
 # i.e. SWITCH 3
-# mac0 link_layer_ip0 physical_layer_ip0
-# mac1 link_layer_ip1 physical_layer_ip1
-# mac2 link_layer_ip2 physical_layer_ip2
+# link_layer_ip0 physical_layer_ip0
+# link_layer_ip1 physical_layer_ip1
+# link_layer_ip2 physical_layer_ip2
 SWITCH 4
 -
 -

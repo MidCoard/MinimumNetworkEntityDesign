@@ -36,9 +36,9 @@ std::vector<std::string> util::split(const std::string &str, const std::string &
 	if (delimiter.empty())
 		return std::vector<std::string>{str};
 	std::vector<std::string> tokens;
-	unsigned long start = 0;
+	unsigned long long start = 0;
 	while (str.find(delimiter, start) != std::string::npos) {
-		unsigned long end = str.find(delimiter, start);
+		unsigned long long end = str.find(delimiter, start);
 		tokens.push_back(str.substr(start, end - start));
 		start = end + delimiter.size();
 	}
@@ -57,9 +57,9 @@ bool util::equalsIgnoreCase(const std::string &str1, const std::string &str2) {
 	});
 }
 
-std::vector<std::string> util::subVector(const std::vector<std::string> &vec, unsigned long start, unsigned long end) {
+std::vector<std::string> util::subVector(const std::vector<std::string> &vec, unsigned long long start, unsigned long long end) {
 	std::vector<std::string> subVec;
-	for (unsigned long i = start; i < end; i++)
+	for (unsigned long long i = start; i < end; i++)
 		subVec.push_back(vec[i]);
 	return subVec;
 }

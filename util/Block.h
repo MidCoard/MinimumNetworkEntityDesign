@@ -6,6 +6,8 @@
 #define NETWORKDESIGN_BLOCK_H
 
 #include "vector"
+#include "network/MAC.h"
+#include "network/IP.h"
 
 class Block {
 public:
@@ -19,7 +21,17 @@ public:
 
 	int read(unsigned char *data, int len);
 
-	std::vector<unsigned char> getData();
+	std::vector<unsigned char> read();
+
+	MAC readMAC();
+
+	void writeBlock(Block *block);
+
+	void writeMAC(const MAC& mac);
+
+	void write(const std::vector<unsigned char>& data);
+
+	IP readIP();
 
 private:
 	// avoid use pointer

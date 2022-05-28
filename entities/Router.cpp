@@ -87,8 +87,3 @@ RouterConfiguration::~RouterConfiguration() {
 RouterNetworkLayer::RouterNetworkLayer(NetworkEntity * networkEntity) : NetworkLayer(networkEntity) {}
 
 RouterNetworkLayer::RouterNetworkLayer(int id, NetworkEntity * networkEntity) : NetworkLayer(id, networkEntity) {}
-
-unsigned long RouterNetworkLayer::size() {
-	return this->configurations.size();
-}
-

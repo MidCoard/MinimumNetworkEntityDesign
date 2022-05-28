@@ -12,6 +12,8 @@ class RouteTable {
 
 public:
 	int lookup(IP ip);
+
+	void check();
 };
 
 

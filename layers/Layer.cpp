@@ -41,11 +41,11 @@ Layer::dfsGenerate(int node, Layer *layer, std::vector<std::string> *lines, cons
 	}
 }
 
-void Layer::send(const Block& block) {
+void Layer::send(Block* block) {
 	this->sendBlockQueue.emplace(block);
 }
 
-void Layer::receive(int id, const Block& block) {
+void Layer::receive(int id, Block* block) {
 	this->receiveBlockQueue.emplace(std::make_pair(id, block));
 }
 
@@ -56,21 +56,25 @@ void Layer::start() {
 		while (true) {
 			if (shouldStop)
 				break;
-			Block block;
+			Block* block = nullptr;
 			// this block is safe now
 			code_machina::BlockingCollectionStatus status = this->sendBlockQueue.try_take(block, std::chrono::milliseconds(1));
-			if (status == code_machina::BlockingCollectionStatus::Ok)
-				this->dealSend( block);
+			if (status == code_machina::BlockingCollectionStatus::Ok) {
+				this->dealSend(block);
+				delete block;
+			}
 		}
 	});
 	this->receiveThread = new std::thread([this]() {
 		while (true) {
 			if (shouldStop)
 				break;
-			std::pair<int,Block> pair;
+			std::pair<int,Block*> pair;
 			code_machina::BlockingCollectionStatus status = this->receiveBlockQueue.try_take(pair, std::chrono::milliseconds(1));
-			if (status == code_machina::BlockingCollectionStatus::Ok)
-				this->dealReceive(pair.first,pair.second);
+			if (status == code_machina::BlockingCollectionStatus::Ok) {
+				this->dealReceive(pair.first, pair.second);
+				delete pair.second;
+			}
 		}
 	});
 }

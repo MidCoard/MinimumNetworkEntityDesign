@@ -7,3 +7,7 @@
 int RouteTable::lookup(IP ip) {
 	return 0;
 }
+
+void RouteTable::check() {
+
+}

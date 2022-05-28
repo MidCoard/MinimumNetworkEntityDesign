@@ -65,8 +65,6 @@ public:
 	explicit RouterNetworkLayer(NetworkEntity * networkEntity);
 
 	RouterNetworkLayer(int id, NetworkEntity * networkEntity);
-
-	unsigned long size();
 };
 
 

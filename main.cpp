@@ -60,17 +60,13 @@ NetworkEntity *createEntity(Network *network, int node, const std::string &name,
 		std::map<int, SwitchConfiguration *> switchConfigurations;
 		for (int i = 0; i < size; i++) {
 			std::vector<std::string> subVector = availableLine(begin, end);
-			MAC *mac = nullptr;
 			INetAddress *linkAddress = nullptr;
 			INetAddress *physicalAddress = nullptr;
 			if (!subVector.empty() && subVector[0] != "-")
-				mac = new MAC(subVector[0]);
+				linkAddress = new INetAddress(createINetAddress(subVector[0]));
 			if (subVector.size() >= 2 && subVector[1] != "-")
-				linkAddress = new INetAddress(createINetAddress(subVector[1]));
-			if (subVector.size() >= 3 && subVector[2] != "-")
-				physicalAddress = new INetAddress(createINetAddress(subVector[2]));
-			switchConfigurations.insert({i, new SwitchConfiguration(mac,
-			                                                        linkAddress,
+				physicalAddress = new INetAddress(createINetAddress(subVector[1]));
+			switchConfigurations.insert({i, new SwitchConfiguration(linkAddress,
 			                                                        physicalAddress)});
 		}
 		return new Switch(network, node, switchConfigurations);
@@ -214,6 +210,7 @@ Network *initialize() {
 
 int main() {
 	Network *network = initialize();
+	while(true);
 	if (network != nullptr) {
 		// join
 		for (auto node: network->getNodes())

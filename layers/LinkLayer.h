@@ -12,6 +12,7 @@
 #include <vector>
 #include <utility>
 #include "map"
+#include "MACTable.h"
 
 class LinkLayer : public Layer {
 public:
@@ -23,16 +24,15 @@ public:
 
 	std::string getRawName() override;
 
-	void dealSend(Block block) override;
+	void dealSend(Block* block) override;
 
-	void dealReceive(int id, Block block) override;
+	void dealReceive(int id, Block* block) override;
 
 private:
-	// not use pointer to avoid unnecessary delete operation
-	std::map<MAC, int> macTable;
 
+	// facing a problem when one interface have one mac, so use a map to store the mac
+	// in fact it is unnecessary for our now design
 	std::map<int, MAC> idMacMap;
-
 };
 
 

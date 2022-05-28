@@ -2,7 +2,7 @@
 
 #include <utility>
 
-NetworkLayer::NetworkLayer(NetworkEntity * networkEntity) : NetworkLayer(-1, networkEntity) {}
+NetworkLayer::NetworkLayer(NetworkEntity * networkEntity) : NetworkLayer(0, networkEntity) {}
 
 std::string NetworkLayer::getRawName() {
 	return "NET";
@@ -18,16 +18,27 @@ IPConfiguration NetworkLayer::getIPConfiguration(int id) {
 	return this->configurations.at(id);
 }
 
+unsigned long long NetworkLayer::size() {
+	return this->configurations.size();
+}
 
-void NetworkLayer::dealReceive(int id, Block block) {
+
+void NetworkLayer::dealReceive(int id, Block* block) {
+	routeTable.check();
+	if (block.getRemaining() < 8)
+		return;
+	IP source = block.readIP();
+	IP destination = block.readIP();
 
 }
 
-void NetworkLayer::dealSend(Block block) {
-	std::vector<unsigned char> data = block.getData();
-	// data copy is not necessary if isIPValid is false
+void NetworkLayer::dealSend(Block* block) {
+	routeTable.check();
 	if (!isIPValid)
 		return;
+	std::vector<unsigned char> data = block.read();
+	// data copy is not necessary if isIPValid is false
+
 	if (data.size() < 4)
 		throw std::invalid_argument("block should have target IP address");
 	Block sendBlock;
