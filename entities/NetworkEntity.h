@@ -13,7 +13,7 @@ extern const Executor kExecutor;
 
 class NetworkEntity {
 public:
-	NetworkEntity(Network* network,int node, Layer* layer);
+	NetworkEntity(Network *network, int node, Layer *layer);
 
 	virtual ~NetworkEntity();
 
@@ -34,9 +34,9 @@ public:
 	[[nodiscard]] int getNode() const;
 
 protected:
-	Layer * layer;
+	Layer *layer;
 	int node;
-	Network * network;
+	Network *network;
 	bool isStarted = false;
 	bool isStopped = false;
 };

@@ -9,14 +9,15 @@
 #include "network/IP.h"
 #include "Packet.h"
 
-class ARPPacket : public Packet{
+class ARPPacket : public Packet {
 
 public:
-	ARPPacket(IP ip, IP  query);
+	ARPPacket(IP ip, IP query);
 
-	Block * createBlock() override;
+	Block *createBlock() override;
 
 	unsigned char getHeader() override;
+
 private:
 	IP ip;
 	IP query;

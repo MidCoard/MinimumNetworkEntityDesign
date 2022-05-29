@@ -4,15 +4,16 @@
 #include "DHCPRequestPacket.h"
 #include "PC.h"
 #include "DHCPDeclinePacket.h"
+#include "ICMPPacket.h"
 #include <utility>
 
-NetworkLayer::NetworkLayer(NetworkEntity * networkEntity) : NetworkLayer(0, networkEntity) {}
+NetworkLayer::NetworkLayer(NetworkEntity *networkEntity) : NetworkLayer(0, networkEntity) {}
 
 std::string NetworkLayer::getRawName() {
 	return "NET";
 }
 
-NetworkLayer::NetworkLayer(int id, NetworkEntity * networkEntity) : Layer(id, networkEntity) {}
+NetworkLayer::NetworkLayer(int id, NetworkEntity *networkEntity) : Layer(id, networkEntity) {}
 
 void NetworkLayer::setIPConfiguration(int id, IP *segment, IP *mask, IP *gateway) {
 	configurations.insert_or_assign(id, IPConfiguration(segment, mask, gateway));
@@ -26,7 +27,7 @@ unsigned long long NetworkLayer::size() {
 	return this->configurations.size();
 }
 
-void NetworkLayer::handleReceive(int id, Block* block) {
+void NetworkLayer::handleReceive(int id, Block *block) {
 	routeTable.check();
 	if (this->isIPValid)
 		this->checkDHCP();
@@ -39,7 +40,8 @@ void NetworkLayer::handleReceive(int id, Block* block) {
 	IPConfiguration ipConfiguration = configurations.at(0);
 	unsigned char header;
 	block->read(&header, 1);
-	if (!destination.isBroadcast() && ipConfiguration.getSegment() != nullptr && destination != *ipConfiguration.getSegment())
+	if (!destination.isBroadcast() && ipConfiguration.getSegment() != nullptr &&
+	    destination != *ipConfiguration.getSegment())
 		return;
 	else {
 		switch (header) {
@@ -78,7 +80,8 @@ void NetworkLayer::handleReceive(int id, Block* block) {
 				IP ip = block->readIP();
 				IP mask = block->readIP();
 				IP gateway = block->readIP();
-				this->log("receive DHCP_ACK get segment: " + ip.str() + " mask: " + mask.str() + " gateway: " + gateway.str());
+				this->log("receive DHCP_ACK get segment: " + ip.str() + " mask: " + mask.str() + " gateway: " +
+				          gateway.str());
 				auto *pc = (PC *) this->networkEntity;
 				delete pc->ip;
 				delete pc->mask;
@@ -102,7 +105,7 @@ void NetworkLayer::handleReceive(int id, Block* block) {
 	}
 }
 
-void NetworkLayer::handleSend(Block* block) {
+void NetworkLayer::handleSend(Block *block) {
 	routeTable.check();
 	if (!isIPValid)
 		return;
@@ -125,9 +128,10 @@ void NetworkLayer::handleSend(Block* block) {
 			MAC mac = this->arpTable.lookup(nextHop.first);
 			// if the mac address is not found, send ARP, later send
 			if (mac.isBroadcast()) {
-				((LinkLayer*)this->lowerLayers[nextHop.second])->sendARP(*ipConfiguration.getSegment(),nextHop.first);
+				((LinkLayer *) this->lowerLayers[nextHop.second])->sendARP(*ipConfiguration.getSegment(),
+				                                                           nextHop.first);
 				std::this_thread::sleep_for(std::chrono::milliseconds(500));
-				auto * newBlock = new Block(block->getSendCount() - 1);
+				auto *newBlock = new Block(block->getSendCount() - 1);
 				newBlock->writeIP(destination);
 				newBlock->writeBlock(block);
 				newBlock->flip();
@@ -135,7 +139,7 @@ void NetworkLayer::handleSend(Block* block) {
 				this->send(newBlock);
 			} else {
 				// if the mac address is found, send the block
-				auto * newBlock = new Block();
+				auto *newBlock = new Block();
 				newBlock->writeMAC(mac);
 				newBlock->write(0); // for ip protocol
 				newBlock->writeIP(*ipConfiguration.getSegment());
@@ -154,21 +158,22 @@ IP NetworkLayer::getIP() {
 	return *configurations.at(0).getSegment();
 }
 
-void NetworkLayer::handleARP(const IP& ip, const MAC& mac) {
+void NetworkLayer::handleARP(const IP &ip, const MAC &mac) {
 	this->arpTable.update(ip, mac);
 }
 
 void NetworkLayer::sendDHCP0(bool useSegment) {
 	IPConfiguration ipConfiguration = configurations.at(0);
-	auto*linkLayer = (LinkLayer*)this->lowerLayers[0];
+	auto *linkLayer = (LinkLayer *) this->lowerLayers[0];
 	if (ipConfiguration.getSegment() == nullptr || ipConfiguration.getMask() == nullptr) {
-		auto *packet = new DHCPDiscoverPacket(linkLayer->getMAC(),useSegment);
-		Block* block = packet->createBlock();
+		auto *packet = new DHCPDiscoverPacket(linkLayer->getMAC(), useSegment);
+		Block *block = packet->createBlock();
 		delete packet;
 		this->lowerLayers[0]->send(block);
-	} else  {
-		auto *packet = new DHCPRequestPacket(*ipConfiguration.getSegment(), *ipConfiguration.getMask(), linkLayer->getMAC(), this->dhcpID, useSegment);
-		Block* block = packet->createBlock();
+	} else {
+		auto *packet = new DHCPRequestPacket(*ipConfiguration.getSegment(), *ipConfiguration.getMask(),
+		                                     linkLayer->getMAC(), this->dhcpID, useSegment);
+		Block *block = packet->createBlock();
 		delete packet;
 		this->lowerLayers[0]->send(block);
 	}
@@ -180,12 +185,13 @@ void NetworkLayer::sendDHCP() {
 }
 
 void NetworkLayer::sendDHCPRenewal0(bool useSegment) {
-	if (this->isIPValid)
+	if (!this->isIPValid)
 		return;
 	IPConfiguration ipConfiguration = configurations.at(0);
-	auto*linkLayer = (LinkLayer*)this->lowerLayers[0];
-	auto *packet = new DHCPRequestPacket(*ipConfiguration.getSegment(), *ipConfiguration.getMask(), *ipConfiguration.getGateway(), linkLayer->getMAC(), useSegment);
-	Block* block = packet->createBlock();
+	auto *linkLayer = (LinkLayer *) this->lowerLayers[0];
+	auto *packet = new DHCPRequestPacket(*ipConfiguration.getSegment(), *ipConfiguration.getMask(),
+	                                     *ipConfiguration.getGateway(), linkLayer->getMAC(), useSegment);
+	Block *block = packet->createBlock();
 	delete packet;
 	this->lowerLayers[0]->send(block);
 }
@@ -198,6 +204,17 @@ void NetworkLayer::checkDHCP() {
 	if (this->startDHCP == 0 && this->duration == 0)
 		return;
 	auto now = std::chrono::system_clock::now().time_since_epoch().count();
-	if (now - this->startDHCP > this->duration  * 3 / 4) // for 75%
+	if (now - this->startDHCP > this->duration * 3 / 4) // for 75%
 		this->sendDHCPRenewal();
 }
+
+void NetworkLayer::sendICMP(IP ip) {
+	if (!this->isIPValid)
+		return;
+	IPConfiguration ipConfiguration = configurations.at(0);
+	auto *packet = new ICMPPacket(std::move(ip), *ipConfiguration.getGateway());
+	Block *block = packet->createBlock();
+	delete packet;
+	this->lowerLayers[0]->send(block);
+}
+

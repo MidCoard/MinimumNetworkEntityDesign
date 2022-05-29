@@ -12,7 +12,7 @@ void Network::addNode(NetworkEntity *entity) {
 
 // add node1 -> node2 edge i.e. PC -> SWITCH
 void Network::addUndirectedLink(int node1, int node2, std::pair<int, int> weight) {
-	Link *link = new Link(this->heads[node1],  node2,this->links.size() + 1,  weight);
+	Link *link = new Link(this->heads[node1], node2, this->links.size() + 1, weight);
 	Link *otherLink = new Link(this->heads[node2], node1, this->links.size(), {weight.second, weight.first});
 	this->links.push_back(link);
 	this->heads[node1] = this->links.size() - 1;
@@ -60,7 +60,7 @@ void Network::dfs(int node, std::vector<bool> *visited, std::map<int, std::vecto
 	all->insert(std::make_pair(node, this->nodes[node]->createLayers(node, ids)));
 }
 
-void Network::build(const std::string& graphFile) {
+void Network::build(const std::string &graphFile) {
 	std::vector<std::string> lines = {};
 	std::map<int, std::vector<std::string>> all;
 	std::vector<bool> visited(this->nodes.size(), false);
@@ -89,7 +89,7 @@ void Network::dfs2(int node, std::vector<bool> *visited, std::vector<std::string
 		if (link->weight.first == -1 || link->weight.second == -1)
 			throw std::invalid_argument("invalid network");
 		lines->push_back(std::to_string(node + 1) + "," + std::to_string(link->weight.first) + "--"
-			+ std::to_string(link->node + 1) + "," + std::to_string(link->weight.second));
+		                 + std::to_string(link->node + 1) + "," + std::to_string(link->weight.second));
 	}
 
 }
@@ -113,7 +113,7 @@ std::vector<int> Network::getHeads() {
 	return this->heads;
 }
 
-Link::Link(int next, int self,int undirected, std::pair<int, int> weight) {
+Link::Link(int next, int self, int undirected, std::pair<int, int> weight) {
 	this->next = next;
 	this->node = self;
 	this->weight = weight;

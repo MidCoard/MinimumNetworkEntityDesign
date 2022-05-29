@@ -11,6 +11,7 @@ class Link {
 
 public:
 	Link(int next, int self, int undirected, std::pair<int, int> weight);
+
 	int undirected;
 	int node;
 	int next;
@@ -26,19 +27,22 @@ public:
 
 	void addNode(NetworkEntity *entity);
 
-	void build(const std::string& graphFile);
+	void build(const std::string &graphFile);
 
 	~Network();
 
 	std::vector<NetworkEntity *> getNodes();
+
 	std::vector<Link *> getLinks();
+
 	std::vector<int> getHeads();
 
 private:
 	std::vector<NetworkEntity *> nodes;
 	std::vector<Link *> links;
 	std::vector<int> heads;
-	void dfs(int node, std::vector<bool> * visited, std::map<int, std::vector<std::string>> *all);
+
+	void dfs(int node, std::vector<bool> *visited, std::map<int, std::vector<std::string>> *all);
 
 	void dfs2(int node, std::vector<bool> *visited, std::vector<std::string> *lines);
 };

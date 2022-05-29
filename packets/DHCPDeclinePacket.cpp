@@ -25,4 +25,7 @@ unsigned char DHCPDeclinePacket::getHeader() {
 	return 0x06;
 }
 
-DHCPDeclinePacket::DHCPDeclinePacket(IP ip,IP mask,MAC mac, bool useSegment) : ip(std::move(ip)), mask(std::move(mask)),mac(std::move(mac)), useSegment(useSegment) {}
+DHCPDeclinePacket::DHCPDeclinePacket(IP ip, IP mask, MAC mac, bool useSegment) : ip(std::move(ip)),
+                                                                                 mask(std::move(mask)),
+                                                                                 mac(std::move(mac)),
+                                                                                 useSegment(useSegment) {}

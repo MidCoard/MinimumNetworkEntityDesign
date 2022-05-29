@@ -24,4 +24,6 @@ Block *DHCPReleasePacket::createBlock() {
 	return block;
 }
 
-DHCPReleasePacket::DHCPReleasePacket(IP segment, IP mask, IP gateway, MAC mac,bool useSegment) : segment(std::move(segment)), mask(std::move(mask)), gateway(std::move(gateway)), mac(std::move(mac)),useSegment(useSegment) {}
+DHCPReleasePacket::DHCPReleasePacket(IP segment, IP mask, IP gateway, MAC mac, bool useSegment) : segment(
+		std::move(segment)), mask(std::move(mask)), gateway(std::move(gateway)), mac(std::move(mac)), useSegment(
+		useSegment) {}

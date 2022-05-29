@@ -13,10 +13,10 @@ void Layer::addLowerLayer(Layer *layer) {
 	});
 }
 
-Layer::Layer(int id, NetworkEntity * networkEntity) : id(id), networkEntity(networkEntity) {}
+Layer::Layer(int id, NetworkEntity *networkEntity) : id(id), networkEntity(networkEntity) {}
 
 std::string Layer::getName() {
-	return this->getRawName() + std::to_string( this->id);
+	return this->getRawName() + std::to_string(this->id);
 }
 
 std::vector<std::string> Layer::generateGraph(int node) {
@@ -26,40 +26,40 @@ std::vector<std::string> Layer::generateGraph(int node) {
 }
 
 void
-Layer::dfsGenerate(int node, Layer *layer, std::vector<std::string> *lines, const std::string& suffix, bool first) {
+Layer::dfsGenerate(int node, Layer *layer, std::vector<std::string> *lines, const std::string &suffix, bool first) {
 	if (layer->lowerLayers.size() == 1)
 		dfsGenerate(node, layer->lowerLayers.at(0), lines, " " + layer->getName() + suffix, first);
-	else if (layer->lowerLayers.size() > 1){
+	else if (layer->lowerLayers.size() > 1) {
 		dfsGenerate(node, layer->lowerLayers.at(0), lines, " " + layer->getName() + suffix, first);
 		for (int i = 1; i < layer->lowerLayers.size(); i++)
 			if (layer->lowerLayers.at(i - 1)->id != layer->lowerLayers.at(i)->id)
 				dfsGenerate(node, layer->lowerLayers.at(i), lines, "", false);
-	}
-	else {
+	} else {
 		if (first)
 			lines->push_back(std::to_string(node + 1) + " " + layer->getName() + suffix);
 		else lines->push_back(" " + layer->getName() + suffix);
 	}
 }
 
-void Layer::send(Block* block) {
+void Layer::send(Block *block) {
 	this->sendBlockQueue.emplace(block);
 }
 
-void Layer::receive(int id, Block* block) {
+void Layer::receive(int id, Block *block) {
 	this->receiveBlockQueue.emplace(std::make_pair(id, block));
 }
 
 void Layer::start() {
-	for (auto layer : this->lowerLayers)
+	for (auto layer: this->lowerLayers)
 		layer->start();
 	this->sendThread = new std::thread([this]() {
 		while (true) {
 			if (shouldStop)
 				break;
-			Block* block = nullptr;
+			Block *block = nullptr;
 			// this block is safe now
-			code_machina::BlockingCollectionStatus status = this->sendBlockQueue.try_take(block, std::chrono::milliseconds(1));
+			code_machina::BlockingCollectionStatus status = this->sendBlockQueue.try_take(block,
+			                                                                              std::chrono::milliseconds(1));
 			if (status == code_machina::BlockingCollectionStatus::Ok) {
 				this->handleSend(block);
 				delete block;
@@ -70,8 +70,10 @@ void Layer::start() {
 		while (true) {
 			if (shouldStop)
 				break;
-			std::pair<int,Block*> pair;
-			code_machina::BlockingCollectionStatus status = this->receiveBlockQueue.try_take(pair, std::chrono::milliseconds(1));
+			std::pair<int, Block *> pair;
+			code_machina::BlockingCollectionStatus status = this->receiveBlockQueue.try_take(pair,
+			                                                                                 std::chrono::milliseconds(
+					                                                                                 1));
 			if (status == code_machina::BlockingCollectionStatus::Ok) {
 				this->handleReceive(pair.first, pair.second);
 				delete pair.second;
@@ -99,16 +101,18 @@ void Layer::stop() {
 		delete this->receiveThread;
 		this->receiveThread = nullptr;
 	}
-	for (auto layer : this->lowerLayers)
+	for (auto layer: this->lowerLayers)
 		layer->stop();
 }
 
-void Layer::log(const std::string& message) {
-	printf("%s(%d): Layer %s: %s\n",this->networkEntity->getName().c_str(), this->networkEntity->getNode(), this->getName().c_str(), message.c_str());
+void Layer::log(const std::string &message) {
+	printf("%s(%d): Layer %s: %s\n", this->networkEntity->getName().c_str(), this->networkEntity->getNode(),
+	       this->getName().c_str(), message.c_str());
 }
 
-void Layer::error(const std::string& message) {
-	fprintf( stderr, "%s(%d): Layer %s: %s\n",this->networkEntity->getName().c_str(), this->networkEntity->getNode(),  this->getName().c_str(), message.c_str());
+void Layer::error(const std::string &message) {
+	fprintf(stderr, "%s(%d): Layer %s: %s\n", this->networkEntity->getName().c_str(), this->networkEntity->getNode(),
+	        this->getName().c_str(), message.c_str());
 }
 
 int Layer::getID() const {

@@ -13,14 +13,14 @@
 class ARPTable {
 public:
 
-	MAC lookup(const IP& ip);
+	MAC lookup(const IP &ip);
 
-	void update(const IP& ip, const MAC& mac);
+	void update(const IP &ip, const MAC &mac);
 
 	void check();
 
 private:
-	std::map<IP, std::pair<MAC,long long>> table;
+	std::map<IP, std::pair<MAC, long long>> table;
 };
 
 

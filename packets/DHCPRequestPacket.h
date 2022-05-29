@@ -10,13 +10,14 @@
 
 class DHCPRequestPacket : public Packet {
 public:
-	DHCPRequestPacket(IP segment, IP mask, MAC mac,int dhcpID, bool useSegment);
+	DHCPRequestPacket(IP segment, IP mask, MAC mac, int dhcpID, bool useSegment);
 
 	DHCPRequestPacket(IP segment, IP mask, IP gateway, MAC mac, bool useSegment);
 
-	Block * createBlock() override;
+	Block *createBlock() override;
 
 	unsigned char getHeader() override;
+
 private:
 	IP segment;
 	IP mask;

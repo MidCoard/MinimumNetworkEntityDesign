@@ -34,15 +34,15 @@ public:
 
 	void writeBlock(Block *block);
 
-	void writeMAC(const MAC& mac);
+	void writeMAC(const MAC &mac);
 
-	void write(const std::vector<unsigned char>& data);
+	void write(const std::vector<unsigned char> &data);
 
 	void write(unsigned char c);
 
 	IP readIP();
 
-	void writeIP(const IP& ip);
+	void writeIP(const IP &ip);
 
 	void writeHeader(Packet *packet);
 

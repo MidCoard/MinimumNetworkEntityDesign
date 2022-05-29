@@ -12,19 +12,22 @@
 class IP {
 public:
 	explicit IP(std::string ip);
+
 	explicit IP(unsigned char bytes[]);
+
 	explicit IP(unsigned int ip);
+
 	IP(unsigned char a, unsigned char b, unsigned char c, unsigned char d);
 
-	IP operator &(IP ip) const;
+	IP operator&(IP ip) const;
 
-	bool operator <(const IP& ip) const;
+	bool operator<(const IP &ip) const;
 
-	bool operator >(const IP& ip) const;
+	bool operator>(const IP &ip) const;
 
-	bool operator ==(IP ip) const;
+	bool operator==(IP ip) const;
 
-	bool operator !=(IP &ip) const;
+	bool operator!=(IP &ip) const;
 
 	[[nodiscard]] bool isBroadcast() const;
 
@@ -36,7 +39,7 @@ public:
 
 	[[nodiscard]] unsigned char get(int index) const;
 
-	[[nodiscard]] bool isInSameNetwork(const IP& ip, const IP& mask) const;
+	[[nodiscard]] bool isInSameNetwork(const IP &ip, const IP &mask) const;
 
 	int getRightZero() const;
 

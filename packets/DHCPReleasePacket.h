@@ -14,7 +14,7 @@ public:
 
 	DHCPReleasePacket(IP segment, IP mask, IP gateway, MAC mac, bool useSegment);
 
-	Block * createBlock() override;
+	Block *createBlock() override;
 
 	unsigned char getHeader() override;
 

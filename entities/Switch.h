@@ -16,32 +16,37 @@ class SwitchConfiguration {
 public:
 	// pointer to present null
 	SwitchConfiguration(INetAddress *linkAddress, INetAddress *physicalAddress);
+
 	~SwitchConfiguration();
-	INetAddress * getPhysicalAddress();
-	INetAddress * getLinkAddress();
+
+	INetAddress *getPhysicalAddress();
+
+	INetAddress *getLinkAddress();
+
 private:
-	INetAddress * linkAddress;
-	INetAddress * physicalAddress;
+	INetAddress *linkAddress;
+	INetAddress *physicalAddress;
 };
 
 
 class Switch : public NetworkEntity {
 
 public:
-	Switch(Network * network, int node, std::map<int, SwitchConfiguration*> switchConfigurations);
+	Switch(Network *network, int node, std::map<int, SwitchConfiguration *> switchConfigurations);
 
 	~Switch() override;
 
 	std::vector<std::string> createLayers(int node, std::vector<int> ids) override;
 
 	std::string getName() override;
+
 private:
-	std::map<int, SwitchConfiguration*> switchConfigurations;
+	std::map<int, SwitchConfiguration *> switchConfigurations;
 };
 
 class SwitchLinkLayer : public LinkLayer {
 public:
-	explicit SwitchLinkLayer(NetworkEntity * networkEntity);
+	explicit SwitchLinkLayer(NetworkEntity *networkEntity);
 
 	void handleReceive(int id, Block *block) override;
 

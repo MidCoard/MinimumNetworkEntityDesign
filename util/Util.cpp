@@ -57,7 +57,8 @@ bool util::equalsIgnoreCase(const std::string &str1, const std::string &str2) {
 	});
 }
 
-std::vector<std::string> util::subVector(const std::vector<std::string> &vec, unsigned long long start, unsigned long long end) {
+std::vector<std::string>
+util::subVector(const std::vector<std::string> &vec, unsigned long long start, unsigned long long end) {
 	std::vector<std::string> subVec;
 	for (unsigned long long i = start; i < end; i++)
 		subVec.push_back(vec[i]);
@@ -72,7 +73,7 @@ void util::writeFile(const std::string &filename, const std::vector<std::string>
 
 std::string util::toHex(unsigned char c) {
 	std::stringstream ss;
-	ss << std::hex << (int)c;
+	ss << std::hex << (int) c;
 	return ss.str();
 }
 

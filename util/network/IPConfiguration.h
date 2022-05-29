@@ -9,19 +9,22 @@
 
 class IPConfiguration {
 public:
-	IPConfiguration(IP* segment, IP* mask, IP* gateway);
-	IP* getSegment();
-	IP* getMask();
-	IP* getGateway();
+	IPConfiguration(IP *segment, IP *mask, IP *gateway);
+
+	IP *getSegment();
+
+	IP *getMask();
+
+	IP *getGateway();
 
 	bool isConfigurable();
 
 	bool isValid();
 
 private:
-	IP* segment;
-	IP* mask;
-	IP* gateway;
+	IP *segment;
+	IP *mask;
+	IP *gateway;
 };
 
 

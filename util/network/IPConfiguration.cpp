@@ -11,11 +11,11 @@ IP *IPConfiguration::getSegment() {
 	return this->segment;
 }
 
-IP* IPConfiguration::getMask() {
+IP *IPConfiguration::getMask() {
 	return this->mask;
 }
 
-IP* IPConfiguration::getGateway() {
+IP *IPConfiguration::getGateway() {
 	return this->gateway;
 }
 

@@ -4,7 +4,7 @@
 
 #include "ARPTable.h"
 
-MAC ARPTable::lookup(const IP& ip) {
+MAC ARPTable::lookup(const IP &ip) {
 	if (this->table.find(ip) == this->table.end())
 		return BROADCAST_MAC;
 	return this->table.at(ip).first;

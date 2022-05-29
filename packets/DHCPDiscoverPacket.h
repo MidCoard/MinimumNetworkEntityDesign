@@ -8,13 +8,14 @@
 
 #include "Packet.h"
 
-class DHCPDiscoverPacket : public Packet{
+class DHCPDiscoverPacket : public Packet {
 public:
 	DHCPDiscoverPacket(MAC mac, bool useSegment);
 
-	Block * createBlock() override;
+	Block *createBlock() override;
 
 	unsigned char getHeader() override;
+
 private:
 	bool useSegment;
 	MAC mac;

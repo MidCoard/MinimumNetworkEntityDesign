@@ -12,7 +12,7 @@ class Network;
 class ISP : public NetworkEntity {
 
 public:
-	explicit ISP(Network* network);
+	explicit ISP(Network *network);
 
 	std::vector<std::string> createLayers(int node, std::vector<int> ids) override;
 
@@ -25,7 +25,7 @@ public:
 
 class RootAppLayer : public AppLayer {
 public:
-	explicit RootAppLayer(NetworkEntity* networkEntity);
+	explicit RootAppLayer(NetworkEntity *networkEntity);
 };
 
 
@@ -37,9 +37,9 @@ public:
 
 	void stop() override;
 
-	void handleReceive(int id, Block * block) override;
+	void handleReceive(int id, Block *block) override;
 
-	void handleSend(Block * block) override;
+	void handleSend(Block *block) override;
 };
 
 class EmptyPhysicalLayer : public PhysicalLayer {
@@ -47,9 +47,9 @@ class EmptyPhysicalLayer : public PhysicalLayer {
 
 	void stop() override;
 
-	void handleReceive(int id,Block * block) override;
+	void handleReceive(int id, Block *block) override;
 
-	void handleSend(Block * block) override;
+	void handleSend(Block *block) override;
 
 public:
 	EmptyPhysicalLayer(int id, NetworkEntity *networkEntity);

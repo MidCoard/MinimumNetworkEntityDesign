@@ -5,7 +5,7 @@
 #include "Socket.h"
 #include "PhysicalLayer.h"
 
-Socket::Socket(int port) :port(port) {
+Socket::Socket(int port) : port(port) {
 	this->temp = new unsigned char[1024];
 	this->internal = socket(AF_INET, SOCK_STREAM, 0);
 	if (this->internal == -1)
@@ -32,7 +32,7 @@ void Socket::run(PhysicalLayer *physicalLayer) const {
 			break;
 		if (client == -1)
 			continue;
-		auto* block = new Block();
+		auto *block = new Block();
 		int len;
 		while ((len = recv(client, temp, sizeof(temp), 0)) != 0)
 			block->write(temp, len);
@@ -45,7 +45,7 @@ void Socket::listen(PhysicalLayer *physicalLayer) {
 	this->thread = new std::thread(&Socket::run, this, physicalLayer);
 }
 
-void Socket::send(const INetAddress& address, Block* block) {
+void Socket::send(const INetAddress &address, Block *block) {
 	int client = socket(AF_INET, SOCK_STREAM, 0);
 	if (client == -1)
 		throw std::runtime_error("create socket failed");
@@ -69,7 +69,7 @@ void Socket::close() {
 	if (this->thread != nullptr) {
 		shutdown(this->internal, SHUT_RDWR);
 		this->shouldStop = true;
-		auto* block = new Block();
+		auto *block = new Block();
 		send(INetAddress(LOCAL0, this->port), block);
 		delete block;
 		this->thread->join();

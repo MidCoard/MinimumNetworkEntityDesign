@@ -9,7 +9,7 @@ Executor::Executor(int size) {
 
 void Executor::run() {
 	while (true) {
-		Task* task;
+		Task *task;
 		code_machina::BlockingCollectionStatus status = queue.try_take(task);
 		if (status == code_machina::BlockingCollectionStatus::Ok)
 			task->run();
@@ -20,7 +20,7 @@ void Executor::run() {
 
 void Executor::stop() {
 	shouldStop = true;
-	for (auto & thread : threads)
+	for (auto &thread: threads)
 		thread.join();
 }
 
@@ -33,4 +33,4 @@ void Task::run() {
 	func();
 }
 
-Task::Task(std::function<void()>  func) : func(std::move(func)) {}
+Task::Task(std::function<void()> func) : func(std::move(func)) {}

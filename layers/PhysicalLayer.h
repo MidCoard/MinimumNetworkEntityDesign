@@ -13,9 +13,9 @@
 
 class PhysicalLayer : public Layer {
 public:
-	PhysicalLayer(NetworkEntity * networkEntity, INetAddress linkAddress, INetAddress physicalAddress);
+	PhysicalLayer(NetworkEntity *networkEntity, INetAddress linkAddress, INetAddress physicalAddress);
 
-	PhysicalLayer(int id, NetworkEntity * networkEntity, INetAddress linkAddress, INetAddress physicalAddress);
+	PhysicalLayer(int id, NetworkEntity *networkEntity, INetAddress linkAddress, INetAddress physicalAddress);
 
 	std::string getRawName() override;
 
@@ -23,9 +23,9 @@ public:
 
 	void stop() override;
 
-	void handleReceive(int id, Block* block) override;
+	void handleReceive(int id, Block *block) override;
 
-	void handleSend(Block* block) override;
+	void handleSend(Block *block) override;
 
 private:
 	INetAddress physicalAddress;

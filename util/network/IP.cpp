@@ -26,7 +26,8 @@ IP IP::operator&(IP ip) const {
 IP::IP(unsigned char bytes[]) {
 	for (int i = 0; i < 4; i++)
 		this->bytes[i] = bytes[i];
-	this->ip = std::to_string(bytes[0]) + "." + std::to_string(bytes[1]) + "." + std::to_string(bytes[2]) + "." + std::to_string(bytes[3]);
+	this->ip = std::to_string(bytes[0]) + "." + std::to_string(bytes[1]) + "." + std::to_string(bytes[2]) + "." +
+	           std::to_string(bytes[3]);
 }
 
 bool IP::operator==(IP ip) const {
@@ -67,7 +68,8 @@ IP::IP(unsigned int ip) {
 	this->bytes[1] = (ip >> 16) & 0xFF;
 	this->bytes[2] = (ip >> 8) & 0xFF;
 	this->bytes[3] = ip & 0xFF;
-	this->ip = std::to_string(this->bytes[0]) + "." + std::to_string(this->bytes[1]) + "." + std::to_string(this->bytes[2]) + "." + std::to_string(this->bytes[3]);
+	this->ip = std::to_string(this->bytes[0]) + "." + std::to_string(this->bytes[1]) + "." +
+	           std::to_string(this->bytes[2]) + "." + std::to_string(this->bytes[3]);
 }
 
 unsigned int IP::intValue() const {
@@ -78,11 +80,11 @@ unsigned char IP::get(int index) const {
 	return this->bytes[index];
 }
 
-bool IP::isInSameNetwork(const IP& ip, const IP& mask) const {
+bool IP::isInSameNetwork(const IP &ip, const IP &mask) const {
 	return (*this & mask) == (ip & mask);
 }
 
-bool IP::operator<(const IP& ip) const {
+bool IP::operator<(const IP &ip) const {
 	return this->intValue() < ip.intValue();
 }
 

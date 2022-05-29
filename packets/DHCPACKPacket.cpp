@@ -7,7 +7,7 @@
 #include <utility>
 
 Block *DHCPACKPacket::createBlock() {
-	auto * block = new Block();
+	auto *block = new Block();
 	block->writeMAC(this->mac);
 	block->write(0);
 	block->writeIP(this->ip);
@@ -25,5 +25,6 @@ unsigned char DHCPACKPacket::getHeader() {
 	return 0x04;
 }
 
-DHCPACKPacket::DHCPACKPacket(MAC mac, IP ip, IP destination, IP mask, IP gateway,  long long int time)
-		: mac(std::move(mac)), ip(std::move(ip)), destination(std::move(destination)), mask(std::move(mask)), gateway(std::move(gateway)),time(time) {}
+DHCPACKPacket::DHCPACKPacket(MAC mac, IP ip, IP destination, IP mask, IP gateway, long long int time)
+		: mac(std::move(mac)), ip(std::move(ip)), destination(std::move(destination)), mask(std::move(mask)),
+		  gateway(std::move(gateway)), time(time) {}

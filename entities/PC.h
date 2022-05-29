@@ -40,7 +40,7 @@ private:
 	MAC *mac;
 	INetAddress *linkAddress;
 	INetAddress *physicalAddress;
-	NetworkLayer * networkLayer = nullptr;
+	NetworkLayer *networkLayer = nullptr;
 };
 
 

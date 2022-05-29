@@ -13,10 +13,12 @@
 class MAC {
 public:
 	explicit MAC(std::string mac);
-	explicit MAC(const unsigned char* bytes);
 
-	bool operator < (const MAC& mac) const;
-	bool operator == (const MAC& mac) const;
+	explicit MAC(const unsigned char *bytes);
+
+	bool operator<(const MAC &mac) const;
+
+	bool operator==(const MAC &mac) const;
 
 	[[nodiscard]] unsigned char get(int index) const;
 

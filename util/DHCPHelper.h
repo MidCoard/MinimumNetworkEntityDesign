@@ -8,15 +8,15 @@
 #include "NetworkLayer.h"
 #include "thread"
 
-namespace dhcp{
+namespace dhcp {
 
-	extern std::thread * dhcpThread;
+	extern std::thread *dhcpThread;
 
 	extern bool shouldStop;
 
 	extern code_machina::BlockingQueue<NetworkLayer *> layers;
 
-	void request(NetworkLayer* layer);
+	void request(NetworkLayer *layer);
 
 	void start();
 

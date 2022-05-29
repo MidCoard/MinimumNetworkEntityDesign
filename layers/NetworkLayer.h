@@ -15,9 +15,9 @@
 class NetworkLayer : public Layer {
 
 public:
-	explicit NetworkLayer(NetworkEntity * networkEntity);
+	explicit NetworkLayer(NetworkEntity *networkEntity);
 
-	NetworkLayer(int id, NetworkEntity * networkEntity);
+	NetworkLayer(int id, NetworkEntity *networkEntity);
 
 	void setIPConfiguration(int id, IP *segment, IP *mask, IP *gateway);
 
@@ -27,15 +27,15 @@ public:
 
 	std::string getRawName() override;
 
-	void handleReceive(int id, Block* block) override;
+	void handleReceive(int id, Block *block) override;
 
-	void handleSend(Block* block) override;
+	void handleSend(Block *block) override;
 
 	IP getIP();
 
 	bool isIPValid = false;
 
-	void handleARP(const IP& ip, const MAC& mac);
+	void handleARP(const IP &ip, const MAC &mac);
 
 	virtual void sendDHCP();
 
@@ -45,11 +45,15 @@ public:
 
 	void sendDHCPRenewal0(bool useSegment);
 
+	void sendICMP(IP ip);
+
 protected:
 	std::map<int, IPConfiguration> configurations;
 	RouteTable routeTable;
 	ARPTable arpTable;
 	std::map<IP, MAC> ipMacMap;
+	std::map<IP, bool> icmpTable;
+
 	int dhcpID = -1;
 	long long int duration = 0;
 	long long int startDHCP = 0;

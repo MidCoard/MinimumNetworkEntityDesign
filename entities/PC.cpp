@@ -6,7 +6,8 @@
 // all should be deleted in layers not in the entity
 PC::PC(Network *network, int node, IP *ip, IP *mask, IP *gateway, MAC *mac, INetAddress *linkAddress,
        INetAddress *physicalAddress)
-		: NetworkEntity(network, node, new AppLayer(this)), ip(ip), mask(mask), gateway(gateway), mac(mac),linkAddress(linkAddress), physicalAddress(physicalAddress) {}
+		: NetworkEntity(network, node, new AppLayer(this)), ip(ip), mask(mask), gateway(gateway), mac(mac),
+		  linkAddress(linkAddress), physicalAddress(physicalAddress) {}
 
 
 std::vector<std::string> PC::createLayers(int node, std::vector<int> ids) {
@@ -14,8 +15,8 @@ std::vector<std::string> PC::createLayers(int node, std::vector<int> ids) {
 		throw std::invalid_argument("PC network interface size should be 1");
 	this->networkLayer = new NetworkLayer(ids[0], this);
 	networkLayer->setIPConfiguration(ids[0], this->ip,
-									this->mask,
-									 this->gateway);
+	                                 this->mask,
+	                                 this->gateway);
 	if (networkLayer->getIPConfiguration(0).isValid())
 		networkLayer->isIPValid = true;
 	this->layer->addLowerLayer(networkLayer);

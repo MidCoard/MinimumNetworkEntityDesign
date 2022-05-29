@@ -215,7 +215,7 @@ Network *network = nullptr;
 int main() {
 	network = initialize();
 	dhcp::start();
-	while(true);
+	while (true);
 	if (network != nullptr) {
 		// join
 		for (auto node: network->getNodes())

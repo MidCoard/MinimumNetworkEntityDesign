@@ -7,7 +7,7 @@
 #include <utility>
 
 Block *DHCPRequestPacket::createBlock() {
-	auto* block = new Block();
+	auto *block = new Block();
 	block->writeMAC(BROADCAST_MAC);
 	block->write(0);
 	if (this->gateway.isBroadcast())
@@ -29,10 +29,19 @@ unsigned char DHCPRequestPacket::getHeader() {
 	return 0x03;
 }
 
-DHCPRequestPacket::DHCPRequestPacket(IP segment, IP mask,MAC mac,int dhcpID, bool useSegment) : segment(std::move(segment)), mask(std::move(mask)),
-                                                                                     mac(std::move(mac)),dhcpID(dhcpID), useSegment(useSegment),
-                                                                                                gateway(BROADCAST_IP) {}
+DHCPRequestPacket::DHCPRequestPacket(IP segment, IP mask, MAC mac, int dhcpID, bool useSegment) : segment(
+		std::move(segment)), mask(std::move(mask)),
+                                                                                                  mac(std::move(mac)),
+                                                                                                  dhcpID(dhcpID),
+                                                                                                  useSegment(
+		                                                                                                  useSegment),
+                                                                                                  gateway(BROADCAST_IP) {}
 
-DHCPRequestPacket::DHCPRequestPacket(IP segment, IP mask, IP gateway, MAC mac, bool useSegment) : segment(std::move(segment)), mask(std::move(mask)),
-																						   gateway(std::move(gateway)), mac(std::move(mac)),
-																						   useSegment(useSegment),dhcpID(-1) {}
+DHCPRequestPacket::DHCPRequestPacket(IP segment, IP mask, IP gateway, MAC mac, bool useSegment) : segment(
+		std::move(segment)), mask(std::move(mask)),
+                                                                                                  gateway(std::move(
+		                                                                                                  gateway)),
+                                                                                                  mac(std::move(mac)),
+                                                                                                  useSegment(
+		                                                                                                  useSegment),
+                                                                                                  dhcpID(-1) {}

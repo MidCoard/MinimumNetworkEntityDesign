@@ -19,17 +19,17 @@ public:
 
 	~Socket();
 
-	void send(const INetAddress& address, Block* block) ;
+	void send(const INetAddress &address, Block *block);
 
-	void listen(PhysicalLayer* physicalLayer);
+	void listen(PhysicalLayer *physicalLayer);
 
 	void close();
 
 private:
 	int internal;
-	unsigned char * temp;
+	unsigned char *temp;
 
-	std::thread * thread = nullptr;
+	std::thread *thread = nullptr;
 
 	void run(PhysicalLayer *physicalLayer) const;
 

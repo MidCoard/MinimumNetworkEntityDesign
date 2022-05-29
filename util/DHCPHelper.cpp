@@ -4,7 +4,7 @@
 
 #include "DHCPHelper.h"
 
-std::thread* dhcp::dhcpThread =  nullptr;
+std::thread *dhcp::dhcpThread = nullptr;
 
 code_machina::BlockingQueue<NetworkLayer *> dhcp::layers{};
 
@@ -22,7 +22,7 @@ void dhcp::start() {
 			if (layers.is_empty())
 				std::this_thread::sleep_for(std::chrono::seconds(2));
 			else {
-				NetworkLayer * layer = nullptr;
+				NetworkLayer *layer = nullptr;
 				code_machina::BlockingCollectionStatus status = layers.take(layer);
 				if (status == code_machina::BlockingCollectionStatus::Ok && !layer->isIPValid) {
 					layer->sendDHCP();

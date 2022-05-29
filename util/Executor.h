@@ -12,8 +12,10 @@
 class Task {
 
 public:
-	explicit Task(std::function<void()>  func);
+	explicit Task(std::function<void()> func);
+
 	void run();
+
 private:
 	std::function<void()> func;
 };
@@ -21,13 +23,16 @@ private:
 class Executor {
 public:
 	explicit Executor(int size);
+
 	~Executor();
+
 	void run();
 
 	void stop();
+
 private:
 	std::vector<std::thread> threads;
-	code_machina::BlockingQueue<Task*> queue;
+	code_machina::BlockingQueue<Task *> queue;
 	bool shouldStop = false;
 };
 

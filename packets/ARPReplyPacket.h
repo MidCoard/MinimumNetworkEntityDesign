@@ -10,11 +10,12 @@
 
 class ARPReplyPacket : Packet {
 public:
-	ARPReplyPacket(IP ip, IP  reply, MAC mac);
+	ARPReplyPacket(IP ip, IP reply, MAC mac);
 
-	Block * createBlock() override;
+	Block *createBlock() override;
 
 	unsigned char getHeader() override;
+
 private:
 	IP ip;
 	IP reply;

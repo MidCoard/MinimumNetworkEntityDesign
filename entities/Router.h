@@ -19,25 +19,33 @@ class RouterConfiguration {
 public:
 	RouterConfiguration(IP *segment, IP *mask, IP *gateway, MAC *mac, INetAddress *physicalAddress,
 	                    INetAddress *pAddress);
+
 	~RouterConfiguration();
-	IP* getSegment();
-	IP* getMask();
-	IP* getGateway();
-	MAC* getMAC();
-	INetAddress* getLinkAddress();
-	INetAddress* getPhysicalAddress();
+
+	IP *getSegment();
+
+	IP *getMask();
+
+	IP *getGateway();
+
+	MAC *getMAC();
+
+	INetAddress *getLinkAddress();
+
+	INetAddress *getPhysicalAddress();
+
 private:
-	IP* segment;
-	IP* mask;
-	IP* gateway;
-	MAC* mac;
-	INetAddress* linkAddress;
-	INetAddress* physicalAddress;
+	IP *segment;
+	IP *mask;
+	IP *gateway;
+	MAC *mac;
+	INetAddress *linkAddress;
+	INetAddress *physicalAddress;
 };
 
 class Router : public NetworkEntity {
 public:
-	Router(Network* network, int node,std::map<int, RouterConfiguration*> routerConfigurations);
+	Router(Network *network, int node, std::map<int, RouterConfiguration *> routerConfigurations);
 
 	~Router() override;
 
@@ -53,11 +61,11 @@ public:
 
 	// first set in generateIP
 	// second set in DHCP server ( this time should delete the first set )
-	IP* segment = nullptr;
-	IP* mask = nullptr;
-	IP* gateway = nullptr;
+	IP *segment = nullptr;
+	IP *mask = nullptr;
+	IP *gateway = nullptr;
 protected:
-	std::map<int, RouterConfiguration*> routerConfigurations;
+	std::map<int, RouterConfiguration *> routerConfigurations;
 	bool generatedIP = false;
 
 	// mark all
@@ -65,16 +73,17 @@ protected:
 
 class RouterNetworkLayer : public NetworkLayer {
 public:
-	explicit RouterNetworkLayer(NetworkEntity * networkEntity);
+	explicit RouterNetworkLayer(NetworkEntity *networkEntity);
 
 	~RouterNetworkLayer() override;
 
-	RouterNetworkLayer(int id, NetworkEntity * networkEntity);
+	RouterNetworkLayer(int id, NetworkEntity *networkEntity);
 
 	void handleReceive(int id, Block *block) override;
 
 	void sendDHCP() override;
-	DHCPTable * table = nullptr;
+
+	DHCPTable *table = nullptr;
 };
 
 

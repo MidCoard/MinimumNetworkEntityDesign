@@ -13,7 +13,7 @@ class DefaultRouter;
 class DefaultRouter : public Router {
 
 public:
-	DefaultRouter(Network *network, int node,  std::map<int, RouterConfiguration *> routerConfigurations);
+	DefaultRouter(Network *network, int node, std::map<int, RouterConfiguration *> routerConfigurations);
 
 	void generateIP() override;
 

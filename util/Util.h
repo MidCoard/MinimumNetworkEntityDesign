@@ -28,7 +28,8 @@ namespace util {
 
 	bool endWith(const std::string &str, const std::string &suffix);
 
-	std::vector<std::string> subVector(const std::vector<std::string> &vec, unsigned long long start, unsigned long long end);
+	std::vector<std::string>
+	subVector(const std::vector<std::string> &vec, unsigned long long start, unsigned long long end);
 
 	void writeFile(const std::string &filename, const std::vector<std::string> &lines);
 

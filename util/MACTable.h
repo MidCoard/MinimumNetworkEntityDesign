@@ -13,14 +13,14 @@ class MACTable {
 
 public:
 
-	int lookup(const MAC& mac);
+	int lookup(const MAC &mac);
 
-	void update(const MAC& mac, int port);
+	void update(const MAC &mac, int port);
 
 	void check();
 
 private:
-	std::map<MAC, std::pair<int,long long>> table;
+	std::map<MAC, std::pair<int, long long>> table;
 };
 
 

@@ -1,25 +1,30 @@
 #include "Switch.h"
 
 
-
-Switch::Switch(Network*network, int node,std::map<int, SwitchConfiguration*> switchConfigurations) : NetworkEntity(network, node, new SwitchLinkLayer(this)),switchConfigurations(std::move(switchConfigurations)) {}
+Switch::Switch(Network *network, int node, std::map<int, SwitchConfiguration *> switchConfigurations) : NetworkEntity(
+		network, node, new SwitchLinkLayer(this)), switchConfigurations(std::move(switchConfigurations)) {}
 
 std::vector<std::string> Switch::createLayers(int node, std::vector<int> ids) {
 	for (int id: ids) {
 		if (!this->switchConfigurations.empty()) {
-			SwitchConfiguration* switchConfiguration = this->switchConfigurations.at(id);
-			auto* physicalLayer = new PhysicalLayer(id,this,
-															 switchConfiguration->getLinkAddress() == nullptr ? generateLinkAddress(node ,id) : *switchConfiguration->getLinkAddress(),
-															 switchConfiguration->getPhysicalAddress() == nullptr ? generatePhysicalAddress(node ,id) : *switchConfiguration->getPhysicalAddress());
+			SwitchConfiguration *switchConfiguration = this->switchConfigurations.at(id);
+			auto *physicalLayer = new PhysicalLayer(id, this,
+			                                        switchConfiguration->getLinkAddress() == nullptr
+			                                        ? generateLinkAddress(node, id)
+			                                        : *switchConfiguration->getLinkAddress(),
+			                                        switchConfiguration->getPhysicalAddress() == nullptr
+			                                        ? generatePhysicalAddress(node, id)
+			                                        : *switchConfiguration->getPhysicalAddress());
 			this->layer->addLowerLayer(physicalLayer);
 		} else
-			this->layer->addLowerLayer(new PhysicalLayer(id,this, generateLinkAddress(node ,id), generatePhysicalAddress(node, id)));
+			this->layer->addLowerLayer(
+					new PhysicalLayer(id, this, generateLinkAddress(node, id), generatePhysicalAddress(node, id)));
 	}
 	return this->layer->generateGraph(node);
 }
 
 Switch::~Switch() {
-	for (const auto& [key, value] : switchConfigurations)
+	for (const auto &[key, value]: switchConfigurations)
 		delete value;
 }
 
@@ -52,20 +57,20 @@ void SwitchLinkLayer::handleReceive(int id, Block *block) {
 	MAC source = block->readMAC();
 	MAC destination = block->readMAC();
 	macTable.update(source, id);
-	auto * newBlock = new Block();
+	auto *newBlock = new Block();
 	newBlock->writeMAC(source);
 	newBlock->writeMAC(destination);
 	newBlock->writeBlock(block);
 	newBlock->flip();
 	if (destination.isBroadcast()) {
-		for (auto layer : this->lowerLayers)
+		for (auto layer: this->lowerLayers)
 			if (layer->getID() != id) {
 				layer->send(newBlock->copy());
 			}
 	} else {
 		int interface = macTable.lookup(destination);
 		if (interface == -1) {
-			for (auto layer : this->lowerLayers)
+			for (auto layer: this->lowerLayers)
 				if (layer->getID() != id) {
 					layer->send(newBlock->copy());
 				}

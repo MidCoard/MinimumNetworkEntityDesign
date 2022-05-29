@@ -7,7 +7,7 @@
 #include <utility>
 
 Block *DHCPDiscoverPacket::createBlock() {
-	auto* block = new Block();
+	auto *block = new Block();
 	block->writeMAC(BROADCAST_MAC);
 	block->write(0);
 	block->writeIP(LOCAL0);
@@ -26,4 +26,4 @@ unsigned char DHCPDiscoverPacket::getHeader() {
 	return 0x01;
 }
 
-DHCPDiscoverPacket::DHCPDiscoverPacket(MAC mac, bool useSegment) :mac(std::move(mac)),useSegment(useSegment) {}
+DHCPDiscoverPacket::DHCPDiscoverPacket(MAC mac, bool useSegment) : mac(std::move(mac)), useSegment(useSegment) {}

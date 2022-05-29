@@ -4,6 +4,8 @@
 #include "DHCPACKPacket.h"
 #include "DHCPNAKPacket.h"
 #include "DHCPDeclinePacket.h"
+#include "ICMPReplyPacket.h"
+#include "ICMPPacket.h"
 
 Router::Router(Network *network, int node, std::map<int, RouterConfiguration *> routerConfigurations) : NetworkEntity(
 		network, node, new RouterNetworkLayer(this)), routerConfigurations(std::move(routerConfigurations)) {
@@ -253,7 +255,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 						MAC mac = this->arpTable.lookup(segment);
 						if (!mac.isBroadcast()) {
 							// one have already got the ip (maybe static ip)
-							auto *packet = new DHCPDeclinePacket(segment,mask, mac, true);
+							auto *packet = new DHCPDeclinePacket(segment, mask, mac, true);
 							auto *newBlock = packet->createBlock();
 							delete packet;
 							this->lowerLayers[id]->send(newBlock);
@@ -318,7 +320,8 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 						IP segment = block->readIP();
 						IP mask = block->readIP();
 						IP gateway = block->readIP();
-						this->log("receive DHCP_ACK get segment: " + segment.str() + " mask: " + mask.str() + " gateway: " + gateway.str());
+						this->log("receive DHCP_ACK get segment: " + segment.str() + " mask: " + mask.str() +
+						          " gateway: " + gateway.str());
 						auto *router = (Router *) this->networkEntity;
 						delete router->segment;
 						delete router->mask;
@@ -333,7 +336,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 						delete this->table;
 						this->table = new DHCPTable(segment, mask);
 						auto *linkLayer = (LinkLayer *) this->lowerLayers[id]; // id should be 0
-						this->table->tryApply(segment,linkLayer->getMAC() , -1);
+						this->table->tryApply(segment, linkLayer->getMAC(), -1);
 						break;
 					}
 				case 0x05:
@@ -342,6 +345,37 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 						this->dhcpID = -1;
 						break;
 					}
+				case 0x20: {
+					if (!this->isIPValid)
+						return;
+					IP segment = block->readIP();
+					unsigned char flag;
+					block->read(&flag, 1);
+					if (flag) {
+						auto* packet = new ICMPReplyPacket(source, ICMPReplyStatus::kICMPReplyStatusJump);
+						auto* newBlock = packet->createBlock();
+						delete packet;
+						this->send(newBlock);
+					} else {
+						auto* packet = new ICMPPacket(segment, segment);
+						auto* newBlock = packet->createBlock();
+						delete packet;
+						this->send(newBlock);
+					}
+					break;
+				}
+				case 0x21: {
+					if (!this->isIPValid)
+						return;
+					unsigned char flag;
+					block->read(&flag, 1);
+					if (flag == ICMPReplyStatus::kICMPReplyStatusJump) {
+
+					} else {
+
+					}
+					break;
+				}
 				default:
 					if (this->upperLayers.size() == 1)
 						this->upperLayers[0]->receive(this->getID(), new Block(block));

@@ -15,7 +15,7 @@ class DHCPNAKPacket : public Packet {
 public:
 	DHCPNAKPacket(MAC mac, IP ip);
 
-	Block * createBlock() override;
+	Block *createBlock() override;
 
 	unsigned char getHeader() override;
 

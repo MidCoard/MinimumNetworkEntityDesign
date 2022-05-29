@@ -6,10 +6,10 @@
 
 #include <utility>
 
-ARPPacket::ARPPacket(IP ip, IP  query) : ip(std::move(ip)), query(std::move(query)) {}
+ARPPacket::ARPPacket(IP ip, IP query) : ip(std::move(ip)), query(std::move(query)) {}
 
 Block *ARPPacket::createBlock() {
-	auto * block = new Block();
+	auto *block = new Block();
 	block->writeMAC(BROADCAST_MAC);
 	block->writeHeader(this);
 	block->writeIP(this->ip);

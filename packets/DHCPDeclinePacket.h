@@ -8,12 +8,14 @@
 
 #include "Packet.h"
 
-class DHCPDeclinePacket : public Packet{
+class DHCPDeclinePacket : public Packet {
 public:
-	DHCPDeclinePacket(IP ip,IP mask, MAC mac, bool useSegment);
+	DHCPDeclinePacket(IP ip, IP mask, MAC mac, bool useSegment);
 
-	Block * createBlock() override;
+	Block *createBlock() override;
+
 	unsigned char getHeader() override;
+
 private:
 	IP ip;
 	IP mask;

@@ -14,7 +14,7 @@ void DefaultRouter::generateIP() {
 		return;
 	std::vector<bool> visited(this->network->getNodes().size(), false);
 	std::vector<IPConfiguration> configurations;
-	for (int i = 0; i <((RouterNetworkLayer *) this->layer)->size();i++ ) {
+	for (int i = 0; i < ((RouterNetworkLayer *) this->layer)->size(); i++) {
 		IPConfiguration ipConfiguration = ((RouterNetworkLayer *) this->layer)->getIPConfiguration(i);
 		if (ipConfiguration.isConfigurable())
 			configurations.push_back(ipConfiguration);
@@ -22,14 +22,16 @@ void DefaultRouter::generateIP() {
 	dfsAllocateIP(this->node, &visited, &configurations);
 	IP defaultIP = IP(255, 255, 255, 255);
 	IP defaultMask = IP(255, 255, 255, 255);
-	for (auto &configuration : configurations)
+	for (auto &configuration: configurations)
 		if (configuration.getSegment() != nullptr && configuration.getMask() != nullptr) {
 			defaultIP = defaultIP & (*configuration.getSegment() & *configuration.getMask());
 			defaultMask = defaultMask & *configuration.getMask();
 		}
 	this->segment = new IP(defaultIP);
 	this->mask = new IP(defaultMask);
-	this->gateway = ((RouterNetworkLayer *) this->layer)->getIPConfiguration(kWanPort).getGateway() == nullptr ? nullptr : new IP(*((RouterNetworkLayer *) this->layer)->getIPConfiguration(kWanPort).getGateway());
+	this->gateway = ((RouterNetworkLayer *) this->layer)->getIPConfiguration(kWanPort).getGateway() == nullptr ? nullptr
+	                                                                                                           : new IP(
+					*((RouterNetworkLayer *) this->layer)->getIPConfiguration(kWanPort).getGateway());
 	((RouterNetworkLayer *) this->layer)->setIPConfiguration(kWanPort, this->segment, this->mask, this->gateway);
 	generatedIP = true;
 }
@@ -52,7 +54,8 @@ void DefaultRouter::dfsAllocateIP(int node, std::vector<bool> *visited, std::vec
 	}
 }
 
-DefaultRouter::DefaultRouter(Network *network, int node,std::map<int, RouterConfiguration*> routerConfigurations) : Router(network, node, std::move(routerConfigurations)) {}
+DefaultRouter::DefaultRouter(Network *network, int node, std::map<int, RouterConfiguration *> routerConfigurations)
+		: Router(network, node, std::move(routerConfigurations)) {}
 
 std::vector<IPConfiguration> DefaultRouter::getIPConfiguration() {
 	generateIP();

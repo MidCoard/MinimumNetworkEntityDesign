@@ -11,7 +11,7 @@ class Block;
 
 class Packet {
 public:
-	virtual Block* createBlock() = 0;
+	virtual Block *createBlock() = 0;
 
 	virtual unsigned char getHeader() = 0;
 };

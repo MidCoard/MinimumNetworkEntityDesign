@@ -8,12 +8,13 @@
 
 #include "Packet.h"
 
-class DHCPACKPacket : public Packet{
+class DHCPACKPacket : public Packet {
 
 public:
 	DHCPACKPacket(MAC mac, IP ip, IP destination, IP mask, IP gateway, long long int i);
 
-	Block * createBlock() override;
+	Block *createBlock() override;
+
 	unsigned char getHeader() override;
 
 private:

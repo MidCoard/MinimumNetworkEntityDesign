@@ -9,7 +9,7 @@
 DHCPNAKPacket::DHCPNAKPacket(MAC mac, IP ip) : mac(std::move(mac)), ip(std::move(ip)) {}
 
 Block *DHCPNAKPacket::createBlock() {
-	auto * block = new Block();
+	auto *block = new Block();
 	block->writeMAC(this->mac);
 	block->write(0);
 	block->writeIP(this->ip);

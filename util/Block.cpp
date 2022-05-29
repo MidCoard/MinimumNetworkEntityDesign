@@ -41,7 +41,8 @@ std::vector<unsigned char> Block::read() {
 MAC Block::readMAC() {
 	if (this->remaining < 6)
 		throw std::range_error("the rest of data is not enough to read MAC");
-	MAC mac = MAC(this->temp[pos], this->temp[pos + 1], this->temp[pos + 2], this->temp[pos + 3], this->temp[pos + 4], this->temp[pos + 5]);
+	MAC mac = MAC(this->temp[pos], this->temp[pos + 1], this->temp[pos + 2], this->temp[pos + 3], this->temp[pos + 4],
+	              this->temp[pos + 5]);
 	this->pos += 6;
 	this->remaining -= 6;
 	return mac;
@@ -54,13 +55,13 @@ void Block::writeBlock(Block *block) {
 	block->remaining = 0;
 }
 
-void Block::writeMAC(const MAC& mac) {
+void Block::writeMAC(const MAC &mac) {
 	for (int i = 0; i < 6; i++)
 		this->temp.push_back(mac.get(i));
 }
 
-void Block::write(const std::vector<unsigned char>& data) {
-	for (unsigned char i : data)
+void Block::write(const std::vector<unsigned char> &data) {
+	for (unsigned char i: data)
 		this->temp.push_back(i);
 }
 
@@ -73,12 +74,12 @@ IP Block::readIP() {
 	return ip;
 }
 
-void Block::writeIP(const IP& ip) {
+void Block::writeIP(const IP &ip) {
 	for (int i = 0; i < 4; i++)
 		this->temp.push_back(ip.get(i));
 }
 
-Block::Block(Block *block) :Block() {
+Block::Block(Block *block) : Block() {
 	this->writeBlock(block);
 	this->flip();
 }
@@ -103,7 +104,7 @@ Block *Block::copy() {
 	auto *block = new Block(this->sendCount);
 	block->pos = this->pos;
 	block->remaining = this->remaining;
-	for (unsigned char i : this->temp)
+	for (unsigned char i: this->temp)
 		block->temp.push_back(i);
 	return block;
 }
@@ -131,14 +132,14 @@ long long int Block::readLong() {
 	if (this->remaining < 8)
 		throw std::range_error("the rest of data is not enough to read long");
 	long long int i = 0;
-	i |= (long long int)this->temp[this->pos++] << 56;
-	i |= (long long int)this->temp[this->pos++] << 48;
-	i |= (long long int)this->temp[this->pos++] << 40;
-	i |= (long long int)this->temp[this->pos++] << 32;
-	i |= (long long int)this->temp[this->pos++] << 24;
-	i |= (long long int)this->temp[this->pos++] << 16;
-	i |= (long long int)this->temp[this->pos++] << 8;
-	i |= (long long int)this->temp[this->pos++];
+	i |= (long long int) this->temp[this->pos++] << 56;
+	i |= (long long int) this->temp[this->pos++] << 48;
+	i |= (long long int) this->temp[this->pos++] << 40;
+	i |= (long long int) this->temp[this->pos++] << 32;
+	i |= (long long int) this->temp[this->pos++] << 24;
+	i |= (long long int) this->temp[this->pos++] << 16;
+	i |= (long long int) this->temp[this->pos++] << 8;
+	i |= (long long int) this->temp[this->pos++];
 	this->remaining -= 8;
 	return i;
 }

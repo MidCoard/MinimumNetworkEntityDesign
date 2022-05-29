@@ -13,9 +13,10 @@ class DHCPOfferPacket : public Packet {
 public:
 	DHCPOfferPacket(MAC mac, IP ip, IP mask, IP gateway, int dhcpID);
 
-	Block * createBlock() override;
+	Block *createBlock() override;
 
 	unsigned char getHeader() override;
+
 private:
 	MAC mac;
 	IP ip;
