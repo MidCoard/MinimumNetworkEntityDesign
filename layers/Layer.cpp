@@ -60,7 +60,6 @@ void Layer::start() {
 			// this block is safe now
 			code_machina::BlockingCollectionStatus status = this->sendBlockQueue.try_take(block, std::chrono::milliseconds(1));
 			if (status == code_machina::BlockingCollectionStatus::Ok) {
-
 				this->handleSend(block);
 				delete block;
 			}

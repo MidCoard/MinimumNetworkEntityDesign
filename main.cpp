@@ -211,15 +211,18 @@ Network *initialize() {
 }
 
 int main() {
-	Network *network = initialize();
-	dhcp::start();
-	while(true);
-	if (network != nullptr) {
-		// join
-		for (auto node: network->getNodes())
-			node->stop();
-	}
-	dhcp::stop();
-	delete network;
-	return 0;
+//	Network *network = initialize();
+//	dhcp::start();
+//	while(true);
+//	if (network != nullptr) {
+//		// join
+//		for (auto node: network->getNodes())
+//			node->stop();
+//	}
+//	dhcp::stop();
+//	delete network;
+//	return 0;
+	Block block = Block();
+	block.writeInt(-24);
+	printf("%d\n", block.readInt());
 }

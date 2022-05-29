@@ -1,5 +1,9 @@
 #include "Router.h"
 #include "DHCPHelper.h"
+#include "DHCPOfferPacket.h"
+#include "DHCPACKPacket.h"
+#include "DHCPNAKPacket.h"
+#include "DHCPDeclinePacket.h"
 
 Router::Router(Network* network, int node,std::map<int,RouterConfiguration*> routerConfigurations) : NetworkEntity(network,node, new RouterNetworkLayer(this)), routerConfigurations(std::move(routerConfigurations)) {
 }
@@ -111,16 +115,83 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 			// first check if ip valid
 			if (!this->isIPValid)
 				return;
+			// ip valid the dhcpTable is also valid
 			// then check if it is dhcp request or dhcp discover
 			unsigned char header;
 			block->read(&header, 1);
 			if (header == 0x01 && source == LOCAL0) {
 				// dhcp discover
-
+				MAC mac = block->readMAC();
+				unsigned char useSegment;
+				block->read(&useSegment, 1);
+				if (useSegment) {
+					std::pair<IP,IP> apply = this->table->applySegment();
+					if (!apply.first.isBroadcast()) {
+						int dhcpID = this->table->dhcpID++;
+						auto* packet = new DHCPOfferPacket(mac, apply.first, apply.second,
+						                                   *ipConfiguration.getSegment(), dhcpID);
+						auto * newBlock = packet->createBlock();
+						delete packet;
+						this->lowerLayers[id]->send(newBlock);
+					}
+				} else {
+					IP apply = this->table->apply();
+					if (!apply.isBroadcast()) {
+						int dhcpID = this->table->dhcpID++;
+						auto* packet = new DHCPOfferPacket(mac, apply, *ipConfiguration.getMask(),
+						                                   *ipConfiguration.getGateway(), dhcpID);
+						auto * newBlock = packet->createBlock();
+						delete packet;
+						this->lowerLayers[id]->send(newBlock);
+					}
+				}
 			} else if (header == 0x03 && source == LOCAL0) {
 				// dhcp request
-
-			} else {
+				IP segment = block->readIP();
+				IP mask = block->readIP();
+				MAC mac = block->readMAC();
+				int dhcpID = block->readInt();
+				unsigned char useSegment;
+				block->read(&useSegment, 1);
+				if (useSegment) {
+					if (this->table->tryApply(segment, mask, dhcpID) ) {
+						auto* packet = new DHCPACKPacket(mac, *ipConfiguration.getSegment(), segment,
+						                                 kDHCPTime);
+						auto * newBlock = packet->createBlock();
+						delete packet;
+						this->lowerLayers[id]->send(newBlock);
+					} else {
+						auto* packet = new DHCPNAKPacket(mac, *ipConfiguration.getSegment());
+						auto * newBlock = packet->createBlock();
+						delete packet;
+						this->lowerLayers[id]->send(newBlock);
+					}
+				} else {
+					if (this->table->tryApply(segment, dhcpID)) {
+						auto* packet = new DHCPACKPacket(mac, *ipConfiguration.getSegment(), segment,
+						                                 kDHCPTime);
+						auto * newBlock = packet->createBlock();
+						delete packet;
+						this->lowerLayers[id]->send(newBlock);
+					} else {
+						auto* packet = new DHCPNAKPacket(mac, *ipConfiguration.getSegment());
+						auto * newBlock = packet->createBlock();
+						delete packet;
+						this->lowerLayers[id]->send(newBlock);
+					}
+				}
+			} else if (header == 0x06 && source == LOCAL0) {
+				// dhcp decline
+				IP segment = block->readIP();
+				IP mask = block->readIP();
+				unsigned char useSegment;
+				block->read(&useSegment, 1);
+				if (useSegment)
+					this->table->tryApply(segment, -1);
+				else
+					this->table->tryApply(segment, mask ,-1);
+			}
+			else {
 				// this is broadcast packet
 				auto * newBlock = new Block();
 				newBlock->writeMAC(BROADCAST_MAC);
@@ -147,39 +218,133 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 			}
 		}
 	} else {
-		if (!this->isIPValid)
-			return;
-		// transfer
-		std::pair<IP, int> pair = routeTable.lookup(destination);
-		if (pair.second == -1)
-			// do not know how to transfer
-			return;
-		// find the next hop
-		IP nextHop = pair.first;
-		// find the next hop mac
-		MAC nextHopMAC = this->arpTable.lookup(nextHop);
-		if (nextHopMAC.isBroadcast()) {
-			((LinkLayer*)this->lowerLayers[pair.second])->sendARP(*ipConfiguration.getSegment(),nextHop);
-			std::this_thread::sleep_for(std::chrono::milliseconds(500));
-			auto * newBlock = new Block(block->getSendCount() - 1);
-			newBlock->writeIP(source);
-			newBlock->writeIP(destination);
-			newBlock->writeBlock(block);
-			newBlock->flip();
-			this->receive(id, newBlock);
-		} else {
-			auto *newBlock = new Block();
-			newBlock->writeMAC(nextHopMAC);
-			newBlock->write(0);
-			newBlock->writeIP(source);
-			newBlock->writeIP(destination);
-			newBlock->writeBlock(block);
-			newBlock->flip();
-			this->lowerLayers[pair.second]->handleReceive(id, newBlock);
+		unsigned char header;
+		block->read(&header, 1);
+		switch (header) {
+			case 0x02: {
+				// receive dhcp offer
+				if (ipConfiguration.isValid())
+					return;
+				IP segment = block->readIP();
+				IP mask = block->readIP();
+				IP gateway = block->readIP();
+				auto* linkLayer = (LinkLayer*) this->lowerLayers[id];
+				linkLayer->sendARP(segment ,segment);
+				std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+				if (!this->arpTable.lookup(segment).isBroadcast()) {
+					// one have already got the ip (maybe static ip)
+					auto * packet = new DHCPDeclinePacket(segment, true);
+					auto * newBlock = packet->createBlock();
+					delete packet;
+					this->lowerLayers[id]->send(newBlock);
+				} else {
+					this->dhcpID = block->readInt();
+					auto *router = (Router *) this->networkEntity;
+					delete router->segment;
+					delete router->mask;
+					delete router->gateway;
+					router->segment = new IP(segment);
+					router->mask = new IP(mask);
+					router->gateway = new IP(gateway);
+					this->setIPConfiguration(0, router->segment, router->mask, router->gateway);
+					this->sendDHCP();
+				}
+				break;
+			}
+			case 0x03: {
+				// receive uni-cast dhcp request this is for renewal
+				if (!this->isIPValid)
+					return;
+				IP segment = block->readIP();
+				IP mask = block->readIP();
+				MAC mac = block->readMAC();
+				unsigned char useSegment;
+				block->read(&useSegment, 1);
+				if (useSegment) {
+					if (this->table->renewal(segment, mask) ) {
+						auto* packet = new DHCPACKPacket(mac, *ipConfiguration.getSegment(), segment,
+						                                 kDHCPTime);
+						auto * newBlock = packet->createBlock();
+						delete packet;
+						this->lowerLayers[id]->send(newBlock);
+					} else {
+						auto* packet = new DHCPNAKPacket(mac, *ipConfiguration.getSegment());
+						auto * newBlock = packet->createBlock();
+						delete packet;
+						this->lowerLayers[id]->send(newBlock);
+					}
+				} else {
+					if (this->table->renewal(segment)) {
+						auto* packet = new DHCPACKPacket(mac, *ipConfiguration.getSegment(), segment,
+						                                 kDHCPTime);
+						auto * newBlock = packet->createBlock();
+						delete packet;
+						this->lowerLayers[id]->send(newBlock);
+					} else {
+						auto* packet = new DHCPNAKPacket(mac, *ipConfiguration.getSegment());
+						auto * newBlock = packet->createBlock();
+						delete packet;
+						this->lowerLayers[id]->send(newBlock);
+					}
+				}
+				break;
+			}
+			case 0x04: {
+				// receive dhcp ack
+				this->startDHCP = std::chrono::system_clock::now().time_since_epoch().count();
+				this->duration  = block->readLong();
+				this->isIPValid = true;
+				delete this->table;
+				this->table = new DHCPTable(*ipConfiguration.getSegment(),*ipConfiguration.getMask());
+				break;
+			}
+			case 0x05: {
+				// receive dhcp nak
+				this->dhcpID = -1;
+				break;
+			}
+			default: {
+				if (!this->isIPValid)
+					return;
+				// transfer
+				std::pair<IP, int> pair = routeTable.lookup(destination);
+				if (pair.second == -1)
+					// do not know how to transfer
+					return;
+				// find the next hop
+				IP nextHop = pair.first;
+				// find the next hop mac
+				MAC nextHopMAC = this->arpTable.lookup(nextHop);
+				if (nextHopMAC.isBroadcast()) {
+					((LinkLayer*)this->lowerLayers[pair.second])->sendARP(*ipConfiguration.getSegment(),nextHop);
+					std::this_thread::sleep_for(std::chrono::milliseconds(500));
+					auto * newBlock = new Block(block->getSendCount() - 1);
+					newBlock->writeIP(source);
+					newBlock->writeIP(destination);
+					newBlock->write(header);
+					newBlock->writeBlock(block);
+					newBlock->flip();
+					this->receive(id, newBlock);
+				} else {
+					auto *newBlock = new Block();
+					newBlock->writeMAC(nextHopMAC);
+					newBlock->write(0);
+					newBlock->writeIP(source);
+					newBlock->writeIP(destination);
+					newBlock->write(header);
+					newBlock->writeBlock(block);
+					newBlock->flip();
+					this->lowerLayers[pair.second]->handleReceive(id, newBlock);
+				}
+			}
 		}
 	}
 }
 
 void RouterNetworkLayer::sendDHCP() {
 	this->sendDHCP0(true);
+}
+
+RouterNetworkLayer::~RouterNetworkLayer() {
+	delete this->table;
 }

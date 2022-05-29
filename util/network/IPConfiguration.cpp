@@ -22,3 +22,7 @@ IP* IPConfiguration::getGateway() {
 bool IPConfiguration::isConfigurable() {
 	return this->segment != nullptr || this->mask != nullptr || this->gateway != nullptr;
 }
+
+bool IPConfiguration::isValid() {
+	return this->segment != nullptr && this->mask != nullptr && this->gateway != nullptr;
+}

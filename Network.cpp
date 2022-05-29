@@ -41,7 +41,7 @@ void Network::dfs(int node, std::vector<bool> *visited, std::map<int, std::vecto
 	for (auto &link: subLinks)
 		if (link->weight.first != -1)
 			allocated.push_back(link->weight.first);
-	int allocatedPort = 0;
+	int allocatedPort = (node == 0 ? 1 : 0);
 	int pos = 0;
 	for (auto &link: subLinks)
 		if (link->weight.first == -1) {

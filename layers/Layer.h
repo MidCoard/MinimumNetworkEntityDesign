@@ -54,6 +54,7 @@ protected:
 
 	code_machina::BlockingQueue<Block*> sendBlockQueue;
 	code_machina::BlockingQueue<std::pair<int,Block*>> receiveBlockQueue;
+	NetworkEntity *networkEntity;
 private:
 	// this two pointer will be deleted when closing
 	std::thread *sendThread = nullptr;
@@ -63,8 +64,6 @@ private:
 
 	void
 	dfsGenerate(int node, Layer *layer, std::vector<std::string> *lines, const std::string& suffix, bool first);
-
-	NetworkEntity *networkEntity;
 };
 
 

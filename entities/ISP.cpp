@@ -8,7 +8,7 @@ ISP::ISP(Network* network) : NetworkEntity(network, 0, new RootAppLayer(this)) {
 }
 
 std::vector<std::string> ISP::createLayers(int node, std::vector<int> ids) {
-	auto *networkLayer = new RouterNetworkLayer(this);
+	this->networkLayer = new RouterNetworkLayer(this);
 	this->layer->addLowerLayer(networkLayer);
 	for (int id: ids) {
 		networkLayer->setIPConfiguration(id, nullptr, nullptr, nullptr);
@@ -19,6 +19,13 @@ std::vector<std::string> ISP::createLayers(int node, std::vector<int> ids) {
 		linkLayer->addLowerLayer(physicalLayer);
 	}
 	return this->layer->generateGraph(node);
+}
+
+void ISP::start() {
+	this->networkLayer->setIPConfiguration(0, const_cast<IP *>(kRootIP), const_cast<IP *>(kRootMask),
+	                                       const_cast<IP *>(kRootIP));
+	this->networkLayer->isIPValid = true;
+	NetworkEntity::start();
 }
 
 RootAppLayer::RootAppLayer(NetworkEntity *networkEntity) : AppLayer(networkEntity) {

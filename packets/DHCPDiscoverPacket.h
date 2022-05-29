@@ -10,13 +10,14 @@
 
 class DHCPDiscoverPacket : public Packet{
 public:
-	DHCPDiscoverPacket(bool useSegment);
+	DHCPDiscoverPacket(MAC mac, bool useSegment);
 
 	Block * createBlock() override;
 
 	unsigned char getHeader() override;
 private:
 	bool useSegment;
+	MAC mac;
 };
 
 

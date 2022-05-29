@@ -39,13 +39,20 @@ public:
 
 	virtual void sendDHCP();
 
+	virtual void sendDHCPRenewal();
+
 	void sendDHCP0(bool useSegment);
+
+	void sendDHCPRenewal0(bool useSegment);
 
 protected:
 	std::map<int, IPConfiguration> configurations;
 	RouteTable routeTable;
 	ARPTable arpTable;
 	std::map<IP, MAC> ipMacMap;
+	int dhcpID = -1;
+	long long int duration = 0;
+	long long int startDHCP = 0;
 };
 
 

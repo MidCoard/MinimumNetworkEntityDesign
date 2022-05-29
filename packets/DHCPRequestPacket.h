@@ -10,7 +10,9 @@
 
 class DHCPRequestPacket : public Packet {
 public:
-	DHCPRequestPacket(IP segment, IP mask, bool useSegment);
+	DHCPRequestPacket(IP segment, IP mask, MAC mac,int dhcpID, bool useSegment);
+
+	DHCPRequestPacket(IP segment, IP mask, IP gateway, MAC mac, bool useSegment);
 
 	Block * createBlock() override;
 
@@ -18,7 +20,10 @@ public:
 private:
 	IP segment;
 	IP mask;
+	MAC mac;
 	bool useSegment;
+	int dhcpID;
+	IP gateway;
 };
 
 

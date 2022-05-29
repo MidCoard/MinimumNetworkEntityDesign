@@ -50,6 +50,14 @@ public:
 
 	Block *copy();
 
+	void writeInt(int i);
+
+	int readInt();
+
+	long long int readLong();
+
+	void writeLong(long long int i);
+
 private:
 	// avoid use pointer
 	std::vector<unsigned char> temp;

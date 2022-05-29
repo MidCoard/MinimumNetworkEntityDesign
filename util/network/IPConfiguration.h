@@ -16,6 +16,8 @@ public:
 
 	bool isConfigurable();
 
+	bool isValid();
+
 private:
 	IP* segment;
 	IP* mask;

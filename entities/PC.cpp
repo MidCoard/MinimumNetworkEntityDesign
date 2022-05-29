@@ -16,6 +16,8 @@ std::vector<std::string> PC::createLayers(int node, std::vector<int> ids) {
 	networkLayer->setIPConfiguration(ids[0], this->ip,
 									this->mask,
 									 this->gateway);
+	if (networkLayer->getIPConfiguration(0).isValid())
+		networkLayer->isIPValid = true;
 	this->layer->addLowerLayer(networkLayer);
 	auto *linkLayer = new LinkLayer(ids[0], this);
 	if (mac == nullptr)

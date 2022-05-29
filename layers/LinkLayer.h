@@ -30,6 +30,8 @@ public:
 
 	void sendARP(const IP& ip, const IP& query);
 
+	MAC getMAC();
+
 private:
 
 	// facing a problem when one interface have one mac, so use a map to store the mac

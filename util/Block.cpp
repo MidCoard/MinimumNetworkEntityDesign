@@ -108,3 +108,49 @@ Block *Block::copy() {
 	return block;
 }
 
+void Block::writeInt(int i) {
+	this->temp.push_back(i >> 24);
+	this->temp.push_back(i >> 16);
+	this->temp.push_back(i >> 8);
+	this->temp.push_back(i);
+}
+
+int Block::readInt() {
+	if (this->remaining < 4)
+		throw std::range_error("the rest of data is not enough to read int");
+	int i = 0;
+	i |= this->temp[this->pos++] << 24;
+	i |= this->temp[this->pos++] << 16;
+	i |= this->temp[this->pos++] << 8;
+	i |= this->temp[this->pos++];
+	this->remaining -= 4;
+	return i;
+}
+
+long long int Block::readLong() {
+	if (this->remaining < 8)
+		throw std::range_error("the rest of data is not enough to read long");
+	long long int i = 0;
+	i |= (long long int)this->temp[this->pos++] << 56;
+	i |= (long long int)this->temp[this->pos++] << 48;
+	i |= (long long int)this->temp[this->pos++] << 40;
+	i |= (long long int)this->temp[this->pos++] << 32;
+	i |= (long long int)this->temp[this->pos++] << 24;
+	i |= (long long int)this->temp[this->pos++] << 16;
+	i |= (long long int)this->temp[this->pos++] << 8;
+	i |= (long long int)this->temp[this->pos++];
+	this->remaining -= 8;
+	return i;
+}
+
+void Block::writeLong(long long int i) {
+	this->temp.push_back(i >> 56);
+	this->temp.push_back(i >> 48);
+	this->temp.push_back(i >> 40);
+	this->temp.push_back(i >> 32);
+	this->temp.push_back(i >> 24);
+	this->temp.push_back(i >> 16);
+	this->temp.push_back(i >> 8);
+	this->temp.push_back(i);
+}
+

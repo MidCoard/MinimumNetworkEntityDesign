@@ -13,6 +13,7 @@ class Network;
 #include "map"
 #include "utility"
 #include "NetworkEntity.h"
+#include "DHCPTable.h"
 
 class RouterConfiguration {
 public:
@@ -51,15 +52,15 @@ public:
 	std::vector<IPConfiguration> getIPConfiguration() override = 0;
 
 	void start() override;
+
+// first set in generateIP
+// second set in DHCP server ( this time should delete the first set )
+IP* segment = nullptr;
+	IP* mask = nullptr;
+	IP* gateway = nullptr;
 protected:
 	std::map<int, RouterConfiguration*> routerConfigurations;
 	bool generatedIP = false;
-
-	// first set in generateIP
-	// second set in DHCP server ( this time should delete the first set )
-	IP* segment = nullptr;
-	IP* mask = nullptr;
-	IP* gateway = nullptr;
 
 	// mark all
 };
@@ -68,11 +69,15 @@ class RouterNetworkLayer : public NetworkLayer {
 public:
 	explicit RouterNetworkLayer(NetworkEntity * networkEntity);
 
+	~RouterNetworkLayer() override;
+
 	RouterNetworkLayer(int id, NetworkEntity * networkEntity);
 
 	void handleReceive(int id, Block *block) override;
 
 	void sendDHCP() override;
+private:
+	DHCPTable * table = nullptr;
 };
 
 

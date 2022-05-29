@@ -82,3 +82,7 @@ void LinkLayer::sendARPReply(int id, const MAC& mac, const IP& source, const IP&
 	this->lowerLayers[id]->send(block);
 }
 
+MAC LinkLayer::getMAC() {
+	return this->idMacMap.at(0);
+}
+

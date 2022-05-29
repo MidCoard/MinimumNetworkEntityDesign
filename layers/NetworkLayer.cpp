@@ -52,6 +52,9 @@ void NetworkLayer::handleSend(Block* block) {
 	routeTable.check();
 	if (!isIPValid)
 		return;
+	auto now = std::chrono::system_clock::now().time_since_epoch().count();
+	if (now - this->startDHCP > this->duration  * 3 / 4) // for 75%
+		this->sendDHCPRenewal();
 	if (block->getSendCount() < 0)
 		return;
 	if (block->getRemaining() < 4)
@@ -105,13 +108,14 @@ void NetworkLayer::handleARP(const IP& ip, const MAC& mac) {
 
 void NetworkLayer::sendDHCP0(bool useSegment) {
 	IPConfiguration ipConfiguration = configurations.at(0);
-	if (ipConfiguration.getSegment() == nullptr) {
-		auto *packet = new DHCPDiscoverPacket(useSegment);
+	auto*linkLayer = (LinkLayer*)this->lowerLayers[0];
+	if (ipConfiguration.getSegment() == nullptr || ipConfiguration.getMask() == nullptr) {
+		auto *packet = new DHCPDiscoverPacket(linkLayer->getMAC(),useSegment);
 		Block* block = packet->createBlock();
 		delete packet;
 		this->lowerLayers[0]->send(block);
 	} else  {
-		auto *packet = new DHCPRequestPacket(*ipConfiguration.getSegment(), *ipConfiguration.getMask(), useSegment);
+		auto *packet = new DHCPRequestPacket(*ipConfiguration.getSegment(), *ipConfiguration.getMask(), linkLayer->getMAC(), this->dhcpID, useSegment);
 		Block* block = packet->createBlock();
 		delete packet;
 		this->lowerLayers[0]->send(block);
@@ -121,4 +125,19 @@ void NetworkLayer::sendDHCP0(bool useSegment) {
 
 void NetworkLayer::sendDHCP() {
 	this->sendDHCP0(false);
+}
+
+void NetworkLayer::sendDHCPRenewal0(bool useSegment) {
+	if (this->isIPValid)
+		return;
+	IPConfiguration ipConfiguration = configurations.at(0);
+	auto*linkLayer = (LinkLayer*)this->lowerLayers[0];
+	auto *packet = new DHCPRequestPacket(*ipConfiguration.getSegment(), *ipConfiguration.getMask(), *ipConfiguration.getGateway(), linkLayer->getMAC(), useSegment);
+	Block* block = packet->createBlock();
+	delete packet;
+	this->lowerLayers[0]->send(block);
+}
+
+void NetworkLayer::sendDHCPRenewal() {
+	this->sendDHCPRenewal0(false);
 }
