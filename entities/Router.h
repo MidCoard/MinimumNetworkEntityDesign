@@ -73,7 +73,9 @@ public:
 
 	void sendDHCP() override;
 
-	DHCPTable *table = nullptr;
+	IP getIP(int id) override;
+
+	std::vector<DHCPTable *> tables;
 };
 
 

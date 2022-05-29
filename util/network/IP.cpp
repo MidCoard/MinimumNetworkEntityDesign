@@ -58,7 +58,7 @@ IP IP::getMask() const {
 	unsigned int defaultIP = 0xFFFFFFFFu;
 	// find raw lowest 1
 	int i = 0;
-	while ((raw & (1u << i)) == 0)
+	while ((raw & (1u << i)) == 0 && i < 32)
 		i++;
 	return IP(defaultIP & ~((1u << i) - 1));
 }
@@ -102,9 +102,22 @@ bool IP::operator>(const IP &ip) const {
 int IP::getRightZero() const {
 	unsigned int raw = intValue();
 	int i = 0;
-	while ((raw & (1u << i)) == 0)
+	while ((raw & (1u << i)) == 0 && i < 32)
 		i++;
 	return i;
+}
+
+IP IP::mix(const IP& ip) {
+	// find their first different bit from right
+	unsigned int a = this->intValue();
+	unsigned int b = ip.intValue();
+	if (a == b)
+		return BROADCAST_IP;
+	int i = 0;
+	while ((a & (1u << i)) == (b & (1u << i)) && i < 32)
+		i++;
+	// return mask
+	return IP((~((1u << i) - 1))<<1);
 }
 
 IP LOCALHOST = IP("127.0.0.1");

@@ -15,7 +15,7 @@ extern const long long int kDHCPTime;
 
 class DHCPTable {
 public:
-	DHCPTable(IP ip, IP mask);
+	DHCPTable(IP ip, IP mask,IP gateway);
 
 	IP apply();
 
@@ -51,6 +51,8 @@ private:
 	bool applyDirect(const IP &ip, const IP &mask, const MAC &mac);
 
 	bool applyDirect(const IP &ip, const MAC &mac);
+
+	IP gateway;
 };
 
 

@@ -44,6 +44,8 @@ public:
 
 	[[nodiscard]] int getRightZero() const;
 
+	IP mix(const IP& ip);
+
 private:
 	std::string ip;
 	unsigned char bytes[4]{};

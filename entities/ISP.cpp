@@ -3,7 +3,7 @@
 
 const IP *kRootIP = new IP("0.0.0.0");
 const IP *kRootMask = new IP("0.0.0.0");
-const IP *kGatewayIP = new IP("0.0.0.1");
+const IP *kRootGateway = new IP("0.0.0.1");
 
 ISP::ISP(Network *network) : NetworkEntity(network, 0, new RootAppLayer(this)) {
 }
@@ -31,8 +31,8 @@ void ISP::generateIP() {
 		IP defaultMask = IP(255, 255, 255, 255);
 		IP * defaultGateway = ipConfiguration.getGateway();
 		for (auto &configuration: configurations) {
+			defaultMask = defaultMask & *configuration.getMask() & defaultIP.mix(*configuration.getSegment() & *configuration.getMask());
 			defaultIP = defaultIP & (*configuration.getSegment() & *configuration.getMask());
-			defaultMask = defaultMask & *configuration.getMask();
 			if (configuration.getGateway() != nullptr && defaultGateway == nullptr)
 				defaultGateway = configuration.getGateway();
 		}
@@ -81,32 +81,33 @@ void ISP::dfsAllocateIP(int node, std::vector<bool> *visited, std::vector<IPConf
 
 void ISP::start() {
 	this->networkLayer->isIPValid = true;
-	this->networkLayer->table = new DHCPTable(*kRootIP, *kRootMask);
+	this->networkLayer->tables.push_back(new DHCPTable(*kRootIP, *kRootMask, *kRootGateway));
 	for (int i = 1; i < this->networkLayer->lowerLayers.size(); i++) {
 		auto *layer = (LinkLayer *) this->networkLayer->lowerLayers[i];
 		IPConfiguration configuration = this->networkLayer->getIPConfiguration(i);
 		if (configuration.getSegment()->isBroadcast() || configuration.getMask()->isBroadcast()) {
-			std::pair<IP,IP> pair = this->networkLayer->table->applySegment();
+			std::pair<IP,IP> pair = this->networkLayer->tables[0]->applySegment();
 			if (pair.first.isBroadcast())
 				throw std::runtime_error("no ip segment available");
 			else {
-				bool flag = this->networkLayer->table->tryApply(pair.first, pair.second,layer->getMAC(), this->networkLayer->table->dhcpID++);
+				bool flag = this->networkLayer->tables[0]->tryApply(pair.first, pair.second,layer->getMAC(), this->networkLayer->tables[0]->dhcpID++);
 				if (!flag)
 					throw std::runtime_error("no ip segment available");
 				delete configuration.getSegment();
 				delete configuration.getMask();
 				delete configuration.getGateway();
 				this->networkLayer->setIPConfiguration(i, new IP(pair.first), new IP(pair.second), new IP(pair.first.intValue() + 1));
+				this->networkLayer->tables.push_back(new DHCPTable(pair.first, pair.second,IP(pair.first.intValue() + 1)));
 			}
 		}
 		else {
-			bool flag = this->networkLayer->table->tryApply(*configuration.getSegment(), *configuration.getMask(), layer->getMAC(), -1);
+			bool flag = this->networkLayer->tables[0]->tryApply(*configuration.getSegment(), *configuration.getMask(), layer->getMAC(), -1);
 			if (!flag) {
-				std::pair<IP,IP> pair = this->networkLayer->table->applySegment();
+				std::pair<IP,IP> pair = this->networkLayer->tables[0]->applySegment();
 				if (pair.first.isBroadcast())
 					throw std::runtime_error("no ip segment available");
 				else {
-					flag = this->networkLayer->table->tryApply(pair.first, pair.second,layer->getMAC(), this->networkLayer->table->dhcpID++);
+					flag = this->networkLayer->tables[0]->tryApply(pair.first, pair.second,layer->getMAC(), this->networkLayer->tables[0]->dhcpID++);
 					if (!flag)
 						throw std::runtime_error("no ip segment available");
 				}
@@ -114,9 +115,15 @@ void ISP::start() {
 				delete configuration.getMask();
 				delete configuration.getGateway();
 				this->networkLayer->setIPConfiguration(i, new IP(pair.first), new IP(pair.second), new IP(pair.first.intValue() + 1));
+				this->networkLayer->tables.push_back(new DHCPTable(pair.first, pair.second, IP(pair.first.intValue() + 1)));
 			} else {
-				if (configuration.getGateway() == nullptr)
-					this->networkLayer->setIPConfiguration(i, configuration.getSegment(), configuration.getMask(), new IP(configuration.getSegment()->intValue() + 1));
+				if (configuration.getGateway() == nullptr) {
+					this->networkLayer->setIPConfiguration(i, configuration.getSegment(), configuration.getMask(),
+					                                       new IP(configuration.getSegment()->intValue() + 1));
+					this->networkLayer->tables.push_back(
+							new DHCPTable(*configuration.getSegment(), *configuration.getMask(), IP(configuration.getSegment()->intValue() + 1)));
+				} else this->networkLayer->tables.push_back(new DHCPTable(*configuration.getSegment(), *configuration.getMask(),
+				                                                           *configuration.getGateway()));
 			}
 		}
 	}

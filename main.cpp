@@ -239,8 +239,11 @@ int main() {
 		} else if (op == 4) {
 			int node;
 			std::cin>>node;
-			auto* router = (Router*)network->getNodes()[node];
-//			std::cout<<router->segment->str()<<std::endl;
+			auto* entity = network->getNodes()[node];
+			std::vector<IPConfiguration> ipConfiguration = entity->getIPConfiguration();
+			if (ipConfiguration.empty())
+				std::cout<< "No IP configuration"<<std::endl;
+			else std::cout<< ipConfiguration[0].getSegment()->str()<<std::endl;
 		}
 	}
 	if (network != nullptr) {

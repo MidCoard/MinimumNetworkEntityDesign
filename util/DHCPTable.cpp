@@ -33,6 +33,8 @@ bool DHCPTable::apply(const IP &ip, const IP &mask) {
 		return false;
 	if ((ip & this->mask) != this->ip)
 		return false;
+	if (ip == this->ip || ip == this->gateway)
+		return false;
 	for (const auto &item: this->ips)
 		if ((item.first & mask) == ip)
 			return false;
@@ -78,6 +80,8 @@ bool DHCPTable::apply(const IP &ip) {
 	this->check();
 	if ((ip & this->mask) != this->ip)
 		return false;
+	if (ip == gateway || ip == this->ip)
+		return false;
 	for (const auto &item: this->ips)
 		if (item.first == ip)
 			return false;
@@ -114,7 +118,7 @@ std::pair<IP, IP> DHCPTable::applySegment() {
 	return std::make_pair(ret, retMask);
 }
 
-DHCPTable::DHCPTable(IP ip, IP mask) : ip(std::move(ip)), mask(std::move(mask)) {}
+DHCPTable::DHCPTable(IP ip, IP mask, IP gateway) : ip(std::move(ip)), mask(std::move(mask)),gateway(std::move(gateway)) {}
 
 bool DHCPTable::tryApply(const IP &ip, const IP &mask, const MAC &mac, int dhcpID) {
 	this->check();
@@ -137,6 +141,8 @@ bool DHCPTable::applyDirect(const IP &ip, const IP &mask, const MAC &mac) {
 	if ((mask & this->mask) != this->mask)
 		return false;
 	if ((ip & this->mask) != this->ip)
+		return false;
+	if (ip == this->ip || ip == this->gateway)
 		return false;
 	for (const auto &item: this->ips)
 		if ((item.first & mask) == ip)
@@ -173,6 +179,8 @@ bool DHCPTable::tryApply(const IP &ip, const MAC &mac, int dhcpID) {
 bool DHCPTable::applyDirect(const IP &ip, const MAC &mac) {
 	this->check();
 	if ((ip & this->mask) != this->ip)
+		return false;
+	if (ip == gateway || ip == this->ip)
 		return false;
 	for (const auto &item: this->ips)
 		if (item.first == ip && item.second.second != mac)

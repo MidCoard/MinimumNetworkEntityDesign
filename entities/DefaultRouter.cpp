@@ -35,8 +35,8 @@ void DefaultRouter::generateIP() {
 		IP defaultMask = IP(255, 255, 255, 255);
 		IP * defaultGateway = ipConfiguration.getGateway();
 		for (auto &configuration: configurations) {
+			defaultMask = defaultMask & *configuration.getMask() & defaultIP.mix(*configuration.getSegment() & *configuration.getMask());
 			defaultIP = defaultIP & (*configuration.getSegment() & *configuration.getMask());
-			defaultMask = defaultMask & *configuration.getMask();
 			if (configuration.getGateway() != nullptr && defaultGateway == nullptr)
 				defaultGateway = configuration.getGateway();
 		}
@@ -51,8 +51,8 @@ void DefaultRouter::generateIP() {
 	IP defaultIP = IP(255, 255, 255, 255);
 	IP defaultMask = IP(255, 255, 255, 255);
 	for (auto &configuration: configurations) {
+		defaultMask = defaultMask & *configuration.getMask() & defaultIP.mix(*configuration.getSegment() & *configuration.getMask());
 		defaultIP = defaultIP & (*configuration.getSegment() & *configuration.getMask());
-		defaultMask = defaultMask & *configuration.getMask();
 	}
 	IPConfiguration ipConfiguration = networkLayer->getIPConfiguration(kWanPort);
 	delete ipConfiguration.getSegment();

@@ -137,9 +137,9 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 					unsigned char useSegment;
 					block->read(&useSegment, 1);
 					if (useSegment) {
-						std::pair<IP, IP> apply = this->table->applySegment();
+						std::pair<IP, IP> apply = this->tables[id]->applySegment();
 						if (!apply.first.isBroadcast()) {
-							int dhcpID = this->table->dhcpID++;
+							int dhcpID = this->tables[id]->dhcpID++;
 							auto *packet = new DHCPOfferPacket(mac, apply.first, apply.second,
 							                                   *ipConfiguration.getGateway(), dhcpID);
 							auto *newBlock = packet->createBlock();
@@ -147,9 +147,9 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 							this->lowerLayers[id]->send(newBlock);
 						}
 					} else {
-						IP apply = this->table->apply();
+						IP apply = this->tables[id]->apply();
 						if (!apply.isBroadcast()) {
-							int dhcpID = this->table->dhcpID++;
+							int dhcpID = this->tables[id]->dhcpID++;
 							auto *packet = new DHCPOfferPacket(mac, apply, *ipConfiguration.getMask(),
 							                                   *ipConfiguration.getGateway(), dhcpID);
 							auto *newBlock = packet->createBlock();
@@ -169,7 +169,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 					unsigned char useSegment;
 					block->read(&useSegment, 1);
 					if (useSegment) {
-						if (this->table->tryApply(segment, mask, mac, dhcpID)) {
+						if (this->tables[id]->tryApply(segment, mask, mac, dhcpID)) {
 							auto *packet = new DHCPACKPacket(mac, *ipConfiguration.getSegment(), segment, mask,
 							                                 *ipConfiguration.getGateway(),
 							                                 kDHCPTime);
@@ -183,7 +183,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 							this->lowerLayers[id]->send(newBlock);
 						}
 					} else {
-						if (this->table->tryApply(segment, mac, dhcpID)) {
+						if (this->tables[id]->tryApply(segment, mac, dhcpID)) {
 							auto *packet = new DHCPACKPacket(mac, *ipConfiguration.getSegment(), segment, mask,
 							                                 *ipConfiguration.getGateway(),
 							                                 kDHCPTime);
@@ -208,9 +208,9 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 					unsigned char useSegment;
 					block->read(&useSegment, 1);
 					if (useSegment)
-						this->table->tryApply(segment, mask, mac, -1);
+						this->tables[id]->tryApply(segment, mask, mac, -1);
 					else
-						this->table->tryApply(segment, mac, -1);
+						this->tables[id]->tryApply(segment, mac, -1);
 					break;
 				}
 			default: {
@@ -281,19 +281,19 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 					this->startDHCP = std::chrono::system_clock::now().time_since_epoch().count();
 					this->duration = block->readLong();
 					this->isIPValid = true;
-					delete this->table;
-					this->table = new DHCPTable(segment, mask);
-					auto *linkLayer = (LinkLayer *) this->lowerLayers[0];
-					this->table->tryApply(segment, linkLayer->getMAC(), -1);
+					for (auto & table : this->tables)
+						delete table;
+					this->tables.clear();
+					this->tables.push_back(new DHCPTable(segment, mask, gateway));
 					for (int i = 1; i < this->lowerLayers.size(); i++) {
 						auto *layer = (LinkLayer *) this->lowerLayers[i];
 						IPConfiguration configuration = this->getIPConfiguration(i);
 						if (configuration.getSegment()->isBroadcast() || configuration.getMask()->isBroadcast()) {
-							std::pair<IP,IP> pair = this->table->applySegment();
+							std::pair<IP,IP> pair = this->tables[0]->applySegment();
 							if (pair.first.isBroadcast())
 								throw std::runtime_error("no ip segment available");
 							else {
-								bool flag = this->table->tryApply(pair.first, pair.second, layer->getMAC(), this->table->dhcpID++);
+								bool flag = this->tables[0]->tryApply(pair.first, pair.second, layer->getMAC(), this->tables[0]->dhcpID++);
 								if (!flag)
 									throw std::runtime_error("no ip segment available");
 							}
@@ -301,15 +301,16 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 							delete configuration.getMask();
 							delete configuration.getGateway();
 							this->setIPConfiguration(i, new IP(pair.first), new IP(pair.second), new IP(pair.first.intValue() + 1));
+							this->tables.push_back(new DHCPTable(pair.first, pair.second, IP(pair.first.intValue() + 1)));
 						}
 						else {
-							bool flag = this->table->tryApply(*configuration.getSegment(), *configuration.getMask(), layer->getMAC(), -1);
+							bool flag = this->tables[0]->tryApply(*configuration.getSegment(), *configuration.getMask(), layer->getMAC(), -1);
 							if (!flag) {
-								std::pair<IP,IP> pair = this->table->applySegment();
+								std::pair<IP,IP> pair = this->tables[0]->applySegment();
 								if (pair.first.isBroadcast())
 									throw std::runtime_error("no ip segment available");
 								else {
-									flag = this->table->tryApply(pair.first, pair.second,layer->getMAC(), this->table->dhcpID++);
+									flag = this->tables[0]->tryApply(pair.first, pair.second,layer->getMAC(), this->tables[0]->dhcpID++);
 									if (!flag)
 										throw std::runtime_error("no ip segment available");
 								}
@@ -317,9 +318,14 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 								delete configuration.getMask();
 								delete configuration.getGateway();
 								this->setIPConfiguration(i, new IP(pair.first), new IP(pair.second), new IP(pair.first.intValue() + 1));
+								this->tables.push_back(new DHCPTable(pair.first, pair.second, IP(pair.first.intValue() + 1)));
 							} else {
-								if (configuration.getGateway() == nullptr)
-									this->setIPConfiguration(i, configuration.getSegment(), configuration.getMask(), new IP(configuration.getSegment()->intValue() + 1));
+								if (configuration.getGateway() == nullptr) {
+									this->setIPConfiguration(i, configuration.getSegment(), configuration.getMask(),
+									                         new IP(configuration.getSegment()->intValue() + 1));
+									this->tables.push_back(
+											new DHCPTable(*configuration.getSegment(), *configuration.getMask(),IP(configuration.getSegment()->intValue() + 1)));
+								} else this->tables.push_back(new DHCPTable(*configuration.getSegment(), *configuration.getMask(), *configuration.getGateway()));
 							}
 						}
 					}
@@ -353,7 +359,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 					unsigned char useSegment;
 					block->read(&useSegment, 1);
 					if (useSegment) {
-						if (this->table->renewal(segment, mask, mac)) {
+						if (this->tables[id]->renewal(segment, mask, mac)) {
 							auto *packet = new DHCPACKPacket(mac, *ipConfiguration.getGateway(), segment, mask,
 							                                 *ipConfiguration.getGateway(),
 							                                 kDHCPTime);
@@ -367,7 +373,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 							this->lowerLayers[id]->send(newBlock);
 						}
 					} else {
-						if (this->table->renewal(segment, mac)) {
+						if (this->tables[id]->renewal(segment, mac)) {
 							auto *packet = new DHCPACKPacket(mac, *ipConfiguration.getGateway(), segment, mask,
 							                                 *ipConfiguration.getGateway(),
 							                                 kDHCPTime);
@@ -470,5 +476,14 @@ void RouterNetworkLayer::sendDHCP() {
 }
 
 RouterNetworkLayer::~RouterNetworkLayer() {
-	delete this->table;
+	for (auto &table : this->tables)
+		delete table;
+}
+
+IP RouterNetworkLayer::getIP(int id) {
+	if (!isIPValid)
+		throw std::invalid_argument("IP is not valid");
+	if (id == 0)
+		return *configurations.at(id).getSegment();
+	else return *configurations.at(id).getGateway();
 }
