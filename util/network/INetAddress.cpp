@@ -15,6 +15,10 @@ Socket INetAddress::createSocket() const {
 	return Socket(this->port);
 }
 
+std::string INetAddress::str() const {
+	return this->ip.str() + ":" + std::to_string(this->port);
+}
+
 INetAddress createINetAddress(const std::string &ip) {
 	auto vector = util::split(ip, ":");
 	if (vector.size() != 2)

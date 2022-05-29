@@ -25,6 +25,7 @@ void ISP::start() {
 	this->networkLayer->setIPConfiguration(0, const_cast<IP *>(kRootIP), const_cast<IP *>(kRootMask),
 	                                       const_cast<IP *>(kRootIP));
 	this->networkLayer->isIPValid = true;
+	this->networkLayer->table = new DHCPTable(*kRootIP, *kRootMask);
 	NetworkEntity::start();
 }
 

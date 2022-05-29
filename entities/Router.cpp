@@ -201,7 +201,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 				newBlock->write(header);
 				newBlock->writeBlock(block);
 				newBlock->flip();
-				for (auto*layer : this->lowerLayers)
+				for (auto& layer : this->lowerLayers)
 					if (layer->getID() != id)
 						layer->handleReceive(id, newBlock->copy());
 				delete newBlock;

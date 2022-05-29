@@ -21,6 +21,8 @@ public:
 
 	Socket createSocket() const;
 
+	std::string str() const;
+
 private:
 	IP ip;
 	int port;

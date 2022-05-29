@@ -53,8 +53,10 @@ void Socket::send(const INetAddress& address, Block* block) {
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(address.getPort());
 	addr.sin_addr.s_addr = htonl(address.getIp().intValue());
-	if (connect(client, (struct sockaddr *) &addr, sizeof(addr)))
-		throw std::runtime_error("connect socket failed");
+	if (connect(client, (struct sockaddr *) &addr, sizeof(addr))) {
+		std::cerr << "connect to " << address.str() << " failed" << std::endl;
+		return;
+	}
 	while (block->getRemaining() > 0) {
 		int len = block->read(temp, sizeof(temp));
 		if (::send(client, temp, len, 0) == -1)

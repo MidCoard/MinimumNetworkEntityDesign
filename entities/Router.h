@@ -76,7 +76,6 @@ public:
 	void handleReceive(int id, Block *block) override;
 
 	void sendDHCP() override;
-private:
 	DHCPTable * table = nullptr;
 };
 
