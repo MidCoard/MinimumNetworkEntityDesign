@@ -104,11 +104,11 @@ void Layer::stop() {
 }
 
 void Layer::log(const std::string& message) {
-	printf("%s: Layer %s: %s\n",this->networkEntity->getName().c_str(), this->getName().c_str(), message.c_str());
+	printf("%s(%d): Layer %s: %s\n",this->networkEntity->getName().c_str(), this->networkEntity->getNode(), this->getName().c_str(), message.c_str());
 }
 
 void Layer::error(const std::string& message) {
-	fprintf( stderr, "%s: Layer %s: %s\n",this->networkEntity->getName().c_str(),  this->getName().c_str(), message.c_str());
+	fprintf( stderr, "%s(%d): Layer %s: %s\n",this->networkEntity->getName().c_str(),  this->getName().c_str(), message.c_str());
 }
 
 int Layer::getID() const {

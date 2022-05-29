@@ -31,6 +31,8 @@ public:
 
 	virtual std::string getName() = 0;
 
+	int getNode() const;
+
 protected:
 	Layer * layer;
 	int node;

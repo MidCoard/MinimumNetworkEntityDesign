@@ -30,3 +30,7 @@ void NetworkEntity::start() {
 void NetworkEntity::stop() {
 	this->layer->stop();
 }
+
+int NetworkEntity::getNode() const {
+	return this->node;
+}

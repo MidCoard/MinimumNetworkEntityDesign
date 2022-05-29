@@ -226,7 +226,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 					for (auto &layer: this->lowerLayers)
 						if (layer->getID() != id)
 							// transfer to all lower layers except the one that sent the packet
-							layer->handleReceive(id, newBlock->copy());
+							layer->send(newBlock->copy());
 					delete newBlock;
 				}
 
@@ -376,7 +376,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 			newBlock->writeIP(destination);
 			newBlock->writeBlock(block);
 			newBlock->flip();
-			this->lowerLayers[pair.second]->handleReceive(id, newBlock);
+			this->lowerLayers[pair.second]->send(newBlock);
 		}
 	}
 }
