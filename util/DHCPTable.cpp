@@ -46,19 +46,19 @@ bool DHCPTable::apply(const IP &ip,const IP &mask) {
 		if ((item.first.first & mask) == ip || (ip & item.first.second) == item.first.first)
 			return false;
 	auto time = std::chrono::system_clock::now().time_since_epoch().count();
-	this->tempSegments.insert_or_assign(std::pair(ip, mask), std::pair{time + 2LL * 60 * 1000 * 1000, dhcpID});
+	this->tempSegments.insert_or_assign(std::pair(ip, mask), std::pair{time + kDHCPTime, dhcpID});
 	return true;
 }
 
 void DHCPTable::check() {
 	auto time = std::chrono::system_clock::now().time_since_epoch().count();
 	for (auto it = this->segments.begin(); it != this->segments.end();)
-		if (it->second < time)
+		if (it->second.first < time)
 			this->segments.erase(it++);
 		else
 			it++;
 	for (auto it = this->ips.begin(); it != this->ips.end();)
-		if (it->second < time)
+		if (it->second.first < time)
 			this->ips.erase(it++);
 		else
 			it++;
@@ -116,22 +116,22 @@ std::pair<IP, IP> DHCPTable::applySegment() {
 
 DHCPTable::DHCPTable(IP ip, IP mask) : ip(std::move(ip)), mask(std::move(mask)) {}
 
-bool DHCPTable::tryApply(const IP& ip,const IP& mask, int dhcpID) {
+bool DHCPTable::tryApply(const IP& ip,const IP& mask,const MAC& mac, int dhcpID) {
 	this->check();
 	if (dhcpID == -1)
-		return applyDirect(ip, mask);
+		return applyDirect(ip, mask,mac);
 	else
 		for (const auto& item : this->tempSegments)
 			if (item.second.second == dhcpID) {
 				auto time = std::chrono::system_clock::now().time_since_epoch().count();
-				this->segments.insert_or_assign(std::pair{item.first.first, item.first.second}, time + 2L * 60 * 60 * 1000 * 1000);
+				this->segments.insert_or_assign(std::pair{item.first.first, item.first.second},std::pair {time + kDHCPTime, mac});
 				this->tempSegments.erase(item.first);
 				return true;
 			}
 	return false;
 }
 
-bool DHCPTable::applyDirect(const IP &ip,const IP &mask) {
+bool DHCPTable::applyDirect(const IP &ip,const IP &mask, const MAC& mac) {
 	this->check();
 	if ((mask & this->mask) != this->mask)
 		return false;
@@ -141,7 +141,7 @@ bool DHCPTable::applyDirect(const IP &ip,const IP &mask) {
 		if ((item.first & mask) == ip)
 			return false;
 	for (const auto& item : this->segments)
-		if ((item.first.first & mask) == ip || (ip & item.first.second) == item.first.first)
+		if (((item.first.first & mask) == ip || (ip & item.first.second) == item.first.first) && item.second.second != mac)
 			return false;
 	for (const auto& item : this->tempIps)
 		if ((item.first & mask) == ip)
@@ -150,31 +150,31 @@ bool DHCPTable::applyDirect(const IP &ip,const IP &mask) {
 		if ((item.first.first & mask) == ip || (ip & item.first.second) == item.first.first)
 			return false;
 	auto time = std::chrono::system_clock::now().time_since_epoch().count();
-	this->segments.insert_or_assign(std::pair(ip, mask), time + 2L * 60 * 60 * 1000 * 1000);
+	this->segments.insert_or_assign(std::pair(ip, mask), std::pair{time + kDHCPTime,mac});
 	return true;
 }
 
-bool DHCPTable::tryApply(const IP& ip, int dhcpID) {
+bool DHCPTable::tryApply(const IP& ip,const MAC& mac, int dhcpID) {
 	this->check();
 	if (dhcpID == -1)
-		return applyDirect(ip);
+		return applyDirect(ip, mac);
 	else
 		for (const auto& item : this->tempIps)
 			if (item.second.second == dhcpID) {
 				auto time = std::chrono::system_clock::now().time_since_epoch().count();
-				this->ips.insert_or_assign(item.first, time + 2L * 60 * 60 * 1000 * 1000);
+				this->ips.insert_or_assign(item.first, std::pair{time + kDHCPTime,mac});
 				this->tempIps.erase(item.first);
 				return true;
 			}
 	return false;
 }
 
-bool DHCPTable::applyDirect(const IP& ip) {
+bool DHCPTable::applyDirect(const IP& ip, const MAC& mac) {
 	this->check();
 	if ((ip & this->mask) != this->ip)
 		return false;
 	for (const auto& item : this->ips)
-		if (item.first == ip)
+		if (item.first == ip && item.second.second != mac)
 			return false;
 	for (const auto& item : this->segments)
 		if ((ip & item.first.second) == item.first.first)
@@ -186,32 +186,28 @@ bool DHCPTable::applyDirect(const IP& ip) {
 		if ((ip & item.first.second) == item.first.first)
 			return false;
 	auto time = std::chrono::system_clock::now().time_since_epoch().count();
-	this->ips.insert_or_assign(ip, time + kDHCPTime);
+	this->ips.insert_or_assign(ip, std::pair{time + kDHCPTime ,mac});
 	return true;
 }
 
-bool DHCPTable::renewal(const IP& ip, const IP& mask) {
+bool DHCPTable::renewal(const IP& ip, const IP& mask, const MAC& mac) {
 	this->check();
 	auto time = std::chrono::system_clock::now().time_since_epoch().count() + kDHCPTime;
 	for (auto& item : this->segments)
-		if ((ip & item.first.second) == item.first.first) {
-			item.second = time;
+		if (item.first.first == ip && item.first.second == mask && item.second.second == mac) {
+			item.second.first = time;
 			return true;
 		}
-	this->ips.insert_or_assign(ip, time);
-	return true;
-	// always return true?
+	return false;
 }
 
-bool DHCPTable::renewal(const IP& ip) {
+bool DHCPTable::renewal(const IP& ip, const MAC& mac) {
 	this->check();
 	auto time = std::chrono::system_clock::now().time_since_epoch().count() + kDHCPTime;
 	for (auto& item : this->ips)
-		if (item.first == ip) {
-			item.second = time;
+		if (item.first == ip && item.second.second == mac){
+			item.second.first = time;
 			return true;
 		}
-	this->ips.insert_or_assign(ip, time);
-	return true;
-	// always return true?
+	return false;
 }

@@ -154,7 +154,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 				unsigned char useSegment;
 				block->read(&useSegment, 1);
 				if (useSegment) {
-					if (this->table->tryApply(segment, mask, dhcpID) ) {
+					if (this->table->tryApply(segment, mask, mac, dhcpID) ) {
 						auto* packet = new DHCPACKPacket(mac, *ipConfiguration.getSegment(), segment,
 						                                 kDHCPTime);
 						auto * newBlock = packet->createBlock();
@@ -167,7 +167,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 						this->lowerLayers[id]->send(newBlock);
 					}
 				} else {
-					if (this->table->tryApply(segment, dhcpID)) {
+					if (this->table->tryApply(segment,mac, dhcpID)) {
 						auto* packet = new DHCPACKPacket(mac, *ipConfiguration.getSegment(), segment,
 						                                 kDHCPTime);
 						auto * newBlock = packet->createBlock();
@@ -261,7 +261,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 				unsigned char useSegment;
 				block->read(&useSegment, 1);
 				if (useSegment) {
-					if (this->table->renewal(segment, mask) ) {
+					if (this->table->renewal(segment, mask, mac) ) {
 						auto* packet = new DHCPACKPacket(mac, *ipConfiguration.getSegment(), segment,
 						                                 kDHCPTime);
 						auto * newBlock = packet->createBlock();
@@ -274,7 +274,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 						this->lowerLayers[id]->send(newBlock);
 					}
 				} else {
-					if (this->table->renewal(segment)) {
+					if (this->table->renewal(segment,mac)) {
 						auto* packet = new DHCPACKPacket(mac, *ipConfiguration.getSegment(), segment,
 						                                 kDHCPTime);
 						auto * newBlock = packet->createBlock();
@@ -291,6 +291,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 			}
 			case 0x04: {
 				// receive dhcp ack
+				error("received dhcp ack");
 				this->startDHCP = std::chrono::system_clock::now().time_since_epoch().count();
 				this->duration  = block->readLong();
 				this->isIPValid = true;

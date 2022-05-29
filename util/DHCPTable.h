@@ -9,6 +9,7 @@
 #include "network/IP.h"
 #include "map"
 #include "random"
+#include "network/MAC.h"
 
 extern const long long int kDHCPTime;
 
@@ -26,18 +27,18 @@ public:
 
 	int dhcpID = 0;
 
-	bool tryApply(const IP& ip,const IP& mask, int dhcpID);
+	bool tryApply(const IP& ip,const IP& mask,const MAC& mac, int dhcpID);
 
-	bool tryApply(const IP& ip, int dhcpID);
+	bool tryApply(const IP& ip,const MAC& mac, int dhcpID);
 
-	bool renewal(const IP& ip, const IP& mask);
+	bool renewal(const IP& ip, const IP& mask, const MAC& mac);
 
-	bool renewal(const IP& ip);
+	bool renewal(const IP& ip, const MAC& mac);
 
 private:
 
-	std::map<std::pair<IP,IP>, long long> segments;
-	std::map<IP, long long > ips;
+	std::map<std::pair<IP,IP>, std::pair<long long,MAC>> segments;
+	std::map<IP,std::pair<long long,MAC> > ips;
 
 	std::map<std::pair<IP,IP>,std::pair<long long,int>> tempSegments;
 	std::map<IP, std::pair<long long,int>> tempIps;
@@ -47,9 +48,9 @@ private:
 
 	void check();
 
-	bool applyDirect(const IP &ip, const IP &mask);
+	bool applyDirect(const IP &ip, const IP &mask, const MAC& mac);
 
-	bool applyDirect(const IP& ip);
+	bool applyDirect(const IP& ip, const MAC& mac);
 };
 
 
