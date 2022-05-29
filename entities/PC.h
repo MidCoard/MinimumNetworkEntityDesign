@@ -29,10 +29,12 @@ public:
 
 	void start() override;
 
-private:
+public:
 	IP *ip;
 	IP *mask;
 	IP *gateway;
+
+private:
 	MAC *mac;
 	INetAddress *linkAddress;
 	INetAddress *physicalAddress;

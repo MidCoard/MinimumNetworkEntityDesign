@@ -108,6 +108,8 @@ RouterNetworkLayer::RouterNetworkLayer(int id, NetworkEntity *networkEntity) : N
 
 void RouterNetworkLayer::handleReceive(int id, Block *block) {
 	routeTable.check();
+	if (this->isIPValid)
+		this->checkDHCP();
 	if (block->getSendCount() < 0)
 		return;
 	if (block->getRemaining() < 8)
@@ -129,7 +131,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 			block->read(&header, 1);
 			switch (header) {
 				case 0x01:
-					if (source == LOCAL0) {
+					if (id != 0 && source == LOCAL0) {
 						// receive dhcp discover, as this is a dhcp server, so handle it!
 						MAC mac = block->readMAC();
 						unsigned char useSegment;
@@ -158,7 +160,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 						break;
 					}
 				case 0x03:
-					if (source == LOCAL0) {
+					if (id != 0 && source == LOCAL0) {
 						// receive dhcp request, as this is a dhcp server, so handle it!
 						IP segment = block->readIP();
 						IP mask = block->readIP();
@@ -168,7 +170,8 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 						block->read(&useSegment, 1);
 						if (useSegment) {
 							if (this->table->tryApply(segment, mask, mac, dhcpID)) {
-								auto *packet = new DHCPACKPacket(mac, *ipConfiguration.getSegment(), segment,
+								auto *packet = new DHCPACKPacket(mac, *ipConfiguration.getSegment(), segment, mask,
+								                                 *ipConfiguration.getSegment(),
 								                                 kDHCPTime);
 								auto *newBlock = packet->createBlock();
 								delete packet;
@@ -181,7 +184,8 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 							}
 						} else {
 							if (this->table->tryApply(segment, mac, dhcpID)) {
-								auto *packet = new DHCPACKPacket(mac, *ipConfiguration.getSegment(), segment,
+								auto *packet = new DHCPACKPacket(mac, *ipConfiguration.getSegment(), segment, mask,
+								                                 *ipConfiguration.getSegment(),
 								                                 kDHCPTime);
 								auto *newBlock = packet->createBlock();
 								delete packet;
@@ -196,7 +200,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 						break;
 					}
 				case 0x06:
-					if (source == LOCAL0) {
+					if (id != 0 && source == LOCAL0) {
 						// dhcp decline
 						IP segment = block->readIP();
 						IP mask = block->readIP();
@@ -236,24 +240,84 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 			unsigned char header;
 			block->read(&header, 1);
 			switch (header) {
-				case 0x02: {// receive dhcp offer
-					if (ipConfiguration.isValid())
-						return;
-					IP segment = block->readIP();
-					IP mask = block->readIP();
-					IP gateway = block->readIP();
-					auto *linkLayer = (LinkLayer *) this->lowerLayers[id];
-					linkLayer->sendARP(segment, segment);
-					std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-					MAC mac = this->arpTable.lookup(segment);
-					if (!mac.isBroadcast()) {
-						// one have already got the ip (maybe static ip)
-						auto *packet = new DHCPDeclinePacket(segment, mac, true);
-						auto *newBlock = packet->createBlock();
-						delete packet;
-						this->lowerLayers[id]->send(newBlock);
-					} else {
-						this->dhcpID = block->readInt();
+				case 0x02:
+					if (id == 0) {// receive dhcp offer
+						if (ipConfiguration.isValid())
+							return;
+						IP segment = block->readIP();
+						IP mask = block->readIP();
+						IP gateway = block->readIP();
+						auto *linkLayer = (LinkLayer *) this->lowerLayers[id];
+						linkLayer->sendARP(segment, segment);
+						std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+						MAC mac = this->arpTable.lookup(segment);
+						if (!mac.isBroadcast()) {
+							// one have already got the ip (maybe static ip)
+							auto *packet = new DHCPDeclinePacket(segment, mac, true);
+							auto *newBlock = packet->createBlock();
+							delete packet;
+							this->lowerLayers[id]->send(newBlock);
+						} else {
+							this->dhcpID = block->readInt();
+							auto *router = (Router *) this->networkEntity;
+							delete router->segment;
+							delete router->mask;
+							delete router->gateway;
+							router->segment = new IP(segment);
+							router->mask = new IP(mask);
+							router->gateway = new IP(gateway);
+							this->setIPConfiguration(0, router->segment, router->mask, router->gateway);
+							this->sendDHCP();
+						}
+						break;
+					}
+				case 0x03:
+					if (id != 0) {
+						// receive uni-cast dhcp request this is for renewal
+						if (!this->isIPValid)
+							return;
+						IP segment = block->readIP();
+						IP mask = block->readIP();
+						MAC mac = block->readMAC();
+						unsigned char useSegment;
+						block->read(&useSegment, 1);
+						if (useSegment) {
+							if (this->table->renewal(segment, mask, mac)) {
+								auto *packet = new DHCPACKPacket(mac, *ipConfiguration.getSegment(), segment, mask,
+								                                 *ipConfiguration.getGateway(),
+								                                 kDHCPTime);
+								auto *newBlock = packet->createBlock();
+								delete packet;
+								this->lowerLayers[id]->send(newBlock);
+							} else {
+								auto *packet = new DHCPNAKPacket(mac, *ipConfiguration.getSegment());
+								auto *newBlock = packet->createBlock();
+								delete packet;
+								this->lowerLayers[id]->send(newBlock);
+							}
+						} else {
+							if (this->table->renewal(segment, mac)) {
+								auto *packet = new DHCPACKPacket(mac, *ipConfiguration.getSegment(), segment, mask,
+								                                 *ipConfiguration.getGateway(),
+								                                 kDHCPTime);
+								auto *newBlock = packet->createBlock();
+								delete packet;
+								this->lowerLayers[id]->send(newBlock);
+							} else {
+								auto *packet = new DHCPNAKPacket(mac, *ipConfiguration.getSegment());
+								auto *newBlock = packet->createBlock();
+								delete packet;
+								this->lowerLayers[id]->send(newBlock);
+							}
+						}
+						break;
+					}
+				case 0x04:
+					if (id == 0) {
+						// receive dhcp ack
+						IP segment = block->readIP();
+						IP mask = block->readIP();
+						IP gateway = block->readIP();
 						auto *router = (Router *) this->networkEntity;
 						delete router->segment;
 						delete router->mask;
@@ -262,63 +326,21 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 						router->mask = new IP(mask);
 						router->gateway = new IP(gateway);
 						this->setIPConfiguration(0, router->segment, router->mask, router->gateway);
-						this->sendDHCP();
+						this->startDHCP = std::chrono::system_clock::now().time_since_epoch().count();
+						this->duration = block->readLong();
+						this->isIPValid = true;
+						delete this->table;
+						this->table = new DHCPTable(segment, mask);
+						auto *linkLayer = (LinkLayer *) this->lowerLayers[id]; // id should be 0
+						this->table->tryApply(segment,linkLayer->getMAC() , -1);
+						break;
 					}
-					break;
-				}
-				case 0x03: {
-					// receive uni-cast dhcp request this is for renewal
-					if (!this->isIPValid)
-						return;
-					IP segment = block->readIP();
-					IP mask = block->readIP();
-					MAC mac = block->readMAC();
-					unsigned char useSegment;
-					block->read(&useSegment, 1);
-					if (useSegment) {
-						if (this->table->renewal(segment, mask, mac)) {
-							auto *packet = new DHCPACKPacket(mac, *ipConfiguration.getSegment(), segment,
-							                                 kDHCPTime);
-							auto *newBlock = packet->createBlock();
-							delete packet;
-							this->lowerLayers[id]->send(newBlock);
-						} else {
-							auto *packet = new DHCPNAKPacket(mac, *ipConfiguration.getSegment());
-							auto *newBlock = packet->createBlock();
-							delete packet;
-							this->lowerLayers[id]->send(newBlock);
-						}
-					} else {
-						if (this->table->renewal(segment, mac)) {
-							auto *packet = new DHCPACKPacket(mac, *ipConfiguration.getSegment(), segment,
-							                                 kDHCPTime);
-							auto *newBlock = packet->createBlock();
-							delete packet;
-							this->lowerLayers[id]->send(newBlock);
-						} else {
-							auto *packet = new DHCPNAKPacket(mac, *ipConfiguration.getSegment());
-							auto *newBlock = packet->createBlock();
-							delete packet;
-							this->lowerLayers[id]->send(newBlock);
-						}
+				case 0x05:
+					if (id == 0) {
+						// receive dhcp nak
+						this->dhcpID = -1;
+						break;
 					}
-					break;
-				}
-				case 0x04: {
-					// receive dhcp ack
-					error("received dhcp ack");
-					this->startDHCP = std::chrono::system_clock::now().time_since_epoch().count();
-					this->duration = block->readLong();
-					this->isIPValid = true;
-					delete this->table;
-					this->table = new DHCPTable(*ipConfiguration.getSegment(), *ipConfiguration.getMask());
-					break;
-				}
-				case 0x05: {
-					// receive dhcp nak
-					this->dhcpID = -1;
-					break;
-				}
 				default:
 					if (this->upperLayers.size() == 1)
 						this->upperLayers[0]->receive(this->getID(), new Block(block));

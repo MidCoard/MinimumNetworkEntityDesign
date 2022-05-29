@@ -3,6 +3,8 @@
 #include "ARPReplyPacket.h"
 #include "DHCPDiscoverPacket.h"
 #include "DHCPRequestPacket.h"
+#include "PC.h"
+#include "DHCPDeclinePacket.h"
 #include <utility>
 
 NetworkLayer::NetworkLayer(NetworkEntity * networkEntity) : NetworkLayer(0, networkEntity) {}
@@ -27,6 +29,10 @@ unsigned long long NetworkLayer::size() {
 
 void NetworkLayer::handleReceive(int id, Block* block) {
 	routeTable.check();
+	if (this->isIPValid)
+		this->checkDHCP();
+	if (id != 0)
+		this->error("PC must receive on interface 0");
 	if (block->getRemaining() < 8)
 		return;
 	IP source = block->readIP();
@@ -38,12 +44,59 @@ void NetworkLayer::handleReceive(int id, Block* block) {
 		unsigned char header;
 		block->read(&header, 1);
 		switch (header) {
-			default:
+			case 0x02: {
+				if (ipConfiguration.isValid())
+					return;
+				// handle dhcp offer
+				IP ip = block->readIP();
+				IP mask = block->readIP();
+				IP gateway = block->readIP();
+				auto *linkLayer = (LinkLayer *) this->lowerLayers[id];
+				linkLayer->sendARP(ip, ip);
+				std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+				MAC mac = this->arpTable.lookup(ip);
+				if (mac.isBroadcast()) {
+					// one have already got the ip (maybe static ip)
+					auto *packet = new DHCPDeclinePacket(ip, mac, true);
+					auto *newBlock = packet->createBlock();
+					delete packet;
+					this->lowerLayers[id]->send(newBlock);
+				} else {
+					this->dhcpID = block->readInt();
+					auto *pc = (PC *) this->networkEntity;
+					delete pc->ip;
+					delete pc->mask;
+					delete pc->gateway;
+					pc->ip = new IP(ip);
+					pc->mask = new IP(mask);
+					pc->gateway = new IP(gateway);
+					this->setIPConfiguration(0, pc->ip, pc->mask, pc->gateway);
+					this->sendDHCP();
+				}
+				break;
+			}
+			case 0x04: {
+				IP ip = block->readIP();
+				IP mask = block->readIP();
+				IP gateway = block->readIP();
+				auto *pc = (PC *) this->networkEntity;
+				delete pc->ip;
+				delete pc->mask;
+				delete pc->gateway;
+				pc->ip = new IP(ip);
+				pc->mask = new IP(mask);
+				pc->gateway = new IP(gateway);this->setIPConfiguration(0, pc->ip, pc->mask, pc->gateway);
+				this->startDHCP = std::chrono::system_clock::now().time_since_epoch().count();
+				this->duration = block->readLong();
+				this->isIPValid = true;
+				break;
+			}
+			default: {
 				auto *newBlock = new Block();
 				newBlock->writeBlock(block);
 				newBlock->flip();
 				this->upperLayers[0]->receive(this->getID(), newBlock);
-				break;
+			}
 		}
 	}
 }
@@ -52,9 +105,7 @@ void NetworkLayer::handleSend(Block* block) {
 	routeTable.check();
 	if (!isIPValid)
 		return;
-	auto now = std::chrono::system_clock::now().time_since_epoch().count();
-	if (now - this->startDHCP > this->duration  * 3 / 4) // for 75%
-		this->sendDHCPRenewal();
+	this->checkDHCP();
 	if (block->getSendCount() < 0)
 		return;
 	if (block->getRemaining() < 4)
@@ -140,4 +191,10 @@ void NetworkLayer::sendDHCPRenewal0(bool useSegment) {
 
 void NetworkLayer::sendDHCPRenewal() {
 	this->sendDHCPRenewal0(false);
+}
+
+void NetworkLayer::checkDHCP() {
+	auto now = std::chrono::system_clock::now().time_since_epoch().count();
+	if (now - this->startDHCP > this->duration  * 3 / 4) // for 75%
+		this->sendDHCPRenewal();
 }

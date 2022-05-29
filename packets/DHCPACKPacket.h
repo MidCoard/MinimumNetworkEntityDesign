@@ -11,7 +11,7 @@
 class DHCPACKPacket : public Packet{
 
 public:
-	DHCPACKPacket(MAC mac, IP ip, IP destination, long long int i);
+	DHCPACKPacket(MAC mac, IP ip, IP destination, IP mask, IP gateway, long long int i);
 
 	Block * createBlock() override;
 	unsigned char getHeader() override;
@@ -20,6 +20,8 @@ private:
 	MAC mac;
 	IP ip;
 	IP destination;
+	IP mask;
+	IP gateway;
 	long long int time;
 };
 

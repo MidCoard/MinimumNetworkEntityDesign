@@ -53,6 +53,8 @@ protected:
 	int dhcpID = -1;
 	long long int duration = 0;
 	long long int startDHCP = 0;
+
+	void checkDHCP();
 };
 
 
