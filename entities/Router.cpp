@@ -184,12 +184,13 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 				// dhcp decline
 				IP segment = block->readIP();
 				IP mask = block->readIP();
+				MAC mac = block->readMAC();
 				unsigned char useSegment;
 				block->read(&useSegment, 1);
 				if (useSegment)
-					this->table->tryApply(segment, -1);
+					this->table->tryApply(segment, mac, -1);
 				else
-					this->table->tryApply(segment, mask ,-1);
+					this->table->tryApply(segment, mask, mac,-1);
 			}
 			else {
 				// this is broadcast packet
@@ -231,9 +232,10 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 				auto* linkLayer = (LinkLayer*) this->lowerLayers[id];
 				linkLayer->sendARP(segment ,segment);
 				std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-				if (!this->arpTable.lookup(segment).isBroadcast()) {
+				MAC mac = this->arpTable.lookup(segment);
+				if (!mac.isBroadcast()) {
 					// one have already got the ip (maybe static ip)
-					auto * packet = new DHCPDeclinePacket(segment, true);
+					auto * packet = new DHCPDeclinePacket(segment,mac, true);
 					auto * newBlock = packet->createBlock();
 					delete packet;
 					this->lowerLayers[id]->send(newBlock);

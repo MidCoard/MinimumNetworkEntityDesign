@@ -10,12 +10,13 @@
 
 class DHCPDeclinePacket : public Packet{
 public:
-	DHCPDeclinePacket(IP ip, bool useSegment);
+	DHCPDeclinePacket(IP ip,MAC mac, bool useSegment);
 
 	Block * createBlock() override;
 	unsigned char getHeader() override;
 private:
 	IP ip;
+	MAC mac;
 	bool useSegment;
 
 };
