@@ -33,9 +33,10 @@ int Block::read(unsigned char *data, int len) {
 }
 
 std::vector<unsigned char> Block::read() {
+	std::vector<unsigned char> data = {this->temp.begin() + this->pos, this->temp.end()};
 	this->pos = this->remaining;
 	this->remaining = 0;
-	return {this->temp.begin(), this->temp.end()};
+	return data;
 }
 
 MAC Block::readMAC() {

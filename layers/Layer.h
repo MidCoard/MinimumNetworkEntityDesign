@@ -55,11 +55,11 @@ protected:
 	code_machina::BlockingQueue<Block *> sendBlockQueue;
 	code_machina::BlockingQueue<std::pair<int, Block *>> receiveBlockQueue;
 	NetworkEntity *networkEntity;
+	bool shouldStop = false;
 private:
 	// this two pointer will be deleted when closing
 	std::thread *sendThread = nullptr;
 	std::thread *receiveThread = nullptr;
-	bool shouldStop = false;
 	int id;
 
 	void

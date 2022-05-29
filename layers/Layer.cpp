@@ -58,8 +58,7 @@ void Layer::start() {
 				break;
 			Block *block = nullptr;
 			// this block is safe now
-			code_machina::BlockingCollectionStatus status = this->sendBlockQueue.try_take(block,
-			                                                                              std::chrono::milliseconds(1));
+			code_machina::BlockingCollectionStatus status = this->sendBlockQueue.try_take(block, std::chrono::seconds(1));
 			if (status == code_machina::BlockingCollectionStatus::Ok) {
 				this->handleSend(block);
 				delete block;
@@ -71,9 +70,7 @@ void Layer::start() {
 			if (shouldStop)
 				break;
 			std::pair<int, Block *> pair;
-			code_machina::BlockingCollectionStatus status = this->receiveBlockQueue.try_take(pair,
-			                                                                                 std::chrono::milliseconds(
-					                                                                                 1));
+			code_machina::BlockingCollectionStatus status = this->receiveBlockQueue.try_take(pair, std::chrono::seconds(1));
 			if (status == code_machina::BlockingCollectionStatus::Ok) {
 				this->handleReceive(pair.first, pair.second);
 				delete pair.second;

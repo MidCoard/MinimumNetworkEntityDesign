@@ -106,7 +106,10 @@ void NetworkLayer::handleReceive(int id, Block *block) {
 				break;
 			}
 			default: {
+				if (!this->isIPValid)
+					return;
 				auto *newBlock = new Block();
+				newBlock->writeInt(header);
 				newBlock->writeBlock(block);
 				newBlock->flip();
 				this->upperLayers[0]->receive(this->getID(), newBlock);

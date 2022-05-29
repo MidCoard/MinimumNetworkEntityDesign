@@ -25,6 +25,7 @@ public:
 private:
 	// multithreading safe should be considered
 	std::map<std::pair<IP,IP>,int> map;
+	std::mutex mtx;
 };
 
 
