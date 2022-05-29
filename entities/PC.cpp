@@ -55,6 +55,12 @@ PC::~PC() {
 
 void PC::start() {
 	NetworkEntity::start();
-	this->networkLayer->sendDHCP();
-	dhcp::request(this->networkLayer);
+	if (!this->networkLayer->isIPValid) {
+		this->networkLayer->sendDHCP();
+		dhcp::request(this->networkLayer);
+	}
+}
+
+std::string PC::getName() {
+	return "PC";
 }

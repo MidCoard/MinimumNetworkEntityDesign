@@ -61,3 +61,7 @@ std::vector<IPConfiguration> DefaultRouter::getIPConfiguration() {
 		return {ipConfiguration};
 	return {};
 }
+
+std::string DefaultRouter::getName() {
+	return "DefaultRouter";
+}

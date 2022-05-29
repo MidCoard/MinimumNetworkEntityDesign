@@ -253,7 +253,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 						MAC mac = this->arpTable.lookup(segment);
 						if (!mac.isBroadcast()) {
 							// one have already got the ip (maybe static ip)
-							auto *packet = new DHCPDeclinePacket(segment, mac, true);
+							auto *packet = new DHCPDeclinePacket(segment,mask, mac, true);
 							auto *newBlock = packet->createBlock();
 							delete packet;
 							this->lowerLayers[id]->send(newBlock);
@@ -314,6 +314,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 					}
 				case 0x04:
 					if (id == 0) {
+						this->error("DHCP server receive DHCPACK");
 						// receive dhcp ack
 						IP segment = block->readIP();
 						IP mask = block->readIP();

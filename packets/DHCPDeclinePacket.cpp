@@ -14,6 +14,8 @@ Block *DHCPDeclinePacket::createBlock() {
 	block->writeIP(BROADCAST_IP);
 	block->writeHeader(this);
 	block->writeIP(this->ip);
+	block->writeIP(this->mask);
+	block->writeMAC(mac);
 	block->write(this->useSegment);
 	block->flip();
 	return block;
@@ -23,4 +25,4 @@ unsigned char DHCPDeclinePacket::getHeader() {
 	return 0x06;
 }
 
-DHCPDeclinePacket::DHCPDeclinePacket(IP ip,MAC mac, bool useSegment) : ip(std::move(ip)),mac(std::move(mac)), useSegment(useSegment) {}
+DHCPDeclinePacket::DHCPDeclinePacket(IP ip,IP mask,MAC mac, bool useSegment) : ip(std::move(ip)), mask(std::move(mask)),mac(std::move(mac)), useSegment(useSegment) {}

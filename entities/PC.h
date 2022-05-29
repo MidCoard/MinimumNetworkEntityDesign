@@ -29,6 +29,8 @@ public:
 
 	void start() override;
 
+	std::string getName() override;
+
 public:
 	IP *ip;
 	IP *mask;
@@ -38,7 +40,7 @@ private:
 	MAC *mac;
 	INetAddress *linkAddress;
 	INetAddress *physicalAddress;
-	NetworkLayer * networkLayer;
+	NetworkLayer * networkLayer = nullptr;
 };
 
 

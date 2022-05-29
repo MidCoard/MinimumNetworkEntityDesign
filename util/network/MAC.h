@@ -24,6 +24,8 @@ public:
 
 	MAC(unsigned char i, unsigned char i1, unsigned char i2, unsigned char i3, unsigned char i4, unsigned char i5);
 
+	std::string str();
+
 private:
 	std::string mac;
 	unsigned char bytes[6]{};

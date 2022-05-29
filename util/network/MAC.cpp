@@ -62,6 +62,10 @@ bool MAC::isBroadcast() const {
 	return true;
 }
 
+std::string MAC::str() {
+	return this->mac;
+}
+
 MAC generateMAC() {
 	std::default_random_engine e(std::chrono::system_clock::now().time_since_epoch().count());
 	std::uniform_int_distribution<int> u(0, 255);

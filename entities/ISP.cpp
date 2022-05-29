@@ -33,6 +33,10 @@ void ISP::start() {
 	NetworkEntity::start();
 }
 
+std::string ISP::getName() {
+	return "ISP";
+}
+
 RootAppLayer::RootAppLayer(NetworkEntity *networkEntity) : AppLayer(networkEntity) {
 }
 

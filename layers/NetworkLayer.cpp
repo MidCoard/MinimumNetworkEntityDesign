@@ -1,6 +1,5 @@
 #include "NetworkLayer.h"
 #include "ARPPacket.h"
-#include "ARPReplyPacket.h"
 #include "DHCPDiscoverPacket.h"
 #include "DHCPRequestPacket.h"
 #include "PC.h"
@@ -38,11 +37,12 @@ void NetworkLayer::handleReceive(int id, Block* block) {
 	IP source = block->readIP();
 	IP destination = block->readIP();
 	IPConfiguration ipConfiguration = configurations.at(0);
-	if (!destination.isBroadcast() && (ipConfiguration.getSegment() == nullptr || destination != *ipConfiguration.getSegment()))
+	unsigned char header;
+	block->read(&header, 1);
+	this->log("Received packet with header " + std::to_string(header));
+	if (!destination.isBroadcast() && ipConfiguration.getSegment() != nullptr && destination != *ipConfiguration.getSegment())
 		return;
 	else {
-		unsigned char header;
-		block->read(&header, 1);
 		switch (header) {
 			case 0x02: {
 				if (ipConfiguration.isValid())
@@ -57,7 +57,7 @@ void NetworkLayer::handleReceive(int id, Block* block) {
 				MAC mac = this->arpTable.lookup(ip);
 				if (mac.isBroadcast()) {
 					// one have already got the ip (maybe static ip)
-					auto *packet = new DHCPDeclinePacket(ip, mac, true);
+					auto *packet = new DHCPDeclinePacket(ip, mask, mac, true);
 					auto *newBlock = packet->createBlock();
 					delete packet;
 					this->lowerLayers[id]->send(newBlock);
@@ -85,7 +85,8 @@ void NetworkLayer::handleReceive(int id, Block* block) {
 				delete pc->gateway;
 				pc->ip = new IP(ip);
 				pc->mask = new IP(mask);
-				pc->gateway = new IP(gateway);this->setIPConfiguration(0, pc->ip, pc->mask, pc->gateway);
+				pc->gateway = new IP(gateway);
+				this->setIPConfiguration(0, pc->ip, pc->mask, pc->gateway);
 				this->startDHCP = std::chrono::system_clock::now().time_since_epoch().count();
 				this->duration = block->readLong();
 				this->isIPValid = true;

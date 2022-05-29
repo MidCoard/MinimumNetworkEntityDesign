@@ -19,6 +19,8 @@ public:
 	void start() override;
 
 	RouterNetworkLayer *networkLayer;
+
+	std::string getName() override;
 };
 
 class RootAppLayer : public AppLayer {

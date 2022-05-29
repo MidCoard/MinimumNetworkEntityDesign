@@ -29,6 +29,8 @@ public:
 
 	virtual void stop();
 
+	virtual std::string getName() = 0;
+
 protected:
 	Layer * layer;
 	int node;

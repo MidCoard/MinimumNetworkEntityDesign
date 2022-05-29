@@ -3,6 +3,7 @@
 //
 
 #include "Layer.h"
+#include "NetworkEntity.h"
 
 void Layer::addLowerLayer(Layer *layer) {
 	this->lowerLayers.push_back(layer);
@@ -103,11 +104,11 @@ void Layer::stop() {
 }
 
 void Layer::log(const std::string& message) {
-	std::cout << "Layer " << this->getName() << ": " << message << std::endl;
+	printf("%s: Layer %s: %s\n",this->networkEntity->getName().c_str(), this->getName().c_str(), message.c_str());
 }
 
 void Layer::error(const std::string& message) {
-	std::cerr << "Layer " << this->getName() << ": " << message << std::endl;
+	fprintf( stderr, "%s: Layer %s: %s\n",this->networkEntity->getName().c_str(),  this->getName().c_str(), message.c_str());
 }
 
 int Layer::getID() const {

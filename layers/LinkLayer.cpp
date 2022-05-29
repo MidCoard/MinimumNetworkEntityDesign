@@ -33,6 +33,7 @@ void LinkLayer::handleReceive(int id, Block* block) {
 		return;
 	MAC source = block->readMAC();
 	MAC destination = block->readMAC();
+	this->log("Received packet from " + source.str() + " to " + destination.str());
 	if (!destination.isBroadcast() && destination != this->idMacMap.at(0)) {
 		return;
 	} else {

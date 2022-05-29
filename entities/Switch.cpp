@@ -23,6 +23,10 @@ Switch::~Switch() {
 		delete value;
 }
 
+std::string Switch::getName() {
+	return "Switch";
+}
+
 SwitchConfiguration::SwitchConfiguration(INetAddress *linkAddress, INetAddress *physicalAddress)
 		: linkAddress(linkAddress), physicalAddress(physicalAddress) {}
 
