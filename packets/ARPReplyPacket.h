@@ -10,7 +10,7 @@
 
 class ARPReplyPacket : Packet {
 public:
-	ARPReplyPacket(IP ip, IP reply, MAC mac);
+	ARPReplyPacket(IP ip, IP reply, MAC source, MAC destination);
 
 	Block *createBlock() override;
 
@@ -19,7 +19,8 @@ public:
 private:
 	IP ip;
 	IP reply;
-	MAC mac;
+	MAC source;
+	MAC destination;
 };
 
 

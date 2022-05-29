@@ -1,4 +1,6 @@
 #include "PC.h"
+
+#include <utility>
 #include "DHCPHelper.h"
 
 // why here using pointer to IP, MAC etc.
@@ -17,8 +19,9 @@ std::vector<std::string> PC::createLayers(int node, std::vector<int> ids) {
 	networkLayer->setIPConfiguration(ids[0], this->ip,
 	                                 this->mask,
 	                                 this->gateway);
-	if (networkLayer->getIPConfiguration(0).isValid())
+	if (networkLayer->getIPConfiguration(0).isValid()) {
 		networkLayer->isIPValid = true;
+	}
 	this->layer->addLowerLayer(networkLayer);
 	auto *linkLayer = new LinkLayer(ids[0], this);
 	if (mac == nullptr)
@@ -64,4 +67,8 @@ void PC::start() {
 
 std::string PC::getName() {
 	return "PC";
+}
+
+void PC::ping(IP ip) {
+	this->networkLayer->sendICMP(std::move(ip));
 }

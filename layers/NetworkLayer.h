@@ -12,6 +12,7 @@
 #include "LinkLayer.h"
 #include "ICMPTable.h"
 #include "UDPTable.h"
+#include "ICMPReplyPacket.h"
 
 
 class NetworkLayer : public Layer {
@@ -33,8 +34,6 @@ public:
 
 	void handleSend(Block *block) override;
 
-	IP getIP();
-
 	bool isIPValid = false;
 
 	void handleARP(const IP &ip, const MAC &mac);
@@ -49,18 +48,24 @@ public:
 
 	void sendICMP(IP ip);
 
-protected:
-	std::map<int, IPConfiguration> configurations;
+	void handleICMP(const IP& ip, ICMPReplyStatus status);
 	RouteTable routeTable;
-	ARPTable arpTable;
-	std::map<IP, MAC> ipMacMap;
-	ICMPTable icmpTable;
 
+protected:
+	// for PC : its only one port 0, its ip is segment, its mask is mask, its gateway is gateway
+	// for router : for port 0, its ip is segment, its mask is mask, its gateway is gateway
+	// for router : for other port, its ip is subnetwork segment, its mask is subnetwork mask, its gateway is subnetwork gateway
+	std::map<int, IPConfiguration> configurations;
+	ARPTable arpTable;
+	ICMPTable icmpTable;
+	std::map<IP, MAC> ipMacMap;
 	int dhcpID = -1;
 	long long int duration = 0;
 	long long int startDHCP = 0;
 
 	void checkDHCP();
+
+	IP getIP(int id);
 };
 
 

@@ -31,6 +31,8 @@ public:
 
 	std::string getName() override;
 
+	void ping(IP ip);
+
 public:
 	IP *ip;
 	IP *mask;

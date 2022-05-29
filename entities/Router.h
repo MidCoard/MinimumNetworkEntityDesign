@@ -58,12 +58,6 @@ public:
 	bool isIPAvailable() override;
 
 	void start() override;
-
-	// first set in generateIP
-	// second set in DHCP server ( this time should delete the first set )
-	IP *segment = nullptr;
-	IP *mask = nullptr;
-	IP *gateway = nullptr;
 protected:
 	std::map<int, RouterConfiguration *> routerConfigurations;
 	bool generatedIP = false;

@@ -51,15 +51,19 @@ void LinkLayer::handleReceive(int id, Block *block) {
 				if (this->upperLayers.size() == 1) {
 					IP ip = block->readIP();
 					IP des = block->readIP();
+					this->log("Is it " + des.str() + "?");
 					auto *networkLayer = (NetworkLayer *) this->upperLayers[0];
-					if (networkLayer->isIPValid && des == networkLayer->getIP())
-						this->sendARPReply(id, source, des, ip);
+					if (networkLayer->isIPValid && des == networkLayer->getIP()) {
+						this->log("Yes, I am " + des.str() + ", my MAC address is " + this->getMAC().str());
+						this->sendARPReply(source, des, ip);
+					}
 				}
 				break;
 			case 0x87:
 				if (this->upperLayers.size() == 1) {
 					IP ip = block->readIP();
 					IP des = block->readIP();
+					this->log("I know " + ip.str() + " is " + source.str());
 					auto *networkLayer = (NetworkLayer *) this->upperLayers[0];
 					if (networkLayer->isIPValid && des == networkLayer->getIP())
 						networkLayer->handleARP(ip, source);
@@ -75,11 +79,11 @@ void LinkLayer::sendARP(const IP &ip, const IP &query) {
 	this->send(block);
 }
 
-void LinkLayer::sendARPReply(int id, const MAC &mac, const IP &source, const IP &destination) {
-	auto *packet = new ARPReplyPacket(source, destination, mac);
+void LinkLayer::sendARPReply(const MAC &mac, const IP &source, const IP &destination) {
+	auto *packet = new ARPReplyPacket(source, destination,getMAC(), mac);
 	auto *block = packet->createBlock();
 	delete packet;
-	this->lowerLayers[id]->send(block);
+	this->lowerLayers[0]->send(block);
 }
 
 MAC LinkLayer::getMAC() {

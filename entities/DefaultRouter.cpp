@@ -12,35 +12,58 @@ const int kWanPort = 0;
 void DefaultRouter::generateIP() {
 	if (generatedIP)
 		return;
+	auto* networkLayer = (RouterNetworkLayer *) this->layer;
 	std::vector<bool> visited(this->network->getNodes().size(), false);
-	std::vector<IPConfiguration> configurations;
-	for (int i = 0; i < ((RouterNetworkLayer *) this->layer)->size(); i++) {
-		IPConfiguration ipConfiguration = ((RouterNetworkLayer *) this->layer)->getIPConfiguration(i);
+	visited.at(this->node) = true;
+	for (int i = this->network->getHeads()[node]; i != -1; i = this->network->getLinks()[i]->next) {
+		int port = this->network->getLinks()[i]->weight.first;
+		if (port == kWanPort)
+			continue;
+		int subNode = this->network->getLinks()[i]->node;
+		auto child = this->network->getNodes()[subNode];
+		std::vector<IPConfiguration> configurations;
+		IPConfiguration ipConfiguration = networkLayer->getIPConfiguration(port);
 		if (ipConfiguration.isConfigurable())
 			configurations.push_back(ipConfiguration);
-	}
-	dfsAllocateIP(this->node, &visited, &configurations);
-	IP defaultIP = IP(255, 255, 255, 255);
-	IP defaultMask = IP(255, 255, 255, 255);
-	for (auto &configuration: configurations)
-		if (configuration.getSegment() != nullptr && configuration.getMask() != nullptr) {
+		if (child->isIPAvailable()) {
+			visited.at(subNode) = true;
+			auto configuration = child->getIPConfiguration();
+			configurations.insert(configurations.end(), configuration.begin(), configuration.end());
+		} else
+			dfsAllocateIP(subNode, &visited, &configurations);
+		IP defaultIP = IP(255, 255, 255, 255);
+		IP defaultMask = IP(255, 255, 255, 255);
+		IP * defaultGateway = ipConfiguration.getGateway();
+		for (auto &configuration: configurations) {
 			defaultIP = defaultIP & (*configuration.getSegment() & *configuration.getMask());
 			defaultMask = defaultMask & *configuration.getMask();
+			if (configuration.getGateway() != nullptr && defaultGateway == nullptr)
+				defaultGateway = configuration.getGateway();
 		}
-	this->segment = new IP(defaultIP);
-	this->mask = new IP(defaultMask);
-	this->gateway = ((RouterNetworkLayer *) this->layer)->getIPConfiguration(kWanPort).getGateway() == nullptr ? nullptr
-	                                                                                                           : new IP(
-					*((RouterNetworkLayer *) this->layer)->getIPConfiguration(kWanPort).getGateway());
-	((RouterNetworkLayer *) this->layer)->setIPConfiguration(kWanPort, this->segment, this->mask, this->gateway);
+		delete ipConfiguration.getSegment();
+		delete ipConfiguration.getMask();
+		networkLayer->setIPConfiguration(port, new IP(defaultIP), new IP(defaultMask), defaultGateway);
+	}
+	std::vector<IPConfiguration> configurations;
+	for (int i = 0; i<networkLayer->lowerLayers.size(); i++)
+		if (networkLayer->getIPConfiguration(i).isConfigurable())
+			configurations.push_back(networkLayer->getIPConfiguration(i));
+	IP defaultIP = IP(255, 255, 255, 255);
+	IP defaultMask = IP(255, 255, 255, 255);
+	for (auto &configuration: configurations) {
+		defaultIP = defaultIP & (*configuration.getSegment() & *configuration.getMask());
+		defaultMask = defaultMask & *configuration.getMask();
+	}
+	IPConfiguration ipConfiguration = networkLayer->getIPConfiguration(kWanPort);
+	delete ipConfiguration.getSegment();
+	delete ipConfiguration.getMask();
+	networkLayer->setIPConfiguration(kWanPort, new IP(defaultIP), new IP(defaultMask), ipConfiguration.getGateway());
 	generatedIP = true;
 }
 
 void DefaultRouter::dfsAllocateIP(int node, std::vector<bool> *visited, std::vector<IPConfiguration> *configurations) {
 	visited->at(node) = true;
 	for (int i = this->network->getHeads()[node]; i != -1; i = this->network->getLinks()[i]->next) {
-		if (node == this->node && this->network->getLinks()[i]->weight.first == kWanPort)
-			continue;
 		int subNode = this->network->getLinks()[i]->node;
 		if (visited->at(subNode))
 			continue;

@@ -48,8 +48,8 @@ public:
 
 	[[nodiscard]] int getID() const;
 
-protected:
 	std::vector<Layer *> lowerLayers;
+protected:
 	std::vector<Layer *> upperLayers;
 
 	code_machina::BlockingQueue<Block *> sendBlockQueue;

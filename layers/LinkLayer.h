@@ -38,7 +38,7 @@ private:
 	// in fact it is unnecessary for our now design
 	std::map<int, MAC> idMacMap;
 
-	void sendARPReply(int id, const MAC &mac, const IP &source, const IP &destination);
+	void sendARPReply(const MAC &mac, const IP &source, const IP &destination);
 };
 
 

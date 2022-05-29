@@ -38,12 +38,32 @@ void NetworkLayer::handleReceive(int id, Block *block) {
 	IP source = block->readIP();
 	IP destination = block->readIP();
 	IPConfiguration ipConfiguration = configurations.at(0);
-	unsigned char header;
-	block->read(&header, 1);
-	if (!destination.isBroadcast() && ipConfiguration.getSegment() != nullptr &&
-	    destination != *ipConfiguration.getSegment())
-		return;
-	else {
+	if (destination.isBroadcast() && isIPValid) {
+		auto *newBlock = new Block();
+		newBlock->writeBlock(block);
+		newBlock->flip();
+		this->upperLayers[0]->receive(this->getID(), newBlock);
+	} else if (isIPValid && *ipConfiguration.getSegment() == destination) {
+		unsigned char header;
+		block->read(&header, 1);
+		switch (header) {
+			case 0x21: {
+				IP segment = block->readIP();
+				IP query = block->readIP();
+				unsigned char flag;
+				block->read(&flag, 1);
+				this->icmpTable.update(segment, query, flag);
+				this->handleICMP(query, flag ? ICMPReplyStatus::kICMPReplyStatusUnreachable
+				                             : ICMPReplyStatus::kICMPReplyStatusSuccess);
+				break;
+			}
+			default: {
+				error("Unknown protocol type");
+			}
+		}
+	} else if (!isIPValid) {
+		unsigned char header;
+		block->read(&header, 1);
 		switch (header) {
 			case 0x02: {
 				if (ipConfiguration.isValid())
@@ -58,7 +78,7 @@ void NetworkLayer::handleReceive(int id, Block *block) {
 				MAC mac = this->arpTable.lookup(ip);
 				if (!mac.isBroadcast()) {
 					// one have already got the ip (maybe static ip)
-					auto *packet = new DHCPDeclinePacket(ip, mask, mac, true);
+					auto *packet = new DHCPDeclinePacket(ip, mask, mac, false);
 					auto *newBlock = packet->createBlock();
 					delete packet;
 					this->lowerLayers[id]->send(newBlock);
@@ -95,26 +115,25 @@ void NetworkLayer::handleReceive(int id, Block *block) {
 				this->isIPValid = true;
 				break;
 			}
-			case 0x21: {
-				if (!this->isIPValid)
-					return;
-				IP segment = block->readIP();
-				IP query = block->readIP();
-				unsigned char flag;
-				block->read(&flag, 1);
-				this->icmpTable.update(segment, query, flag);
+			case 0x05: {
+				// receive dhcp nak
+				this->dhcpID = -1;
+				delete ipConfiguration.getSegment();
+				delete ipConfiguration.getMask();
+				delete ipConfiguration.getGateway();
+				auto *pc = (PC *) this->networkEntity;
+				pc->ip = nullptr;
+				pc->mask = nullptr;
+				pc->gateway = nullptr;
+				this->setIPConfiguration(0, nullptr, nullptr, nullptr);
 				break;
 			}
 			default: {
-				if (!this->isIPValid)
-					return;
-				auto *newBlock = new Block();
-				newBlock->writeInt(header);
-				newBlock->writeBlock(block);
-				newBlock->flip();
-				this->upperLayers[0]->receive(this->getID(), newBlock);
+				error("PC is not available");
 			}
 		}
+	} else {
+		error("Discard packet");
 	}
 }
 
@@ -138,41 +157,60 @@ void NetworkLayer::handleSend(Block *block) {
 	std::pair<IP, int> nextHop = this->routeTable.lookup(destination);
 	if (nextHop.second != -1) {
 		// normally PC has no route to the destination, so send to the target or gateway
-		// first check if the destination is in the same network
-		if (nextHop.first.isInSameNetwork(*ipConfiguration.getSegment(), *ipConfiguration.getMask())) {
-			// if the destination is in the same network, send to the target
-			// get the mac address of the target
-			MAC mac = this->arpTable.lookup(nextHop.first);
-			// if the mac address is not found, send ARP, later send
-			if (mac.isBroadcast()) {
-				((LinkLayer *) this->lowerLayers[nextHop.second])->sendARP(*ipConfiguration.getSegment(),
-				                                                           nextHop.first);
-				std::this_thread::sleep_for(std::chrono::milliseconds(500));
-				auto *newBlock = new Block(block->getSendCount() - 1);
-				newBlock->writeIP(destination);
-				newBlock->writeBlock(block);
-				newBlock->flip();
-				// wait for the ARP reply
-				this->send(newBlock);
-			} else {
-				// if the mac address is found, send the block
-				auto *newBlock = new Block();
-				newBlock->writeMAC(mac);
-				newBlock->write(0); // for ip protocol
-				newBlock->writeIP(*ipConfiguration.getSegment());
-				newBlock->writeIP(destination);
-				newBlock->writeBlock(block);
-				newBlock->flip();
-				this->lowerLayers[nextHop.second]->send(newBlock);
-			}
+		// if the destination is in the same network, send to the target
+		// get the mac address of the target
+		MAC mac = this->arpTable.lookup(nextHop.first);
+		// if the mac address is not found, send ARP, later send
+		if (mac.isBroadcast()) {
+			((LinkLayer *) this->lowerLayers[nextHop.second])->sendARP(*ipConfiguration.getSegment(),
+			                                                           nextHop.first);
+			std::this_thread::sleep_for(std::chrono::milliseconds(500));
+			auto *newBlock = new Block(block->getSendCount() - 1);
+			newBlock->writeIP(destination);
+			newBlock->writeBlock(block);
+			newBlock->flip();
+			// wait for the ARP reply
+			this->send(newBlock);
+		} else {
+			// if the mac address is found, send the block
+			auto *newBlock = new Block();
+			newBlock->writeMAC(mac);
+			newBlock->write(0); // for ip protocol
+			newBlock->writeIP(*ipConfiguration.getSegment());
+			newBlock->writeIP(destination);
+			newBlock->writeBlock(block);
+			newBlock->flip();
+			this->lowerLayers[nextHop.second]->send(newBlock);
 		}
+	} else if (destination.isInSameNetwork(*ipConfiguration.getSegment(), *ipConfiguration.getMask())) {
+		// special case the destination is in the same network
+		MAC mac = this->arpTable.lookup(destination);
+		if (mac.isBroadcast()) {
+			((LinkLayer *) this->lowerLayers[0])->sendARP(*ipConfiguration.getSegment(), destination);
+			std::this_thread::sleep_for(std::chrono::milliseconds(500));
+			auto *newBlock = new Block(block->getSendCount() - 1);
+			newBlock->writeIP(destination);
+			newBlock->writeBlock(block);
+			newBlock->flip();
+			this->send(newBlock);
+		} else {
+			auto *newBlock = new Block();
+			newBlock->writeMAC(mac);
+			newBlock->write(0); // for ip protocol
+			newBlock->writeIP(*ipConfiguration.getSegment());
+			newBlock->writeIP(destination);
+			newBlock->writeBlock(block);
+			newBlock->flip();
+			this->lowerLayers[0]->send(newBlock);
+		}
+
 	}
 }
 
-IP NetworkLayer::getIP() {
+IP NetworkLayer::getIP(int id) {
 	if (!isIPValid)
 		throw std::invalid_argument("IP is not valid");
-	return *configurations.at(0).getSegment();
+	return *configurations.at(id).getSegment();
 }
 
 void NetworkLayer::handleARP(const IP &ip, const MAC &mac) {
@@ -182,7 +220,7 @@ void NetworkLayer::handleARP(const IP &ip, const MAC &mac) {
 void NetworkLayer::sendDHCP0(bool useSegment) {
 	IPConfiguration ipConfiguration = configurations.at(0);
 	auto *linkLayer = (LinkLayer *) this->lowerLayers[0];
-	if (ipConfiguration.getSegment() == nullptr || ipConfiguration.getMask() == nullptr) {
+	if (!ipConfiguration.isConfigurable()) {
 		auto *packet = new DHCPDiscoverPacket(linkLayer->getMAC(), useSegment);
 		Block *block = packet->createBlock();
 		delete packet;
@@ -229,10 +267,15 @@ void NetworkLayer::sendICMP(IP ip) {
 	if (!this->isIPValid)
 		return;
 	IPConfiguration ipConfiguration = configurations.at(0);
-	this->icmpTable.add(*ipConfiguration.getSegment(),ip);
-	auto *packet = new ICMPPacket(*ipConfiguration.getSegment(),std::move(ip), *ipConfiguration.getGateway());
+	this->icmpTable.add(*ipConfiguration.getSegment(), ip);
+	auto *packet = new ICMPPacket(*ipConfiguration.getSegment(), std::move(ip), *ipConfiguration.getGateway());
 	Block *block = packet->createBlock();
 	delete packet;
-	this->lowerLayers[0]->send(block);
+	this->send(block);
+}
+
+void NetworkLayer::handleICMP(const IP &ip, ICMPReplyStatus status) {
+	std::string s = (status ? "unreachable" : "reachable");
+	this->log("receive ICMP reply status " + s);
 }
 

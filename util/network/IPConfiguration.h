@@ -11,17 +11,16 @@ class IPConfiguration {
 public:
 	IPConfiguration(IP *segment, IP *mask, IP *gateway);
 
-	IP *getSegment();
+	IP *getSegment() const;
 
-	IP *getMask();
+	IP *getMask() const;
 
-	IP *getGateway();
+	IP *getGateway() const;
 
-	bool isConfigurable();
+	bool isConfigurable() const;
 
-	bool isValid();
+	bool isValid() const;
 
-private:
 	IP *segment;
 	IP *mask;
 	IP *gateway;

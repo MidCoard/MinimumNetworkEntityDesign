@@ -225,7 +225,23 @@ int main() {
 			std::cin>>node;
 			std::cout<<network->getNodes()[node]->getName()<<std::endl;
 		} else if (op == 2) {
-
+			int node;
+			std::cin>>node;
+			std::string s;
+			std::cin>>s;
+			IP ip = IP(s);
+			auto* pc = (PC*)network->getNodes()[node];
+			pc->ping(ip);
+		} else if (op == 3) {
+			int node;
+			std::cin>>node;
+			auto* pc = (PC*)network->getNodes()[node];
+			std::cout<<pc->ip->str()<<std::endl;
+		} else if (op == 4) {
+			int node;
+			std::cin>>node;
+			auto* router = (Router*)network->getNodes()[node];
+//			std::cout<<router->segment->str()<<std::endl;
 		}
 	}
 	if (network != nullptr) {
