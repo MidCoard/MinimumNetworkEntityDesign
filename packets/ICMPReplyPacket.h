@@ -12,17 +12,18 @@
 enum ICMPReplyStatus {
 	kICMPReplyStatusSuccess = 0,
 	kICMPReplyStatusUnreachable,
-	kICMPReplyStatusJump,
 };
 
 class ICMPReplyPacket : public Packet{
 
 public:
-	ICMPReplyPacket(IP ip, ICMPReplyStatus status);
+	ICMPReplyPacket(IP ip, IP query, IP destination, ICMPReplyStatus status);
 	Block * createBlock() override;
 	unsigned char getHeader() override;
 private:
 	IP ip;
+	IP query;
+	IP destination;
 	ICMPReplyStatus status;
 };
 

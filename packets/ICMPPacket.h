@@ -10,7 +10,7 @@
 
 class ICMPPacket : public Packet {
 public:
-	ICMPPacket(IP ip, IP gateway);
+	ICMPPacket(IP ip, IP query, IP gateway);
 
 	Block *createBlock() override;
 
@@ -18,6 +18,7 @@ public:
 
 private:
 	IP ip;
+	IP query;
 	IP gateway;
 };
 

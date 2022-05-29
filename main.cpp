@@ -222,6 +222,7 @@ int main() {
 			node->stop();
 	}
 	dhcp::stop();
+	kExecutor.stop();
 	delete network;
 	return 0;
 }

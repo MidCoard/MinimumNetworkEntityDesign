@@ -349,15 +349,23 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 					if (!this->isIPValid)
 						return;
 					IP segment = block->readIP();
-					unsigned char flag;
-					block->read(&flag, 1);
-					if (flag) {
-						auto* packet = new ICMPReplyPacket(source, ICMPReplyStatus::kICMPReplyStatusJump);
+					IP query = block->readIP();
+					// destination is my address
+					if (query == destination) {
+						auto* packet = new ICMPReplyPacket(segment, query, source, ICMPReplyStatus::kICMPReplyStatusSuccess);
 						auto* newBlock = packet->createBlock();
 						delete packet;
 						this->send(newBlock);
 					} else {
-						auto* packet = new ICMPPacket(segment, segment);
+						kExecutor.submit([this, segment, query, source]() {
+							this->icmpTable.remove(segment,query);
+							auto* packet = new ICMPReplyPacket(segment, query, source,ICMPReplyStatus::kICMPReplyStatusUnreachable);
+							auto* newBlock = packet->createBlock();
+							delete packet;
+							this->send(newBlock);
+						}, std::chrono::milliseconds(2000));
+						this->icmpTable.add(segment, query);
+						auto* packet = new ICMPPacket(segment, query, query);
 						auto* newBlock = packet->createBlock();
 						delete packet;
 						this->send(newBlock);
@@ -367,12 +375,18 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 				case 0x21: {
 					if (!this->isIPValid)
 						return;
+					IP segment = block->readIP();
+					IP query = block->readIP();
 					unsigned char flag;
 					block->read(&flag, 1);
-					if (flag == ICMPReplyStatus::kICMPReplyStatusJump) {
-
+					if (query == destination) {
+						this->icmpTable.update(segment, query, flag);
 					} else {
-
+						// i am the transfer
+						auto * packet = new ICMPReplyPacket(segment, query, segment, flag ?  ICMPReplyStatus::kICMPReplyStatusUnreachable : ICMPReplyStatus::kICMPReplyStatusSuccess);
+						auto * newBlock = packet->createBlock();
+						delete packet;
+						this->send(newBlock);
 					}
 					break;
 				}

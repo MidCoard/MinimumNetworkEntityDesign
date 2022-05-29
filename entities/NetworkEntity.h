@@ -9,7 +9,7 @@ class Network;
 #include "network/IPConfiguration.h"
 #include "Executor.h"
 
-extern const Executor kExecutor;
+extern Executor kExecutor;
 
 class NetworkEntity {
 public:

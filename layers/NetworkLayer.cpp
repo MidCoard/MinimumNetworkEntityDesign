@@ -95,6 +95,16 @@ void NetworkLayer::handleReceive(int id, Block *block) {
 				this->isIPValid = true;
 				break;
 			}
+			case 0x21: {
+				if (!this->isIPValid)
+					return;
+				IP segment = block->readIP();
+				IP query = block->readIP();
+				unsigned char flag;
+				block->read(&flag, 1);
+				this->icmpTable.update(segment, query, flag);
+				break;
+			}
 			default: {
 				auto *newBlock = new Block();
 				newBlock->writeBlock(block);
@@ -117,6 +127,10 @@ void NetworkLayer::handleSend(Block *block) {
 	IP destination = block->readIP();
 	// ip is valid so the ipConfiguration is valid
 	IPConfiguration ipConfiguration = configurations.at(0);
+	if (destination == *ipConfiguration.getSegment()) {
+		error("cannot send packet to yourself");
+		return;
+	}
 	// if PC route table has a route to the destination, send the block using the route
 	std::pair<IP, int> nextHop = this->routeTable.lookup(destination);
 	if (nextHop.second != -1) {
@@ -212,7 +226,8 @@ void NetworkLayer::sendICMP(IP ip) {
 	if (!this->isIPValid)
 		return;
 	IPConfiguration ipConfiguration = configurations.at(0);
-	auto *packet = new ICMPPacket(std::move(ip), *ipConfiguration.getGateway());
+	this->icmpTable.add(*ipConfiguration.getSegment(),ip);
+	auto *packet = new ICMPPacket(*ipConfiguration.getSegment(),std::move(ip), *ipConfiguration.getGateway());
 	Block *block = packet->createBlock();
 	delete packet;
 	this->lowerLayers[0]->send(block);

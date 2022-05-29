@@ -1,6 +1,6 @@
 #include "NetworkEntity.h"
 
-const Executor kExecutor(10);
+Executor kExecutor(10);
 
 // the first Network pointer(avoid circular dependencies)
 // node is to get its position in building part

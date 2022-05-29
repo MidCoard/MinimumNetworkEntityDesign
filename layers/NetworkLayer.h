@@ -10,6 +10,7 @@
 #include "RouteTable.h"
 #include "ARPTable.h"
 #include "LinkLayer.h"
+#include "ICMPTable.h"
 
 
 class NetworkLayer : public Layer {
@@ -52,7 +53,7 @@ protected:
 	RouteTable routeTable;
 	ARPTable arpTable;
 	std::map<IP, MAC> ipMacMap;
-	std::map<IP, bool> icmpTable;
+	ICMPTable icmpTable;
 
 	int dhcpID = -1;
 	long long int duration = 0;

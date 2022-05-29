@@ -12,12 +12,13 @@
 class Task {
 
 public:
-	explicit Task(std::function<void()> func);
+	Task(std::function<void()> func,std::chrono::milliseconds delay);
 
 	void run();
 
 private:
 	std::function<void()> func;
+	std::chrono::milliseconds delay;
 };
 
 class Executor {
@@ -29,6 +30,8 @@ public:
 	void run();
 
 	void stop();
+
+	void submit(std::function<void()> func,std::chrono::milliseconds delay);
 
 private:
 	std::vector<std::thread> threads;

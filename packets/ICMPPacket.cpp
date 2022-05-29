@@ -11,9 +11,7 @@ Block *ICMPPacket::createBlock() {
 	block->writeIP(this->gateway);
 	block->writeHeader(this);
 	block->writeIP(this->ip);
-	if (ip == gateway)
-		block->write(1);
-	else block->write(0);
+	block->writeIP(this->query);
 	block->flip();
 	return block;
 }
@@ -22,4 +20,4 @@ unsigned char ICMPPacket::getHeader() {
 	return 0x20;
 }
 
-ICMPPacket::ICMPPacket(IP ip, IP gateway) : ip(std::move(ip)), gateway(std::move(gateway)) {}
+ICMPPacket::ICMPPacket(IP ip,IP query, IP gateway) : ip(std::move(ip)), query(std::move(query)), gateway(std::move(gateway)){}

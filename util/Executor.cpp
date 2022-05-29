@@ -9,8 +9,8 @@ Executor::Executor(int size) {
 
 void Executor::run() {
 	while (true) {
-		Task *task;
-		code_machina::BlockingCollectionStatus status = queue.try_take(task);
+		Task *task = nullptr;
+		code_machina::BlockingCollectionStatus status = queue.take(task);
 		if (status == code_machina::BlockingCollectionStatus::Ok)
 			task->run();
 		if (shouldStop)
@@ -28,9 +28,14 @@ Executor::~Executor() {
 	this->stop();
 }
 
+void Executor::submit(std::function<void()> func, std::chrono::milliseconds delay) {
+	queue.emplace(new Task(std::move(func), delay));
+}
+
 
 void Task::run() {
+	std::this_thread::sleep_for(this->delay);
 	func();
 }
 
-Task::Task(std::function<void()> func) : func(std::move(func)) {}
+Task::Task(std::function<void()> func,std::chrono::milliseconds delay) : func(std::move(func)),delay(delay) {}

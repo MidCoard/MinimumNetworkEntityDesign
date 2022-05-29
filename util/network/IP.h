@@ -11,6 +11,7 @@
 
 class IP {
 public:
+
 	explicit IP(std::string ip);
 
 	explicit IP(unsigned char bytes[]);
@@ -41,7 +42,7 @@ public:
 
 	[[nodiscard]] bool isInSameNetwork(const IP &ip, const IP &mask) const;
 
-	int getRightZero() const;
+	[[nodiscard]] int getRightZero() const;
 
 private:
 	std::string ip;
