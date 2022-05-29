@@ -19,7 +19,7 @@ public:
 
 	virtual std::vector<std::string> createLayers(int node, std::vector<int> ids) = 0;
 
-	virtual bool isRouter();
+	virtual void generateIP();
 
 	virtual bool isIPAvailable();
 

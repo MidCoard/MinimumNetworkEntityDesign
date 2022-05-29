@@ -51,10 +51,6 @@ public:
 
 	std::vector<std::string> createLayers(int node, std::vector<int> ids) override;
 
-	bool isRouter() override;
-
-	virtual void generateIP() = 0;
-
 	bool isIPAvailable() override;
 
 	void start() override;

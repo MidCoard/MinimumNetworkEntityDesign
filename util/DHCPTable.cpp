@@ -142,8 +142,7 @@ bool DHCPTable::applyDirect(const IP &ip, const IP &mask, const MAC &mac) {
 		if ((item.first & mask) == ip)
 			return false;
 	for (const auto &item: this->segments)
-		if (((item.first.first & mask) == ip || (ip & item.first.second) == item.first.first) &&
-		    item.second.second != mac)
+		if (((item.first.first & mask) == ip || (ip & item.first.second) == item.first.first) && item.second.second != mac)
 			return false;
 	for (const auto &item: this->tempIps)
 		if ((item.first & mask) == ip)

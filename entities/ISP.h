@@ -21,6 +21,12 @@ public:
 	RouterNetworkLayer *networkLayer;
 
 	std::string getName() override;
+
+	void generateIP() override;
+
+	bool generatedIP = false;
+
+	void dfsAllocateIP(int node, std::vector<bool> *visited, std::vector<IPConfiguration> *configurations);
 };
 
 class RootAppLayer : public AppLayer {

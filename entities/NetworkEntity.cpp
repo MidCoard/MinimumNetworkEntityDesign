@@ -11,10 +11,6 @@ NetworkEntity::~NetworkEntity() {
 	delete this->layer;
 }
 
-bool NetworkEntity::isRouter() {
-	return false;
-}
-
 bool NetworkEntity::isIPAvailable() {
 	return false;
 }
@@ -34,3 +30,5 @@ void NetworkEntity::stop() {
 int NetworkEntity::getNode() const {
 	return this->node;
 }
+
+void NetworkEntity::generateIP() {}

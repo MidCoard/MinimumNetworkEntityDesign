@@ -44,10 +44,6 @@ std::vector<std::string> Router::createLayers(int node, std::vector<int> ids) {
 	return this->layer->generateGraph(node);
 }
 
-bool Router::isRouter() {
-	return true;
-}
-
 bool Router::isIPAvailable() {
 	return true;
 }
@@ -290,9 +286,42 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 					auto *linkLayer = (LinkLayer *) this->lowerLayers[0];
 					this->table->tryApply(segment, linkLayer->getMAC(), -1);
 					for (int i = 1; i < this->lowerLayers.size(); i++) {
-						auto *linkLayer = (LinkLayer *) this->lowerLayers[i];
-						//todo
-						this->table->tryApply(segment, linkLayer->getMAC(), i);
+						auto *layer = (LinkLayer *) this->lowerLayers[i];
+						IPConfiguration configuration = this->getIPConfiguration(i);
+						if (configuration.getSegment()->isBroadcast() || configuration.getMask()->isBroadcast()) {
+							std::pair<IP,IP> pair = this->table->applySegment();
+							if (pair.first.isBroadcast())
+								throw std::runtime_error("no ip segment available");
+							else {
+								bool flag = this->table->tryApply(pair.first, pair.second, layer->getMAC(), this->table->dhcpID++);
+								if (!flag)
+									throw std::runtime_error("no ip segment available");
+							}
+							delete configuration.getSegment();
+							delete configuration.getMask();
+							delete configuration.getGateway();
+							this->setIPConfiguration(i, new IP(pair.first), new IP(pair.second), new IP(pair.first.intValue() + 1));
+						}
+						else {
+							bool flag = this->table->tryApply(*configuration.getSegment(), *configuration.getMask(), layer->getMAC(), -1);
+							if (!flag) {
+								std::pair<IP,IP> pair = this->table->applySegment();
+								if (pair.first.isBroadcast())
+									throw std::runtime_error("no ip segment available");
+								else {
+									flag = this->table->tryApply(pair.first, pair.second,layer->getMAC(), this->table->dhcpID++);
+									if (!flag)
+										throw std::runtime_error("no ip segment available");
+								}
+								delete configuration.getSegment();
+								delete configuration.getMask();
+								delete configuration.getGateway();
+								this->setIPConfiguration(i, new IP(pair.first), new IP(pair.second), new IP(pair.first.intValue() + 1));
+							} else {
+								if (configuration.getGateway() == nullptr)
+									this->setIPConfiguration(i, configuration.getSegment(), configuration.getMask(), new IP(configuration.getSegment()->intValue() + 1));
+							}
+						}
 					}
 					break;
 				}

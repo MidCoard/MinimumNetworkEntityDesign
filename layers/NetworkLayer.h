@@ -51,6 +51,8 @@ public:
 	void handleICMP(const IP& ip, ICMPReplyStatus status);
 	RouteTable routeTable;
 
+	IP getIP(int id);
+
 protected:
 	// for PC : its only one port 0, its ip is segment, its mask is mask, its gateway is gateway
 	// for router : for port 0, its ip is segment, its mask is mask, its gateway is gateway
@@ -65,7 +67,6 @@ protected:
 
 	void checkDHCP();
 
-	IP getIP(int id);
 };
 
 

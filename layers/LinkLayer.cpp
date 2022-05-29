@@ -53,7 +53,7 @@ void LinkLayer::handleReceive(int id, Block *block) {
 					IP des = block->readIP();
 					this->log("Is it " + des.str() + "?");
 					auto *networkLayer = (NetworkLayer *) this->upperLayers[0];
-					if (networkLayer->isIPValid && des == networkLayer->getIP()) {
+					if (networkLayer->isIPValid && des == networkLayer->getIP(id)) {
 						this->log("Yes, I am " + des.str() + ", my MAC address is " + this->getMAC().str());
 						this->sendARPReply(source, des, ip);
 					}
@@ -65,7 +65,7 @@ void LinkLayer::handleReceive(int id, Block *block) {
 					IP des = block->readIP();
 					this->log("I know " + ip.str() + " is " + source.str());
 					auto *networkLayer = (NetworkLayer *) this->upperLayers[0];
-					if (networkLayer->isIPValid && des == networkLayer->getIP())
+					if (networkLayer->isIPValid && des == networkLayer->getIP(id))
 						networkLayer->handleARP(ip, source);
 				}
 		}

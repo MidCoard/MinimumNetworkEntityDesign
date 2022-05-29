@@ -198,8 +198,7 @@ Network *initialize(const std::string &networkFile, const std::string &graphFile
 		return nullptr;
 	}
 	for (auto node: network->getNodes())
-		if (node->isRouter())
-			((Router *) node)->generateIP();
+		node->generateIP();
 	for (auto node: network->getNodes())
 		node->start();
 	return network;

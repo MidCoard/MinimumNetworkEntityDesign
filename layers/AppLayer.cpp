@@ -34,7 +34,7 @@ void AppLayer::handleReceive(int id, Block *block) {
 			int count = block->readInt();
 			int target = this->udpTable.tryAllocate();
 			auto* networkLayer = (NetworkLayer*)this->lowerLayers[0];
-			auto* packet = new UDPACKPacket(ip, networkLayer->getIP(),  count, target);
+			auto* packet = new UDPACKPacket(ip, networkLayer->getIP(0),  count, target);
 			auto* newBlock = packet->createBlock();
 			delete packet;
 			this->send(newBlock);
