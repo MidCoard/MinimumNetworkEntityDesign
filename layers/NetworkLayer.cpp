@@ -51,11 +51,14 @@ void NetworkLayer::handleReceive(int id, Block* block) {
 				IP ip = block->readIP();
 				IP mask = block->readIP();
 				IP gateway = block->readIP();
+				log("get ip: " + ip.str() + " mask: " + mask.str() + " gateway: " + gateway.str());
 				auto *linkLayer = (LinkLayer *) this->lowerLayers[id];
 				linkLayer->sendARP(ip, ip);
 				std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 				MAC mac = this->arpTable.lookup(ip);
-				if (mac.isBroadcast()) {
+				log("this mac: " + linkLayer->getMAC().str());
+				log("mac: " + mac.str());
+				if (!mac.isBroadcast()) {
 					// one have already got the ip (maybe static ip)
 					auto *packet = new DHCPDeclinePacket(ip, mask, mac, true);
 					auto *newBlock = packet->createBlock();
@@ -195,6 +198,8 @@ void NetworkLayer::sendDHCPRenewal() {
 }
 
 void NetworkLayer::checkDHCP() {
+	if (this->startDHCP == 0 && this->duration == 0)
+		return;
 	auto now = std::chrono::system_clock::now().time_since_epoch().count();
 	if (now - this->startDHCP > this->duration  * 3 / 4) // for 75%
 		this->sendDHCPRenewal();

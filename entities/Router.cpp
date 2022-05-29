@@ -151,7 +151,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 							if (!apply.isBroadcast()) {
 								int dhcpID = this->table->dhcpID++;
 								auto *packet = new DHCPOfferPacket(mac, apply, *ipConfiguration.getMask(),
-								                                   *ipConfiguration.getGateway(), dhcpID);
+								                                   *ipConfiguration.getSegment(), dhcpID);
 								auto *newBlock = packet->createBlock();
 								delete packet;
 								this->lowerLayers[id]->send(newBlock);

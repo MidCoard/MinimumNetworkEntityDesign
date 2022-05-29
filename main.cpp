@@ -210,8 +210,10 @@ Network *initialize() {
 	return initialize("network.in", "ne.txt");
 }
 
+Network *network = nullptr;
+
 int main() {
-	Network *network = initialize();
+	network = initialize();
 	dhcp::start();
 	while(true);
 	if (network != nullptr) {
