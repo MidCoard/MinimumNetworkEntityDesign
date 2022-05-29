@@ -58,7 +58,8 @@ void AppLayer::sendUDPData0(const IP& ip, unsigned char* data, int len) {
 }
 
 void AppLayer::handleUDPData(unsigned char *data, int length) {
-
+	std::string str(data, data +length);
+	std::cout << str << std::endl;
 }
 
 void AppLayer::start() {

@@ -10,9 +10,11 @@ Executor::Executor(int size) {
 void Executor::run() {
 	while (true) {
 		Task *task = nullptr;
-		code_machina::BlockingCollectionStatus status = queue.take(task);
-		if (status == code_machina::BlockingCollectionStatus::Ok)
+		code_machina::BlockingCollectionStatus status = queue.try_take(task, std::chrono::milliseconds(1));
+		if (status == code_machina::BlockingCollectionStatus::Ok) {
 			task->run();
+			delete task;
+		}
 		if (shouldStop)
 			break;
 	}
@@ -22,10 +24,6 @@ void Executor::stop() {
 	shouldStop = true;
 	for (auto &thread: threads)
 		thread.join();
-}
-
-Executor::~Executor() {
-	this->stop();
 }
 
 void Executor::submit(std::function<void()> func, std::chrono::milliseconds delay) {

@@ -215,7 +215,19 @@ Network *network = nullptr;
 int main() {
 	network = initialize();
 	dhcp::start();
-	while (true);
+	while (true) {
+		int op;
+		std::cin>>op;
+		if (op == -1) {
+			break;
+		} else if (op == 1) {
+			int node;
+			std::cin>>node;
+			std::cout<<network->getNodes()[node]->getName()<<std::endl;
+		} else if (op == 2) {
+
+		}
+	}
 	if (network != nullptr) {
 		// join
 		for (auto node: network->getNodes())
