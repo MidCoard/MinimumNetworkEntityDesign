@@ -39,7 +39,6 @@ void NetworkLayer::handleReceive(int id, Block* block) {
 	IPConfiguration ipConfiguration = configurations.at(0);
 	unsigned char header;
 	block->read(&header, 1);
-	this->log("Received packet with header " + std::to_string(header));
 	if (!destination.isBroadcast() && ipConfiguration.getSegment() != nullptr && destination != *ipConfiguration.getSegment())
 		return;
 	else {
@@ -51,13 +50,10 @@ void NetworkLayer::handleReceive(int id, Block* block) {
 				IP ip = block->readIP();
 				IP mask = block->readIP();
 				IP gateway = block->readIP();
-				log("get ip: " + ip.str() + " mask: " + mask.str() + " gateway: " + gateway.str());
 				auto *linkLayer = (LinkLayer *) this->lowerLayers[id];
 				linkLayer->sendARP(ip, ip);
 				std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 				MAC mac = this->arpTable.lookup(ip);
-				log("this mac: " + linkLayer->getMAC().str());
-				log("mac: " + mac.str());
 				if (!mac.isBroadcast()) {
 					// one have already got the ip (maybe static ip)
 					auto *packet = new DHCPDeclinePacket(ip, mask, mac, true);
@@ -82,6 +78,7 @@ void NetworkLayer::handleReceive(int id, Block* block) {
 				IP ip = block->readIP();
 				IP mask = block->readIP();
 				IP gateway = block->readIP();
+				this->log("receive DHCP_ACK get segment: " + ip.str() + " mask: " + mask.str() + " gateway: " + gateway.str());
 				auto *pc = (PC *) this->networkEntity;
 				delete pc->ip;
 				delete pc->mask;

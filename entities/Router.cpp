@@ -314,11 +314,11 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 					}
 				case 0x04:
 					if (id == 0) {
-						this->error("DHCP server receive DHCPACK");
 						// receive dhcp ack
 						IP segment = block->readIP();
 						IP mask = block->readIP();
 						IP gateway = block->readIP();
+						this->log("receive DHCP_ACK get segment: " + segment.str() + " mask: " + mask.str() + " gateway: " + gateway.str());
 						auto *router = (Router *) this->networkEntity;
 						delete router->segment;
 						delete router->mask;
