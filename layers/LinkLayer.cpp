@@ -20,7 +20,7 @@ void LinkLayer::handleSend(Block* block) {
 	if (block->getRemaining() < 6)
 		return;
 	auto* newBlock = new Block();
-	MAC source = idMacMap.at(0);
+	MAC source = this->getMAC();
 	newBlock->writeMAC(source);
 	newBlock->writeBlock(block);
 	newBlock->flip();
@@ -83,6 +83,6 @@ void LinkLayer::sendARPReply(int id, const MAC& mac, const IP& source, const IP&
 }
 
 MAC LinkLayer::getMAC() {
-	return this->idMacMap.at(0);
+	return this->idMacMap.at(this->getID());
 }
 

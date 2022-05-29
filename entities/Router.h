@@ -49,8 +49,6 @@ public:
 
 	bool isIPAvailable() override;
 
-	std::vector<IPConfiguration> getIPConfiguration() override = 0;
-
 	void start() override;
 
 // first set in generateIP

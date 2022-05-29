@@ -5,7 +5,9 @@ class Network;
 
 #include "network/MAC.h"
 #include "AppLayer.h"
+#include "LinkLayer.h"
 #include "Router.h"
+#include "PhysicalLayer.h"
 
 class ISP : public NetworkEntity {
 
@@ -24,6 +26,32 @@ public:
 	explicit RootAppLayer(NetworkEntity* networkEntity);
 };
 
+
+class EmptyLinkLayer : public LinkLayer {
+public:
+	EmptyLinkLayer(int id, NetworkEntity *networkEntity);
+
+	void start() override;
+
+	void stop() override;
+
+	void handleReceive(int id, Block * block) override;
+
+	void handleSend(Block * block) override;
+};
+
+class EmptyPhysicalLayer : public PhysicalLayer {
+	void start() override;
+
+	void stop() override;
+
+	void handleReceive(int id,Block * block) override;
+
+	void handleSend(Block * block) override;
+
+public:
+	EmptyPhysicalLayer(int id, NetworkEntity *networkEntity);
+};
 
 
 #endif //NETWORKDESIGN_ISP_H

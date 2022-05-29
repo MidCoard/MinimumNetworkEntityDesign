@@ -10,6 +10,10 @@ ISP::ISP(Network* network) : NetworkEntity(network, 0, new RootAppLayer(this)) {
 std::vector<std::string> ISP::createLayers(int node, std::vector<int> ids) {
 	this->networkLayer = new RouterNetworkLayer(this);
 	this->layer->addLowerLayer(networkLayer);
+	auto* emptyLinkLayer = new EmptyLinkLayer(0, this);
+	this->networkLayer->addLowerLayer(emptyLinkLayer);
+	auto* emptyPhysicalLayer = new EmptyPhysicalLayer(0, this);
+	emptyLinkLayer->addLowerLayer(emptyPhysicalLayer);
 	for (int id: ids) {
 		networkLayer->setIPConfiguration(id, nullptr, nullptr, nullptr);
 		auto *linkLayer = new LinkLayer(id,this);
@@ -31,3 +35,24 @@ void ISP::start() {
 
 RootAppLayer::RootAppLayer(NetworkEntity *networkEntity) : AppLayer(networkEntity) {
 }
+
+void EmptyLinkLayer::start() {}
+
+void EmptyLinkLayer::stop() {}
+
+EmptyLinkLayer::EmptyLinkLayer(int id, NetworkEntity *networkEntity) : LinkLayer(id, networkEntity) {}
+
+void EmptyLinkLayer::handleReceive(int id, Block *block) {}
+
+void EmptyLinkLayer::handleSend(Block *block) {}
+
+void EmptyPhysicalLayer::start() {}
+
+void EmptyPhysicalLayer::stop() {}
+
+void EmptyPhysicalLayer::handleReceive(int id, Block *block) {}
+
+void EmptyPhysicalLayer::handleSend(Block *block) {}
+
+EmptyPhysicalLayer::EmptyPhysicalLayer(int id, NetworkEntity *networkEntity) : PhysicalLayer(id, networkEntity,
+                                                                                             INetAddress(LOCALHOST, 0), INetAddress(LOCALHOST, 0)) {}
