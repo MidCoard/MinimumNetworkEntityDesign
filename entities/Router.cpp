@@ -146,10 +146,10 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 							this->lowerLayers[id]->send(newBlock);
 						}
 					} else {
-						std::pair<IP, long long int> apply = this->tables[id]->apply();
-						if (apply.second != -1) {
-							auto *packet = new DHCPOfferPacket(mac, apply.first, *ipConfiguration.getMask(),
-							                                   *ipConfiguration.getGateway(), apply.second);
+						std::pair<IP, long long int> app = this->tables[id]->apply();
+						if (app.second != -1) {
+							auto *packet = new DHCPOfferPacket(mac, app.first, *ipConfiguration.getMask(),
+							                                   *ipConfiguration.getGateway(), app.second);
 							auto *newBlock = packet->createBlock();
 							delete packet;
 							this->lowerLayers[id]->send(newBlock);
@@ -166,8 +166,10 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 					int dhcpID = block->readInt();
 					unsigned char useSegment;
 					block->read(&useSegment, 1);
+					error(std::to_string(id) + " " + std::to_string(useSegment));
 					if (useSegment) {
-						if (this->tables[id]->applyIt(segment, mask, mac, dhcpID)) {
+
+						if (this->tables[id]->applyIt(&segment, &mask, mac, dhcpID)) {
 							auto *packet = new DHCPACKPacket(mac, *ipConfiguration.getSegment(), segment, mask,
 							                                 *ipConfiguration.getGateway(),
 							                                 kDHCPTime);
@@ -283,84 +285,65 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 						delete table;
 					this->tables.clear();
 					this->tables.push_back(new DHCPTable(segment, mask));
+					auto *layer = (LinkLayer *) this->lowerLayers[0];
+					bool flag = this->tables[0]->directApply(segment, layer->getMAC());
+					if (!flag)
+						throw std::runtime_error("apply its segment failed");
 					for (int i = 1; i < this->lowerLayers.size(); i++) {
 						auto *layer = (LinkLayer *) this->lowerLayers[i];
 						IPConfiguration configuration = this->getIPConfiguration(i);
 						if (configuration.getSegment()->isBroadcast() || configuration.getMask()->isBroadcast()) {
-							std::pair<IP,IP> pair = this->tables[0]->applySegment();
+							std::pair<IP, IP> pair = this->tables[0]->directApplySegment(layer->getMAC());
 							if (pair.first.isBroadcast())
 								throw std::runtime_error("no ip segment available");
-							else {
-								bool flag = this->tables[0]->tryApply(pair.first, pair.second, layer->getMAC(),
-								                                      this->tables[0]->dhcpID++);
-								if (!flag)
-									throw std::runtime_error("no ip segment available");
-								delete configuration.getSegment();
-								delete configuration.getMask();
-								delete configuration.getGateway();
-								IP gateway = IP(pair.first.intValue() + 1);
-								flag = this->tables[0]->tryApply(gateway, layer->getMAC(), -1);
-								if (!flag) {
-									gateway = this->tables[0]->applyInSegment(pair.first, pair.second);
-									if (gateway.isBroadcast())
-										throw std::runtime_error("no ip segment available");
-								}
-								this->setIPConfiguration(i, new IP(pair.first), new IP(pair.second),
-								                         new IP(gateway));
-								this->tables.push_back(
-										new DHCPTable(pair.first, pair.second, gateway));
-							}
-						}
-						else {
-							bool flag = this->tables[0]->tryApply(*configuration.getSegment(), *configuration.getMask(), layer->getMAC(), -1);
+							delete configuration.getSegment();
+							delete configuration.getMask();
+							delete configuration.getGateway();
+							this->tables.push_back(new DHCPTable(pair.first, pair.second));
+							IP gateway = this->tables[i]->directApply(layer->getMAC());
+							if (gateway.isBroadcast())
+								throw std::runtime_error("no gateway available");
+							this->setIPConfiguration(i, new IP(pair.first), new IP(pair.second), new IP(gateway));
+						} else {
+							IP segment = *configuration.getSegment();
+							IP mask = *configuration.getMask();
+							delete configuration.getSegment();
+							delete configuration.getMask();
+							bool flag = this->tables[0]->applyIt(&segment, &mask, layer->getMAC(), -1);
 							if (!flag) {
-								std::pair<IP,IP> pair = this->tables[0]->applySegment();
+								std::pair<IP,IP> pair = this->tables[0]->directApplySegment(layer->getMAC());
 								if (pair.first.isBroadcast())
 									throw std::runtime_error("no ip segment available");
-								else {
-									flag = this->tables[0]->tryApply(pair.first, pair.second,layer->getMAC(), this->tables[0]->dhcpID++);
-									if (!flag)
-										throw std::runtime_error("no ip segment available");
-								}
-								delete configuration.getSegment();
-								delete configuration.getMask();
 								delete configuration.getGateway();
-								IP gateway = IP(pair.first.intValue() + 1);
-								flag = this->tables[0]->tryApply(gateway, layer->getMAC(), -1);
-								if (!flag) {
-									gateway = this->tables[0]->applyInSegment(pair.first,pair.second);
-									if (gateway.isBroadcast())
-										throw std::runtime_error("no ip segment available");
-								}
+								this->tables.push_back(new DHCPTable(pair.first, pair.second));
+								IP gateway = this->tables[i]->directApply(layer->getMAC());
+								if (gateway.isBroadcast())
+									throw std::runtime_error("no gateway available");
 								this->setIPConfiguration(i, new IP(pair.first), new IP(pair.second), new IP(gateway));
-								this->tables.push_back(new DHCPTable(pair.first, pair.second, gateway));
 							} else {
 								if (configuration.getGateway() == nullptr) {
-									IP gateway = IP(configuration.getSegment()->intValue() + 1);
-									flag = this->tables[0]->tryApply(gateway, layer->getMAC(), -1);
-									if (!flag) {
-										gateway = this->tables[0]->applyInSegment(*configuration.getSegment(),
-										                                          *configuration.getMask());
-										if (gateway.isBroadcast())
-											throw std::runtime_error("no ip segment available");
-									}
-									this->setIPConfiguration(i, configuration.getSegment(), configuration.getMask(),
-									                         new IP(gateway));
 									this->tables.push_back(
-											new DHCPTable(*configuration.getSegment(), *configuration.getMask(),gateway));
-								} else {
-									IP gateway = *configuration.getGateway();
-									flag = this->tables[0]->tryApply(gateway, layer->getMAC(), -1);
-									if (!flag) {
-										gateway = this->tables[0]->applyInSegment(*configuration.getSegment(),
-										                                                        *configuration.getMask());
-										if (gateway.isBroadcast())
-											throw std::runtime_error("no ip segment available");
-									}
-									delete configuration.getGateway();
-									this->setIPConfiguration(i, configuration.getSegment(), configuration.getMask(),
+											new DHCPTable(segment, mask));
+									IP gateway = this->tables[i]->directApply(layer->getMAC());
+									if (gateway.isBroadcast())
+										throw std::runtime_error("no gateway available");
+									this->setIPConfiguration(i, new IP(segment), new IP(mask),
 									                                       new IP(gateway));
-									this->tables.push_back(new DHCPTable(*configuration.getSegment(), *configuration.getMask()));
+								} else {
+									this->tables.push_back(
+											new DHCPTable(segment, mask));
+									flag = this->tables[i]->directApply(*configuration.getGateway(), layer->getMAC());
+									if (!flag) {
+										IP gateway = this->tables[i]->directApply(layer->getMAC());
+										if (gateway.isBroadcast())
+											throw std::runtime_error("no gateway available");
+										delete configuration.getGateway();
+										this->setIPConfiguration(i, new IP(segment), new IP(mask),
+										                                       new IP(gateway));
+									} else {
+										this->setIPConfiguration(i, new IP(segment), new IP(mask),
+										                                       configuration.getGateway());
+									}
 								}
 							}
 						}

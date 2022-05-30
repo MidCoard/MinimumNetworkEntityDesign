@@ -36,9 +36,10 @@ class DHCPTable {
 public:
 	DHCPTable(IP ip, IP mask);
 
-	std::pair<IP, long long int> apply();
+	std::pair<IP, long long int> apply0();
 
 	std::pair<std::pair<IP, IP>, long long int> applySegment();
+	std::pair<std::pair<IP, IP>, long long int> applySegment0();
 
 	unsigned long long int apply(const IP& ip);
 
@@ -52,13 +53,15 @@ public:
 
 	bool directApply(const IP&ip, const MAC& mac);
 
-	bool applyIt(const IP& ip, const IP& mask, const MAC& mac, int id);
+	bool applyIt(IP* ip, IP* mask, const MAC& mac, int id);
 
 	bool applyIt(const IP& ip, const MAC& mac, int id);
 
 	bool renewal(const IP& ip, const IP& mask, const MAC& mac);
 
 	bool renewal(const IP& ip, const MAC& mac);
+
+	std::pair<IP, long long int> apply();
 
 private:
 
@@ -75,6 +78,9 @@ private:
 
 	long long int maxCount;
 	long long int nowCount = 0;
+
+	std::pair<std::pair<IP, IP>, long long int> tryApply(const IP &ip, const IP &mask);
+
 };
 
 

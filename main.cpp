@@ -212,49 +212,47 @@ Network *initialize() {
 Network *network = nullptr;
 
 int main() {
-//	network = initialize();
-//	dhcp::start();
-//	while (true) {
-//		int op;
-//		std::cin>>op;
-//		if (op == -1) {
-//			break;
-//		} else if (op == 1) {
-//			int node;
-//			std::cin>>node;
-//			std::cout<<network->getNodes()[node]->getName()<<std::endl;
-//		} else if (op == 2) {
-//			int node;
-//			std::cin>>node;
-//			std::string s;
-//			std::cin>>s;
-//			IP ip = IP(s);
-//			auto* pc = (PC*)network->getNodes()[node];
-//			pc->ping(ip);
-//		} else if (op == 3) {
-//			int node;
-//			std::cin>>node;
-//			auto* pc = (PC*)network->getNodes()[node];
-//			std::cout<<pc->ip->str()<<std::endl;
-//		} else if (op == 4) {
-//			int node;
-//			std::cin>>node;
-//			auto* entity = network->getNodes()[node];
-//			std::vector<IPConfiguration> ipConfiguration = entity->getIPConfiguration();
-//			if (ipConfiguration.empty())
-//				std::cout<< "No IP configuration"<<std::endl;
-//			else std::cout<< ipConfiguration[0].getSegment()->str()<<std::endl;
-//		}
-//	}
-//	if (network != nullptr) {
-//		// join
-//		for (auto node: network->getNodes())
-//			node->stop();
-//	}
-//	dhcp::stop();
-//	kExecutor.stop();
-//	delete network;
-//	return 0;
-	DHCPTable dhcpTable(IP("10.0.0.1"),IP("255.255.255.0"));
-	auto s = dhcpTable.apply();
+	network = initialize();
+	dhcp::start();
+	while (true) {
+		int op;
+		std::cin>>op;
+		if (op == -1) {
+			break;
+		} else if (op == 1) {
+			int node;
+			std::cin>>node;
+			std::cout<<network->getNodes()[node]->getName()<<std::endl;
+		} else if (op == 2) {
+			int node;
+			std::cin>>node;
+			std::string s;
+			std::cin>>s;
+			IP ip = IP(s);
+			auto* pc = (PC*)network->getNodes()[node];
+			pc->ping(ip);
+		} else if (op == 3) {
+			int node;
+			std::cin>>node;
+			auto* pc = (PC*)network->getNodes()[node];
+			std::cout<<pc->ip->str()<<std::endl;
+		} else if (op == 4) {
+			int node;
+			std::cin>>node;
+			auto* entity = network->getNodes()[node];
+			std::vector<IPConfiguration> ipConfiguration = entity->getIPConfiguration();
+			if (ipConfiguration.empty())
+				std::cout<< "No IP configuration"<<std::endl;
+			else std::cout<< ipConfiguration[0].getSegment()->str()<<std::endl;
+		}
+	}
+	if (network != nullptr) {
+		// join
+		for (auto node: network->getNodes())
+			node->stop();
+	}
+	dhcp::stop();
+	kExecutor.stop();
+	delete network;
+	return 0;
 }
