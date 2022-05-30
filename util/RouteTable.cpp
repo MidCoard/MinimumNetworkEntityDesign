@@ -49,5 +49,5 @@ RouteTable::TableItem::TableItem(IP ip, IP mask, int cost, IP nextHop, int id, l
                                                                                                  id(id), time(time) {}
 
 bool RouteTable::TableItem::match(const IP &ip) const {
-	return this->ip == (ip & this->mask);
+	return (this->ip & this->mask) == (ip & this->mask);
 }

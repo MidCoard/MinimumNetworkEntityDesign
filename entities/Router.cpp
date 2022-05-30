@@ -166,7 +166,6 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 					int dhcpID = block->readInt();
 					unsigned char useSegment;
 					block->read(&useSegment, 1);
-					error(std::to_string(id) + " " + std::to_string(useSegment));
 					if (useSegment) {
 
 						if (this->tables[id]->applyIt(&segment, &mask, mac, dhcpID)) {
@@ -347,6 +346,8 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 								}
 							}
 						}
+						IPConfiguration ipConfig = this->getIPConfiguration(i);
+						this->routeTable.update(*ipConfig.getSegment(), *ipConfig.getMask(),0,*ipConfig.getSegment(),i);
 					}
 					break;
 				}

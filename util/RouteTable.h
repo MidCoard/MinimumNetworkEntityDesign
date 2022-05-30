@@ -39,7 +39,7 @@ public:
 
 private:
 
-	std::set<TableItem> table;
+	std::multiset<TableItem> table;
 
 };
 

@@ -72,6 +72,7 @@ void LinkLayer::handleReceive(int id, Block *block) {
 }
 
 void LinkLayer::sendARP(const IP &ip, const IP &query) {
+	this->log("I am " + ip.str() + " ,I want to know who is " + query.str());
 	auto *packet = new ARPPacket(ip, query);
 	auto *block = packet->createBlock();
 	delete packet;

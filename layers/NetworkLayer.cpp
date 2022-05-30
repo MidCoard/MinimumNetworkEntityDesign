@@ -161,28 +161,38 @@ void NetworkLayer::handleSend(Block *block) {
 		// normally PC has no route to the destination, so send to the target or gateway
 		// if the destination is in the same network, send to the target
 		// get the mac address of the target
-		MAC mac = this->arpTable.lookup(nextHop.first);
-		// if the mac address is not found, send ARP, later send
-		if (mac.isBroadcast()) {
-			((LinkLayer *) this->lowerLayers[nextHop.second])->sendARP(*ipConfiguration.getSegment(),
-			                                                           nextHop.first);
-			std::this_thread::sleep_for(std::chrono::milliseconds(500));
-			auto *newBlock = new Block(block->getSendCount() - 1);
+		IPConfiguration configuration = this->configurations.at(nextHop.second);
+		if (*configuration.getSegment() == nextHop.first){
+			auto * newBlock = new Block();
+			newBlock->writeIP(*configuration.getSegment());
 			newBlock->writeIP(destination);
 			newBlock->writeBlock(block);
 			newBlock->flip();
-			// wait for the ARP reply
-			this->send(newBlock);
+			this->receive(nextHop.second, newBlock);
 		} else {
-			// if the mac address is found, send the block
-			auto *newBlock = new Block();
-			newBlock->writeMAC(mac);
-			newBlock->write(0); // for ip protocol
-			newBlock->writeIP(*ipConfiguration.getSegment());
-			newBlock->writeIP(destination);
-			newBlock->writeBlock(block);
-			newBlock->flip();
-			this->lowerLayers[nextHop.second]->send(newBlock);
+			MAC mac = this->arpTable.lookup(nextHop.first);
+			// if the mac address is not found, send ARP, later send
+			if (mac.isBroadcast()) {
+				((LinkLayer *) this->lowerLayers[nextHop.second])->sendARP(*configuration.getSegment(),
+				                                                           nextHop.first);
+				std::this_thread::sleep_for(std::chrono::milliseconds(500));
+				auto *newBlock = new Block(block->getSendCount() - 1);
+				newBlock->writeIP(destination);
+				newBlock->writeBlock(block);
+				newBlock->flip();
+				// wait for the ARP reply
+				this->send(newBlock);
+			} else {
+				// if the mac address is found, send the block
+				auto *newBlock = new Block();
+				newBlock->writeMAC(mac);
+				newBlock->write(0); // for ip protocol
+				newBlock->writeIP(*configuration.getSegment());
+				newBlock->writeIP(destination);
+				newBlock->writeBlock(block);
+				newBlock->flip();
+				this->lowerLayers[nextHop.second]->send(newBlock);
+			}
 		}
 	} else if (destination.isInSameNetwork(*ipConfiguration.getSegment(), *ipConfiguration.getMask())) {
 		// special case the destination is in the same network
