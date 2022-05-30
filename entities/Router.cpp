@@ -409,6 +409,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 					break;
 				}
 			case 0x20: {
+
 				IP segment = block->readIP();
 				IP query = block->readIP();
 				// destination is my address

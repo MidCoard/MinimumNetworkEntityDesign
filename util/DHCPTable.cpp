@@ -6,7 +6,7 @@
 #include <limits>
 #include <utility>
 
-const int kApplyCount = 100;
+const int kApplyCount = 20;
 const long long int kDHCPTime = 2LL * 60 * 60 * 1000 * 1000;
 
 std::pair<IP,long long int> DHCPTable::apply() {
@@ -211,12 +211,14 @@ DHCPTable::DHCPTable(IP ip, IP mask) : ip(std::move(ip)), mask(std::move(mask)) 
 	this->maxCount = (1LL<<zeros) - (this->ip.intValue() - (this->ip & this->mask).intValue());
 }
 
-std::pair<IP, IP> DHCPTable::directApplySegment(const MAC& mac) {
+std::pair<IP, IP> DHCPTable::directApplySegment0(const MAC& mac) {
 	this->check();
 	int zeros = this->mask.getRightZero();
 	if (zeros < 4)
 		return {std::pair{BROADCAST_IP, BROADCAST_IP}};
-	TableItem item(this->nowCount, 1LL << 4);
+	TableItem item(this->nowCount++, 1LL << 4);
+	if (this->nowCount >= this->maxCount)
+		this->nowCount = 0;
 	auto it = this->segments.upper_bound(item);
 	if (it != this->segments.begin()) {
 		it--;
@@ -237,16 +239,27 @@ std::pair<IP, IP> DHCPTable::directApplySegment(const MAC& mac) {
 	}
 	auto time = std::chrono::system_clock::now().time_since_epoch().count();
 	this->segments.insert_or_assign(item, std::pair{time + kDHCPTime * 1000LL, mac});
-	long long int count = this->nowCount;
-	this->nowCount += (1LL << 4);
+	this->nowCount += (1LL << 4) - 1;
 	if (this->nowCount >= this->maxCount)
 		this->nowCount = 0;
-	return {IP(this->ip.intValue() + count),IP(0xffu,0xffu,0xffu,0xf0u)};
+	return {IP(this->ip.intValue() + item.left()),IP(0xffu,0xffu,0xffu,0xf0u)};
 }
 
-IP DHCPTable::directApply(const MAC& mac) {
+std::pair<IP, IP> DHCPTable::directApplySegment(const MAC& mac) {
+	int count = 0;
+	auto a = directApplySegment0(mac);
+	while (a.first.isBroadcast() && count < kApplyCount) {
+		a = directApplySegment0(mac);
+		count++;
+	}
+	return a;
+}
+
+IP DHCPTable::directApply0(const MAC& mac) {
 	this->check();
-	TableItem item(this->nowCount, 1);
+	TableItem item(this->nowCount++, 1);
+	if (this->nowCount >= this->maxCount)
+		this->nowCount = 0;
 	auto it = this->segments.upper_bound(item);
 	if (it != this->segments.begin()) {
 		it--;
@@ -261,10 +274,17 @@ IP DHCPTable::directApply(const MAC& mac) {
 	}
 	auto time = std::chrono::system_clock::now().time_since_epoch().count();
 	this->segments.insert_or_assign(item, std::pair{time + kDHCPTime * 1000LL, mac });
-	long long int count = this->nowCount++;
-	if (this->nowCount >= this->maxCount)
-		this->nowCount = 0;
-	return IP(this->ip.intValue() + count);
+	return IP(this->ip.intValue() + item.left());
+}
+
+IP DHCPTable::directApply(const MAC& mac) {
+	int count = 0;
+	auto a = directApply0(mac);
+	while (a.isBroadcast() && count < kApplyCount) {
+		a = directApply0(mac);
+		count++;
+	}
+	return a;
 }
 
 bool DHCPTable::directApplySegment(const IP &ip, const IP &mask, const MAC &mac) {

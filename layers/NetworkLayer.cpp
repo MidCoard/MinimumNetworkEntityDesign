@@ -74,9 +74,11 @@ void NetworkLayer::handleReceive(int id, Block *block) {
 				IP gateway = block->readIP();
 				auto *linkLayer = (LinkLayer *) this->lowerLayers[id];
 				linkLayer->sendARP(ip, ip);
-				std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+				std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 				MAC mac = this->arpTable.lookup(ip);
+				error(mac.str());
 				if (!mac.isBroadcast()) {
+					this->error("DHCP offer a address that has been used");
 					// one have already got the ip (maybe static ip)
 					auto *packet = new DHCPDeclinePacket(ip, mask, mac, false);
 					auto *newBlock = packet->createBlock();

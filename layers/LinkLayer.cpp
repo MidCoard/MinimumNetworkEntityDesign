@@ -65,8 +65,7 @@ void LinkLayer::handleReceive(int id, Block *block) {
 					IP des = block->readIP();
 					this->log("I know " + ip.str() + " is " + source.str());
 					auto *networkLayer = (NetworkLayer *) this->upperLayers[0];
-					if (networkLayer->isIPValid && des == networkLayer->getIP(id))
-						networkLayer->handleARP(ip, source);
+					networkLayer->handleARP(ip, source);
 				}
 		}
 	}

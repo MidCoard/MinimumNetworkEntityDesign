@@ -43,12 +43,14 @@ public:
 
 	unsigned long long int apply(const IP& ip);
 
+	std::pair<IP, IP>directApplySegment0(const MAC& mac);
 	std::pair<IP, IP>directApplySegment(const MAC& mac);
 
 	bool directApplySegment(const IP&ip, const IP&mask, const MAC& mac);
 
 	long long int apply(const IP &ip, const IP &mask);
 
+	IP directApply0(const MAC& mac);
 	IP directApply(const MAC& mac);
 
 	bool directApply(const IP&ip, const MAC& mac);
