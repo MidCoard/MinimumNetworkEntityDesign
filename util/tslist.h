@@ -341,9 +341,9 @@ template <class T>  _List_iterator<T>*  tsList<T>::getIterator()
 }
 
 /**
-  * @brief  get the value (object) pointed by the iterator
+  * @brief  get the right (object) pointed by the iterator
   * @param  it: the iterator
-  * @retval the value (object)
+  * @retval the right (object)
   */
 template <class T>  T tsList<T>::getValueIterator(iterator it)
 {

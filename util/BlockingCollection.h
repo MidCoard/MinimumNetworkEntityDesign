@@ -390,7 +390,7 @@ namespace code_machina {
 		///
 		/// Represents a first in-first out (FIFO) or a last in-first out
 		/// (LIFO) collection depending on
-		/// the ContainerType template parameter value.
+		/// the ContainerType template parameter right.
 		///
 		/// Implements the implicitly defined IProducerConsumerCollection<T>
 		/// policy.
@@ -453,7 +453,7 @@ namespace code_machina {
 			/// @param [out] item When this method returns, if the element was
 			/// removed and returned successfully, item
 			/// contains the removed element. If no element was available to be
-			/// removed, the value is unspecified.
+			/// removed, the right is unspecified.
 			/// @returns True if an element was removed and returned
 			/// successfully; otherwise, false.
 			bool try_take(value_type &item) {
@@ -614,7 +614,7 @@ namespace code_machina {
 		/// Gets the number of items contained in the BlockingCollection<T>
 		/// instance.
 		/// If any method in BlockingCollection is executing while the size
-		/// property is being accessd, the return value
+		/// property is being accessd, the return right
 		/// is approximate. size may reflect a number that is either greater
 		/// than or less than the actual number of
 		/// items in the BlockingCollection.
@@ -794,26 +794,26 @@ namespace code_machina {
 			not_full_condition_var_.detach();
 		}
 
-		/// Adds the given element value to the BlockingCollection<T>.
-		/// The new element is initialized as a copy of value.
+		/// Adds the given element right to the BlockingCollection<T>.
+		/// The new element is initialized as a copy of right.
 		/// If a bounded capacity was specified when this instance of
 		/// BlockingCollection<T> was initialized,
 		/// a call to Add may block until space is available to store the
 		/// provided item.
-		/// @param value the value of the element to add
+		/// @param value the right of the element to add
 		/// @return A BlockCollectionStatus code.
 		/// @see BlockingCollectionStatus
 		BlockingCollectionStatus add(const T &value) {
 			return try_emplace_timed(std::chrono::milliseconds(-1), value);
 		}
 
-		/// Adds the given element value to the BlockingCollection<T>.
+		/// Adds the given element right to the BlockingCollection<T>.
 		/// Value is moved into the new element.
 		/// If a bounded capacity was specified when this instance of
 		/// BlockingCollection<T> was initialized,
 		/// a call to Add may block until space is available to store the
 		/// provided item.
-		/// @param value the value of the element to add
+		/// @param value the right of the element to add
 		/// @return A BlockCollectionStatus code.
 		/// @see BlockingCollectionStatus
 		BlockingCollectionStatus add(T &&value) {
@@ -821,31 +821,31 @@ namespace code_machina {
 			                         std::forward<T>(value));
 		}
 
-		/// Tries to add the given element value to the BlockingCollection<T>.
-		/// The new element is initialized as a copy of value.
+		/// Tries to add the given element right to the BlockingCollection<T>.
+		/// The new element is initialized as a copy of right.
 		/// If the collection is a bounded collection, and is full, this method
 		/// immediately returns without adding the item.
-		/// @param value the value of the element to try to add
+		/// @param value the right of the element to try to add
 		/// @return A BlockCollectionStatus code.
 		/// @see BlockingCollectionStatus
 		BlockingCollectionStatus try_add(const T &value) {
 			return try_emplace_timed(std::chrono::milliseconds::zero(), value);
 		}
 
-		/// Tries to add the given element value to the BlockingCollection<T>.
+		/// Tries to add the given element right to the BlockingCollection<T>.
 		/// Value is moved into the new element.
 		/// If the collection is a bounded collection, and is full, this
 		/// method immediately returns without adding the item.
-		/// @param value the value of the element to try to add
+		/// @param value the right of the element to try to add
 		BlockingCollectionStatus try_add(T &&value) {
 			return try_emplace_timed(std::chrono::milliseconds::zero(),
 			                         std::forward<T>(value));
 		}
 
-		/// Tries to add the given element value to the BlockingCollection<T>
+		/// Tries to add the given element right to the BlockingCollection<T>
 		/// within the specified time period.
 		/// Value is moved into the new element.
-		/// @param value the value of the element to try to add
+		/// @param value the right of the element to try to add
 		/// @param rel_time An object of type std::chrono::duration
 		/// representing the maximum time to spend waiting.
 		/// @return A BlockCollectionStatus code.
@@ -887,7 +887,7 @@ namespace code_machina {
 			                         std::forward<Args>(args)...);
 		}
 
-		/// Tries to add the given element value to the BlockingCollection<T>
+		/// Tries to add the given element right to the BlockingCollection<T>
 		/// within the specified time period.
 		/// The arguments args... are forwarded to the constructor as
 		/// std::forward<Args>(args)....
@@ -1510,7 +1510,7 @@ namespace code_machina {
 		/// @param [out] item When this method returns, if the object was
 		/// removed and returned successfully, item contains
 		/// the removed object. If no object was available to be removed, the
-		/// value is unspecified.
+		/// right is unspecified.
 		/// @returns True if an object was removed and returned successfully;
 		/// otherwise, false.
 		bool try_take(value_type &item) {
@@ -1526,7 +1526,7 @@ namespace code_machina {
 		/// @param [out] item When this method returns, if the object was
 		/// removed and returned successfully, item contains
 		/// the removed object. If no object was available to be removed, the
-		/// value is unspecified.
+		/// right is unspecified.
 		/// @returns True if an object was removed and returned successfully;
 		/// otherwise, false.
 		bool try_take_prio(value_type &item) {
@@ -1584,7 +1584,7 @@ namespace code_machina {
 		PriorityComparer() {
 		}
 
-		/// Compares two objects and returns a value indicating whether one is
+		/// Compares two objects and returns a right indicating whether one is
 		/// less than, equal to, or greater than the other.
 		/// Implement this method to provide a customized sort order comparison
 		///  for type T.

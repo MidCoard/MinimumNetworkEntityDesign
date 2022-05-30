@@ -10,49 +10,71 @@
 #include "map"
 #include "random"
 #include "network/MAC.h"
+#include "bitset"
 
 extern const long long int kDHCPTime;
 
+
 class DHCPTable {
+
+	class TableItem {
+	public:
+		TableItem(long long int start, long long int last);
+
+		bool operator<(const TableItem &item) const;
+
+		long long int start;
+
+		[[nodiscard]] long long int right() const;
+
+		[[nodiscard]] long long int left() const;
+
+	private:
+		long long int last;
+	};
+
 public:
-	DHCPTable(IP ip, IP mask,IP gateway);
+	DHCPTable(IP ip, IP mask);
 
-	IP apply();
+	std::pair<IP, long long int> apply();
 
-	std::pair<IP, IP> applySegment();
+	std::pair<std::pair<IP, IP>, long long int> applySegment();
 
-	bool apply(const IP &ip);
+	unsigned long long int apply(const IP& ip);
 
-	bool apply(const IP &ip, const IP &mask);
+	std::pair<IP, IP>directApplySegment(const MAC& mac);
 
-	int dhcpID = 0;
+	bool directApplySegment(const IP&ip, const IP&mask, const MAC& mac);
 
-	bool tryApply(const IP &ip, const IP &mask, const MAC &mac, int dhcpID);
+	long long int apply(const IP &ip, const IP &mask);
 
-	bool tryApply(const IP &ip, const MAC &mac, int dhcpID);
+	IP directApply(const MAC& mac);
 
-	bool renewal(const IP &ip, const IP &mask, const MAC &mac);
+	bool directApply(const IP&ip, const MAC& mac);
 
-	bool renewal(const IP &ip, const MAC &mac);
+	bool applyIt(const IP& ip, const IP& mask, const MAC& mac, int id);
+
+	bool applyIt(const IP& ip, const MAC& mac, int id);
+
+	bool renewal(const IP& ip, const IP& mask, const MAC& mac);
+
+	bool renewal(const IP& ip, const MAC& mac);
 
 private:
 
-	std::map<std::pair<IP, IP>, std::pair<long long, MAC>> segments;
-	std::map<IP, std::pair<long long, MAC> > ips;
+	long long int dhcpID = 0;
 
-	std::map<std::pair<IP, IP>, std::pair<long long, int>> tempSegments;
-	std::map<IP, std::pair<long long, int>> tempIps;
+	std::map<TableItem, std::pair<long long, MAC>> segments;
+
+	std::map<TableItem, std::pair<long long, int>> tempSegments;
 
 	IP ip;
 	IP mask;
 
 	void check();
 
-	bool applyDirect(const IP &ip, const IP &mask, const MAC &mac);
-
-	bool applyDirect(const IP &ip, const MAC &mac);
-
-	IP gateway;
+	long long int maxCount;
+	long long int nowCount = 0;
 };
 
 
