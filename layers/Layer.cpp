@@ -103,12 +103,28 @@ void Layer::stop() {
 }
 
 void Layer::log(const std::string &message) {
-	printf("%s(%d): Layer %s: %s\n", this->networkEntity->getName().c_str(), this->networkEntity->getNode(),
+	auto now = std::chrono::system_clock::now();
+	// get hour in system time zone
+	auto now_c = std::chrono::system_clock::to_time_t(now);
+	auto now_tm = *std::localtime(&now_c);
+	std::stringstream ss;
+	// print as 17:25:23.123
+	ss << std::put_time(&now_tm, "%T.") << std::setfill('0') << std::setw(3) << now.time_since_epoch() / std::chrono::milliseconds(1) % 1000;
+	std::string time = ss.str();
+	printf("[%s]%s(%d): Layer %s: %s\n", time.c_str(), this->networkEntity->getName().c_str(), this->networkEntity->getNode(),
 	       this->getName().c_str(), message.c_str());
 }
 
 void Layer::error(const std::string &message) {
-	fprintf(stderr, "%s(%d): Layer %s: %s\n", this->networkEntity->getName().c_str(), this->networkEntity->getNode(),
+	auto now = std::chrono::system_clock::now();
+	// get hour in system time zone
+	auto now_c = std::chrono::system_clock::to_time_t(now);
+	auto now_tm = *std::localtime(&now_c);
+	std::stringstream ss;
+	// print as 17:25:23.123
+	ss << std::put_time(&now_tm, "%T.") << std::setfill('0') << std::setw(3) << now.time_since_epoch() / std::chrono::milliseconds(1) % 1000;
+	std::string time = ss.str();
+	fprintf(stderr, "[%s]%s(%d): Layer %s: %s\n",time.c_str(), this->networkEntity->getName().c_str(), this->networkEntity->getNode(),
 	        this->getName().c_str(), message.c_str());
 }
 

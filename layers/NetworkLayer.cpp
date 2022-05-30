@@ -47,6 +47,17 @@ void NetworkLayer::handleReceive(int id, Block *block) {
 		unsigned char header;
 		block->read(&header, 1);
 		switch (header) {
+			case 0x20: {
+				IP ip = block->readIP();
+				IP query = block->readIP();
+				if (query == *ipConfiguration.getSegment()) {
+					auto *packet = new ICMPReplyPacket(ip,query,source,ICMPReplyStatus::kICMPReplyStatusSuccess);
+					auto* newBlock = packet->createBlock();
+					delete packet;
+					this->send(newBlock);
+				}
+				break;
+			}
 			case 0x21: {
 				IP segment = block->readIP();
 				IP query = block->readIP();
@@ -58,7 +69,7 @@ void NetworkLayer::handleReceive(int id, Block *block) {
 				break;
 			}
 			default: {
-				error("Unknown protocol type");
+				error("Unknown protocol type " + std::to_string(header));
 			}
 		}
 	} else if (!isIPValid) {
@@ -76,7 +87,6 @@ void NetworkLayer::handleReceive(int id, Block *block) {
 				linkLayer->sendARP(ip, ip);
 				std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 				MAC mac = this->arpTable.lookup(ip);
-				error(mac.str());
 				if (!mac.isBroadcast()) {
 					this->error("DHCP offer a address that has been used");
 					// one have already got the ip (maybe static ip)
@@ -162,42 +172,35 @@ void NetworkLayer::handleSend(Block *block) {
 		// if the destination is in the same network, send to the target
 		// get the mac address of the target
 		IPConfiguration configuration = this->configurations.at(nextHop.second);
-		if (*configuration.getSegment() == nextHop.first){
-			auto * newBlock = new Block();
+		MAC mac = this->arpTable.lookup(destination);
+		// if the mac address is not found, send ARP, later send
+		if (mac.isBroadcast()) {
+			// won't happen configuration.getSegment() == nextHop.first
+			((LinkLayer *) this->lowerLayers[nextHop.second])->sendARP(*configuration.getSegment(),
+			                                                           destination);
+			std::this_thread::sleep_for(std::chrono::milliseconds(500));
+			auto *newBlock = new Block(block->getSendCount() - 1);
+			newBlock->writeIP(destination);
+			newBlock->writeBlock(block);
+			newBlock->flip();
+			// wait for the ARP reply
+			this->send(newBlock);
+		} else {
+			// if the mac address is found, send the block
+			auto *newBlock = new Block();
+			newBlock->writeMAC(mac);
+			newBlock->write(0); // for ip protocol
 			newBlock->writeIP(*configuration.getSegment());
 			newBlock->writeIP(destination);
 			newBlock->writeBlock(block);
 			newBlock->flip();
-			this->receive(nextHop.second, newBlock);
-		} else {
-			MAC mac = this->arpTable.lookup(nextHop.first);
-			// if the mac address is not found, send ARP, later send
-			if (mac.isBroadcast()) {
-				((LinkLayer *) this->lowerLayers[nextHop.second])->sendARP(*configuration.getSegment(),
-				                                                           nextHop.first);
-				std::this_thread::sleep_for(std::chrono::milliseconds(500));
-				auto *newBlock = new Block(block->getSendCount() - 1);
-				newBlock->writeIP(destination);
-				newBlock->writeBlock(block);
-				newBlock->flip();
-				// wait for the ARP reply
-				this->send(newBlock);
-			} else {
-				// if the mac address is found, send the block
-				auto *newBlock = new Block();
-				newBlock->writeMAC(mac);
-				newBlock->write(0); // for ip protocol
-				newBlock->writeIP(*configuration.getSegment());
-				newBlock->writeIP(destination);
-				newBlock->writeBlock(block);
-				newBlock->flip();
-				this->lowerLayers[nextHop.second]->send(newBlock);
-			}
+			this->lowerLayers[nextHop.second]->send(newBlock);
 		}
 	} else if (destination.isInSameNetwork(*ipConfiguration.getSegment(), *ipConfiguration.getMask())) {
 		// special case the destination is in the same network
 		MAC mac = this->arpTable.lookup(destination);
 		if (mac.isBroadcast()) {
+			// won't happen destination == ipConfiguration.getSegment()
 			((LinkLayer *) this->lowerLayers[0])->sendARP(*ipConfiguration.getSegment(), destination);
 			std::this_thread::sleep_for(std::chrono::milliseconds(500));
 			auto *newBlock = new Block(block->getSendCount() - 1);
@@ -287,7 +290,8 @@ void NetworkLayer::sendICMP(IP ip) {
 }
 
 void NetworkLayer::handleICMP(const IP &ip, ICMPReplyStatus status) {
-	std::string s = (status ? "unreachable" : "reachable");
-	this->log("receive ICMP reply status " + s);
+	if (status == ICMPReplyStatus::kICMPReplyStatusUnreachable)
+		error("IP " + ip.str() + " is unreachable");
+	else log("IP " + ip.str() + " is reachable");
 }
 

@@ -153,7 +153,9 @@ std::pair<std::pair<IP,IP>,long long int> DHCPTable::applySegment0() {
 	int zeros = this->mask.getRightZero();
 	if (zeros < 4)
 		return {std::pair{BROADCAST_IP, BROADCAST_IP}, -1};
-	TableItem item(this->nowCount++, 1LL << 4);
+	long long int rest = (this->nowCount + this->ip.intValue()) % 16;
+	TableItem item(this->nowCount + (16 - rest), 1LL << 4);
+	this->nowCount = (this->nowCount + (16 - rest)) + 16;
 	if (this->nowCount >= this->maxCount)
 		this->nowCount = 0;
 	auto it = this->segments.upper_bound(item);
@@ -176,9 +178,6 @@ std::pair<std::pair<IP,IP>,long long int> DHCPTable::applySegment0() {
 	}
 	auto time = std::chrono::system_clock::now().time_since_epoch().count();
 	this->tempSegments.insert_or_assign(item, std::pair{time + 2LL * 60 * 1000 * 1000, dhcpID});
-	this->nowCount += (1LL << 4) - 1;
-	if (this->nowCount >= this->maxCount)
-		this->nowCount = 0;
 	return {{IP(this->ip.intValue() + item.left()),IP(0xffu,0xffu,0xffu,0xf0u)},this->dhcpID++};
 }
 
@@ -216,7 +215,9 @@ std::pair<IP, IP> DHCPTable::directApplySegment0(const MAC& mac) {
 	int zeros = this->mask.getRightZero();
 	if (zeros < 4)
 		return {std::pair{BROADCAST_IP, BROADCAST_IP}};
-	TableItem item(this->nowCount++, 1LL << 4);
+	long long int rest = (this->nowCount + this->ip.intValue()) % 16;
+	TableItem item(this->nowCount + (16 - rest), 1LL << 4);
+	this->nowCount = (this->nowCount + (16 - rest)) + 16;
 	if (this->nowCount >= this->maxCount)
 		this->nowCount = 0;
 	auto it = this->segments.upper_bound(item);
@@ -239,9 +240,7 @@ std::pair<IP, IP> DHCPTable::directApplySegment0(const MAC& mac) {
 	}
 	auto time = std::chrono::system_clock::now().time_since_epoch().count();
 	this->segments.insert_or_assign(item, std::pair{time + kDHCPTime * 1000LL, mac});
-	this->nowCount += (1LL << 4) - 1;
-	if (this->nowCount >= this->maxCount)
-		this->nowCount = 0;
+
 	return {IP(this->ip.intValue() + item.left()),IP(0xffu,0xffu,0xffu,0xf0u)};
 }
 
