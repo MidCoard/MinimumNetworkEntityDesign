@@ -244,6 +244,16 @@ int main() {
 			if (ipConfiguration.empty())
 				std::cout<< "No IP configuration"<<std::endl;
 			else std::cout<< ipConfiguration[0].getSegment()->str()<<std::endl;
+		} else if (op == 5) {
+			int node;
+			std::cin>>node;
+			auto* pc = (PC*)network->getNodes()[node];
+			pc->releaseIP();
+		} else if (op == 6) {
+			int node;
+			std::cin>>node;
+			auto* pc = (PC*)network->getNodes()[node];
+			pc->applyIP();
 		}
 	}
 	if (network != nullptr) {

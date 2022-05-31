@@ -7,8 +7,8 @@
 #include <utility>
 
 const int kApplyCount = 20;
-const long long int kDHCPTime = 2LL * 10 * 1000 * 1000;
-//const long long int kDHCPTime = 2LL * 60 * 60 * 1000 * 1000;
+//const long long int kDHCPTime = 2LL * 10 * 1000 * 1000;
+const long long int kDHCPTime = 2LL * 60 * 60 * 1000 * 1000;
 
 std::pair<IP,long long int> DHCPTable::apply() {
 	int count = 0;
@@ -105,7 +105,9 @@ std::pair<std::pair<IP,IP>,long long int> DHCPTable::tryApply(const IP &ip, cons
 	if ((ip & this->mask) != (this->ip & this->mask))
 		return {std::pair<IP,IP>{BROADCAST_IP, BROADCAST_IP}, -1};
 	int zeros = mask.getRightZero();
-	TableItem item(ip.intValue() < this->ip.intValue() ? 0 : ip.intValue() - this->ip.intValue(), (1LL<<zeros) - (ip.intValue() - (ip & mask).intValue()));
+	unsigned int rest = (ip.intValue() < this->ip.intValue() ? (this->ip.intValue() - (this->ip & mask).intValue())
+	                                                : (ip.intValue() - (ip & mask).intValue()));
+	TableItem item(ip.intValue() < this->ip.intValue() ? 0 : ip.intValue() - this->ip.intValue(), (1LL<<zeros) - rest);
 	std::pair<long long int, long long int> a = {item.left() , item.right()};
 	std::pair<long long int, long long int> b = {item.left(), item.right()};
 	auto it = this->segments.upper_bound(item);
@@ -131,15 +133,16 @@ std::pair<std::pair<IP,IP>,long long int> DHCPTable::tryApply(const IP &ip, cons
 	// get the two ranges a and b intersection
 	long long int min = std::max(a.first, b.first);
 	long long int max = std::min(a.second, b.second);
-	if (min > max)
-		return {std::pair<IP,IP>{BROADCAST_IP, BROADCAST_IP}, -1};
+	if (min > max) {
+		return {std::pair<IP, IP>{BROADCAST_IP, BROADCAST_IP}, -1};
+	}
 	else  {
 		IP ip1 = IP(this->ip.intValue() + min);
 		long long int length = max - min + 1;
-		long long int generate = length + min;
+		long long int generate = length + min + (this->ip.intValue() - (this->ip & mask).intValue());
 		// get length highest bit
 		int i = 0;
-		while (generate >> i)
+		while (generate >> i && i <= zeros)
 			i++;
 		IP retMask = IP(~((1LL<<(i-1)) - 1));
 		TableItem newItem = TableItem(min, length);
@@ -293,10 +296,15 @@ bool DHCPTable::directApplySegment(const IP &ip, const IP &mask, const MAC &mac)
 		return false;
 	if ((ip & this->mask) != (this->ip & this->mask))
 		return false;
+	// because this, the above are equal
 	if (ip.intValue() < this->ip.intValue())
 		return false;
 	int zeros = mask.getRightZero();
 	TableItem item(ip.intValue() - this->ip.intValue(), (1LL<<zeros) - (ip.intValue() - (ip & mask).intValue()));
+	// equals to
+	//unsigned int rest = (ip.intValue() < this->ip.intValue() ? (this->ip.intValue() - (this->ip & mask).intValue())
+	//                                                       : (ip.intValue() - (ip & mask).intValue()));
+	//TableItem item(ip.intValue() < this->ip.intValue() ? 0 : ip.intValue() - this->ip.intValue(), (1LL<<zeros) - rest);
 	auto it = this->segments.upper_bound(item);
 	if (it != this->segments.begin()) {
 		it--;
@@ -343,6 +351,7 @@ bool DHCPTable::directApply(const IP &ip, const MAC &mac) {
 }
 
 bool DHCPTable::applyIt(IP* ip, IP* mask, const MAC& mac, int id) {
+	this->check();
 	if (id == -1) {
 		auto part = tryApply(*ip, *mask);
 		*ip = part.first.first;
@@ -352,6 +361,7 @@ bool DHCPTable::applyIt(IP* ip, IP* mask, const MAC& mac, int id) {
 			return false;
 	}
 	int zeros = mask->getRightZero();
+	// no worries for ip < this->ip
 	TableItem item(ip->intValue() - this->ip.intValue(), (1LL<<zeros) - (ip->intValue() - (*ip & *mask).intValue()));
 	if (this->tempSegments.find(item) == this->tempSegments.end())
 		return false;
@@ -365,6 +375,7 @@ bool DHCPTable::applyIt(IP* ip, IP* mask, const MAC& mac, int id) {
 }
 
 bool DHCPTable::applyIt(const IP& ip, const MAC& mac, int id) {
+	this->check();
 	if (id == -1) {
 		id = apply(ip);
 		if (id == -1)
@@ -383,6 +394,13 @@ bool DHCPTable::applyIt(const IP& ip, const MAC& mac, int id) {
 }
 
 bool DHCPTable::renewal(const IP& ip, const IP& mask, const MAC& mac) {
+	this->check();
+	if ((mask & this->mask) != this->mask)
+		return -1;
+	if ((ip & this->mask) != (this->ip & this->mask))
+		return -1;
+	if (ip.intValue() < this->ip.intValue())
+		return -1;
 	int zeros = mask.getRightZero();
 	TableItem item(ip.intValue() - this->ip.intValue(), (1LL<<zeros) - (ip.intValue() - (ip & mask).intValue()));
 	auto it = this->segments.find(item);
@@ -396,6 +414,9 @@ bool DHCPTable::renewal(const IP& ip, const IP& mask, const MAC& mac) {
 }
 
 bool DHCPTable::renewal(const IP& ip, const MAC& mac) {
+	this->check();
+	if ((ip & this->mask) != (this->ip & this->mask) || ip.intValue() < this->ip.intValue())
+		return  -1;
 	TableItem item(ip.intValue() - this->ip.intValue(), 1);
 	auto it = this->segments.find(item);
 	if (it == this->segments.end())
@@ -415,6 +436,39 @@ void DHCPTable::print() {
 	for (auto & tempSegment : this->tempSegments) {
 		std::cout << "TempSegment: " << tempSegment.first.left() << " " << tempSegment.first.right() << " " << tempSegment.second.first << " " << tempSegment.second.second << std::endl;
 	}
+}
+
+void DHCPTable::release(const IP& ip, const IP& mask, const MAC& mac, bool useSegment) {
+	if (!useSegment) {
+		auto it = this->segments.find(TableItem(ip.intValue() - this->ip.intValue(), 1));
+		if (it == this->segments.end())
+			return;
+		if (it->second.second != mac)
+			return;
+		this->segments.erase(it);
+	} else {
+		// no worries for ip < this->ip
+		auto it = this->segments.find(TableItem(ip.intValue() - this->ip.intValue(), (1LL<<mask.getRightZero()) - (ip.intValue() - (ip & mask).intValue())));
+		if (it == this->segments.end())
+			return;
+		if (it->second.second != mac)
+			return;
+		this->segments.erase(it);
+	}
+}
+
+void DHCPTable::decline(const IP& ip, const IP& mask, const MAC& mac) {
+	auto item = TableItem(ip.intValue() - this->ip.intValue(), (1LL<<mask.getRightZero()) - (ip.intValue() - (ip & mask).intValue()));
+	if (this->tempSegments.find(item) != this->tempSegments.end())
+		this->tempSegments.erase(item);
+	this->directApplySegment(ip, mask, mac);
+}
+
+void DHCPTable::decline(IP ip, MAC mac) {
+	auto item = TableItem(ip.intValue() - this->ip.intValue(), 1);
+	if (this->tempSegments.find(item) != this->tempSegments.end())
+		this->tempSegments.erase(item);
+	this->directApply(ip, mac);
 }
 
 DHCPTable::TableItem::TableItem(long long int start, long long int last) :start(start),last(last) {

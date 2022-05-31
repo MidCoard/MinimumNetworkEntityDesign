@@ -101,13 +101,15 @@ void ISP::start() {
 				throw std::runtime_error("no gateway available");
 			this->networkLayer->setIPConfiguration(i, new IP(pair.first), new IP(pair.second), new IP(gateway));
 		} else {
-			bool flag = this->networkLayer->tables[0]->directApplySegment(*configuration.getSegment(), *configuration.getMask(), layer->getMAC());
+			IP segment = *configuration.getSegment();
+			IP mask = *configuration.getMask();
+			delete configuration.getSegment();
+			delete configuration.getMask();
+			bool flag = this->networkLayer->tables[0]->applyIt(&segment, &mask, layer->getMAC(), -1);
 			if (!flag) {
 				std::pair<IP,IP> pair = this->networkLayer->tables[0]->directApplySegment(layer->getMAC());
 				if (pair.first.isBroadcast())
 					throw std::runtime_error("no ip segment available");
-				delete configuration.getSegment();
-				delete configuration.getMask();
 				delete configuration.getGateway();
 				this->networkLayer->tables.push_back(new DHCPTable(pair.first, pair.second));
 				IP gateway = this->networkLayer->tables[i]->directApply(layer->getMAC());
@@ -117,33 +119,33 @@ void ISP::start() {
 			} else {
 				if (configuration.getGateway() == nullptr) {
 					this->networkLayer->tables.push_back(
-							new DHCPTable(*configuration.getSegment(), *configuration.getMask()));
+							new DHCPTable(segment, mask));
 					IP gateway = this->networkLayer->tables[i]->directApply(layer->getMAC());
 					if (gateway.isBroadcast())
 						throw std::runtime_error("no gateway available");
-					this->networkLayer->setIPConfiguration(i, configuration.getSegment(), configuration.getMask(),
-					                                       new IP(gateway));
+					this->networkLayer->setIPConfiguration(i, new IP(segment), new IP(mask),
+					                         new IP(gateway));
 				} else {
 					this->networkLayer->tables.push_back(
-							new DHCPTable(*configuration.getSegment(), *configuration.getMask()));
+							new DHCPTable(segment, mask));
 					flag = this->networkLayer->tables[i]->directApply(*configuration.getGateway(), layer->getMAC());
 					if (!flag) {
 						IP gateway = this->networkLayer->tables[i]->directApply(layer->getMAC());
 						if (gateway.isBroadcast())
 							throw std::runtime_error("no gateway available");
 						delete configuration.getGateway();
-						this->networkLayer->setIPConfiguration(i, configuration.getSegment(), configuration.getMask(),
-						                                       new IP(gateway));
+						this->networkLayer->setIPConfiguration(i, new IP(segment), new IP(mask),
+						                         new IP(gateway));
 					} else {
-						this->networkLayer->setIPConfiguration(i, configuration.getSegment(), configuration.getMask(),
-						                                       configuration.getGateway());
+						this->networkLayer->setIPConfiguration(i, new IP(segment), new IP(mask),
+						                         configuration.getGateway());
 					}
 				}
 			}
 		}
 		IPConfiguration ipConfig = this->networkLayer->getIPConfiguration(i);
 		this->networkLayer->routeTable.updateLong(*ipConfig.getSegment(), *ipConfig.getMask(), 0,
-		                                          *ipConfig.getSegment(), i);
+		                            *ipConfig.getSegment(), i);
 	}
 	NetworkEntity::start();
 }

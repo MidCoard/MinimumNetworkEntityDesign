@@ -30,7 +30,6 @@ class DHCPTable {
 
 		[[nodiscard]] long long int left() const;
 
-	private:
 		long long int last;
 	};
 
@@ -67,6 +66,12 @@ public:
 	std::pair<IP, long long int> apply();
 
 	void print();
+
+	void release(const IP& ip, const IP& mask, const MAC& mac, bool useSegment);
+
+	void decline(const IP& ip, const IP& mask, const MAC& mac);
+
+	void decline(IP ip, MAC mac);
 
 private:
 

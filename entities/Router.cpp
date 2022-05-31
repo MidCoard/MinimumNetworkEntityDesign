@@ -63,7 +63,6 @@ Router::~Router() {
 
 void Router::start() {
 	NetworkEntity::start();
-	((NetworkLayer *) this->layer)->sendDHCP();
 	dhcp::request((NetworkLayer *) this->layer);
 }
 
@@ -134,6 +133,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 					MAC mac = block->readMAC();
 					unsigned char useSegment;
 					block->read(&useSegment, 1);
+					log("Receive DHCP discover from " + mac.str() + " useSegment: " + std::to_string(useSegment));
 					if (useSegment) {
 						std::pair<std::pair<IP, IP>,long long int> apply = this->tables[id]->applySegment();
 						if (apply.second != -1) {
@@ -153,6 +153,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 							this->lowerLayers[id]->send(newBlock);
 						}
 					}
+					this->tables[id]->print();
 				}
 				break;
 			case 0x03:
@@ -211,10 +212,11 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 					MAC mac = block->readMAC();
 					unsigned char useSegment;
 					block->read(&useSegment, 1);
+					log("Receiving DHCP decline from " + segment.str() + " with segment " + segment.str() + " and mask " + mask.str() + " and mac " + mac.str());
 					if (useSegment)
-						this->tables[id]->directApplySegment(segment, mask, mac);
+						this->tables[id]->decline(segment, mask, mac);
 					else
-						this->tables[id]->directApply(segment, mac);
+						this->tables[id]->decline(segment, mac);
 				}
 				break;
 			default: {
@@ -266,7 +268,6 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 						delete ipConfiguration.getMask();
 						delete ipConfiguration.getGateway();
 						this->setIPConfiguration(0, new IP(segment), new IP(mask), new IP(gateway));
-						this->sendDHCP();
 					}
 				}
 				break;
@@ -433,6 +434,17 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 				}
 				break;
 			}
+			case 0x07:
+				if (id != 0) {
+					IP segment = block->readIP();
+					IP mask = block->readIP();
+					MAC mac = block->readMAC();
+					unsigned char useSegment;
+					block->read(&useSegment, 1);
+					log("receive DHCP_RELEASE get segment: " + segment.str() + " mask: " + mask.str() + " mac: " + mac.str());
+					this->tables[id]->release(segment, mask, mac, useSegment);
+				}
+				break;
 			case 0x20: {
 				IP segment = block->readIP();
 				IP query = block->readIP();
@@ -467,18 +479,20 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 				IP query = block->readIP();
 				unsigned char flag;
 				block->read(&flag, 1);
-				if (segment == destination) {
-					// this is my request
-					this->icmpTable.update(segment, query, flag);
-					this->handleICMP(query, flag ? ICMPReplyStatus::kICMPReplyStatusUnreachable : ICMPReplyStatus::kICMPReplyStatusSuccess);
-				} else if (icmpTable.lookupAndUpdate(segment, query, flag) != -1) {
-					// i am the transfer
-					auto *packet = new ICMPReplyPacket(segment, query, segment,
-					                                   flag ? ICMPReplyStatus::kICMPReplyStatusUnreachable
-					                                        : ICMPReplyStatus::kICMPReplyStatusSuccess);
-					auto *newBlock = packet->createBlock();
-					delete packet;
-					this->send(newBlock);
+				if (icmpTable.lookupAndUpdate(segment, query, flag) != -1) {
+					if (segment == destination) {
+						// this is my request
+						this->handleICMP(query, flag ? ICMPReplyStatus::kICMPReplyStatusUnreachable
+						                             : ICMPReplyStatus::kICMPReplyStatusSuccess);
+					} else {
+						// i am the transfer
+						auto *packet = new ICMPReplyPacket(segment, query, segment,
+						                                   flag ? ICMPReplyStatus::kICMPReplyStatusUnreachable
+						                                        : ICMPReplyStatus::kICMPReplyStatusSuccess);
+						auto *newBlock = packet->createBlock();
+						delete packet;
+						this->send(newBlock);
+					}
 				}
 				break;
 			}

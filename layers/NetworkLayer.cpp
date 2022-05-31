@@ -82,9 +82,10 @@ void NetworkLayer::handleReceive(int id, Block *block) {
 				IP query = block->readIP();
 				unsigned char flag;
 				block->read(&flag, 1);
-				this->icmpTable.update(segment, query, flag);
-				this->handleICMP(query, flag ? ICMPReplyStatus::kICMPReplyStatusUnreachable
-				                             : ICMPReplyStatus::kICMPReplyStatusSuccess);
+				if (icmpTable.lookupAndUpdate(segment, query, flag) != -1) {
+					this->handleICMP(query, flag ? ICMPReplyStatus::kICMPReplyStatusUnreachable
+					                             : ICMPReplyStatus::kICMPReplyStatusSuccess);
+				}
 				break;
 			}
 			default: {
@@ -123,7 +124,6 @@ void NetworkLayer::handleReceive(int id, Block *block) {
 					pc->mask = new IP(mask);
 					pc->gateway = new IP(gateway);
 					this->setIPConfiguration(0, pc->ip, pc->mask, pc->gateway);
-					this->sendDHCP();
 				}
 				break;
 			}
@@ -285,9 +285,6 @@ void NetworkLayer::sendDHCPRenewal0(bool useSegment) {
 	if (!renewable)
 		return;
 	renewable = false;
-	kExecutor.submit([this]() {
-		this->renewable = true;
-	},std::chrono::seconds(1));
 	IPConfiguration ipConfiguration = configurations.at(0);
 	auto *linkLayer = (LinkLayer *) this->lowerLayers[0];
 	MAC target = this->arpTable.lookup(*ipConfiguration.getGateway());
@@ -299,8 +296,12 @@ void NetworkLayer::sendDHCPRenewal0(bool useSegment) {
 	target = this->arpTable.lookup(*ipConfiguration.getGateway());
 	if (target.isBroadcast()) {
 		this->error("Send DHCP Renewal failed. Cannot find gateway MAC");
+		renewable = true;
 		return;
 	}
+	kExecutor.submit([this]() {
+		this->renewable = true;
+	},std::chrono::seconds(1));
 	this->log("Send DHCP Renewal with segment " + ipConfiguration.getSegment()->str() + " and mask " + ipConfiguration.getMask()->str() + " and mac " + linkLayer->getMAC().str() + " and useSegment " + std::to_string(useSegment));
 	auto *packet = new DHCPRequestPacket(*ipConfiguration.getSegment(), *ipConfiguration.getMask(),
 	                                     *ipConfiguration.getGateway(), linkLayer->getMAC(), target, useSegment);
@@ -330,11 +331,17 @@ void NetworkLayer::checkDHCP() {
 }
 
 void NetworkLayer::sendICMP(IP ip) {
-	if (!this->isIPValid)
-		return;
 	IPConfiguration ipConfiguration = configurations.at(0);
+	if (ipConfiguration.getSegment() == nullptr || ipConfiguration.getGateway() == nullptr)
+		return;
+	IP segment = *ipConfiguration.getSegment();
+	kExecutor.submit([this,segment,ip]() {
+		if (this->icmpTable.lookupAndUpdate(segment,ip, true) != -1) {
+			this->handleICMP(ip, ICMPReplyStatus::kICMPReplyStatusUnreachable);
+		}
+	},std::chrono::seconds(5));
 	this->icmpTable.add(*ipConfiguration.getSegment(), ip);
-	auto *packet = new ICMPPacket(*ipConfiguration.getSegment(), std::move(ip), *ipConfiguration.getGateway());
+	auto *packet = new ICMPPacket(segment, std::move(ip), *ipConfiguration.getGateway());
 	Block *block = packet->createBlock();
 	delete packet;
 	this->send(block);
@@ -360,11 +367,24 @@ void NetworkLayer::sendDHCPRelease0(bool useSegment) {
 		return;
 	}
 	this->isIPValid = false;
+	this->startDHCP = 0;
+	this->duration = 0;
+	this->dhcpID = -1;
 	IPConfiguration ipConfiguration = this->getIPConfiguration(0);
-	auto* linkLayer = (LinkLayer *) this->lowerLayers[0];
-	auto* packet = new DHCPReleasePacket(*ipConfiguration.getSegment(),*ipConfiguration.getMask(),*ipConfiguration.getGateway(),linkLayer->getMAC(),useSegment);
+	auto * linkLayer = (LinkLayer*)this->lowerLayers[0];
+	MAC mac = this->arpTable.lookup(*ipConfiguration.getGateway());
+	if (mac.isBroadcast()) {
+		linkLayer->sendARP(*ipConfiguration.getSegment(), *ipConfiguration.getGateway());
+		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	}
+	mac = this->arpTable.lookup(*ipConfiguration.getGateway());
+	if (mac.isBroadcast()) {
+		this->error("Send DHCP Release failed. Cannot find gateway MAC");
+		return;
+	}
+	auto* packet = new DHCPReleasePacket(*ipConfiguration.getSegment(),*ipConfiguration.getMask(),*ipConfiguration.getGateway(),mac,linkLayer->getMAC(),useSegment);
 	auto* block = packet->createBlock();
 	delete packet;
-	this->lowerLayers[0]->send(block);
+	linkLayer->send(block);
 }
 

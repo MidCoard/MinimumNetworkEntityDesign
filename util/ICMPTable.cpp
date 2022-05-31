@@ -40,10 +40,11 @@ int ICMPTable::lookupAndUpdate(const IP& ip, const IP& query, bool flag) {
 	int ret = -1;
 	this->mtx.lock();
 	auto it = this->map.find({ip,query});
-	if (it != this->map.end()) {
-		this->map.at({ip,query}) = flag;
-		ret = flag;
-	}
+	if (it != this->map.end())
+		if (it->second == 2) {
+			it->second = flag;
+			ret = flag;
+		}
 	this->mtx.unlock();
 	return ret;
 }

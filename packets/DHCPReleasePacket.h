@@ -12,7 +12,7 @@ class DHCPReleasePacket : public Packet {
 
 public:
 
-	DHCPReleasePacket(IP segment, IP mask, IP gateway, MAC mac, bool useSegment);
+	DHCPReleasePacket(IP segment, IP mask, IP gateway, MAC mac,MAC source, bool useSegment);
 
 	Block *createBlock() override;
 
@@ -25,7 +25,7 @@ private:
 	IP gateway;
 	MAC mac;
 	bool useSegment;
-
+	MAC source;
 };
 
 

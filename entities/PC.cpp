@@ -60,7 +60,6 @@ PC::~PC() {
 void PC::start() {
 	NetworkEntity::start();
 	if (!this->networkLayer->isIPValid) {
-		this->networkLayer->sendDHCP();
 		dhcp::request(this->networkLayer);
 	}
 }
@@ -71,4 +70,12 @@ std::string PC::getName() {
 
 void PC::ping(IP ip) {
 	this->networkLayer->sendICMP(std::move(ip));
+}
+
+void PC::releaseIP() {
+	this->networkLayer->sendDHCPRelease();
+}
+
+void PC::applyIP() {
+	this->networkLayer->sendDHCP();
 }

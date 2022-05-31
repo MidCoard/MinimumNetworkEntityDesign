@@ -20,7 +20,7 @@ void dhcp::start() {
 			if (shouldStop)
 				break;
 			if (layers.is_empty())
-				std::this_thread::sleep_for(std::chrono::seconds(2));
+				std::this_thread::sleep_for(std::chrono::seconds(1));
 			else {
 				NetworkLayer *layer = nullptr;
 				code_machina::BlockingCollectionStatus status = layers.take(layer);

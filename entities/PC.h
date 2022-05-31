@@ -33,6 +33,10 @@ public:
 
 	void ping(IP ip);
 
+	void releaseIP();
+
+	void applyIP();
+
 public:
 	IP *ip;
 	IP *mask;

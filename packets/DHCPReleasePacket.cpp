@@ -19,11 +19,12 @@ Block *DHCPReleasePacket::createBlock() {
 	block->writeHeader(this);
 	block->writeIP(this->segment);
 	block->writeIP(this->mask);
+	block->writeMAC(this->source);
 	block->write(useSegment);
 	block->flip();
 	return block;
 }
 
-DHCPReleasePacket::DHCPReleasePacket(IP segment, IP mask, IP gateway, MAC mac, bool useSegment) : segment(
-		std::move(segment)), mask(std::move(mask)), gateway(std::move(gateway)), mac(std::move(mac)), useSegment(
+DHCPReleasePacket::DHCPReleasePacket(IP segment, IP mask, IP gateway, MAC mac,MAC source, bool useSegment) : segment(
+		std::move(segment)), mask(std::move(mask)), gateway(std::move(gateway)), mac(std::move(mac)), source(std::move(source)), useSegment(
 		useSegment) {}
