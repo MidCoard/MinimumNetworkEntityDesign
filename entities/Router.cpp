@@ -110,7 +110,6 @@ RouterNetworkLayer::RouterNetworkLayer(NetworkEntity *networkEntity) : NetworkLa
 RouterNetworkLayer::RouterNetworkLayer(int id, NetworkEntity *networkEntity) : NetworkLayer(id, networkEntity) {}
 
 void RouterNetworkLayer::handleReceive(int id, Block *block) {
-	routeTable.check();
 	if (this->isIPValid)
 		this->checkDHCP();
 	if (block->getSendCount() < 0)
@@ -288,6 +287,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 					bool flag = this->tables[0]->directApply(segment, layer->getMAC());
 					if (!flag)
 						throw std::runtime_error("apply its segment failed");
+					this->routeTable.update(LOCAL0,LOCAL0,10,gateway,0);
 					for (int i = 1; i < this->lowerLayers.size(); i++) {
 						auto *layer = (LinkLayer *) this->lowerLayers[i];
 						IPConfiguration configuration = this->getIPConfiguration(i);
@@ -444,11 +444,11 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 				IP query = block->readIP();
 				unsigned char flag;
 				block->read(&flag, 1);
-				this->icmpTable.update(segment, query, flag);
 				if (segment == destination) {
 					// this is my request
+					this->icmpTable.update(segment, query, flag);
 					this->handleICMP(query, flag ? ICMPReplyStatus::kICMPReplyStatusUnreachable : ICMPReplyStatus::kICMPReplyStatusSuccess);
-				} else {
+				} else if (icmpTable.lookupAndUpdate(segment, query, flag) != -1) {
 					// i am the transfer
 					auto *packet = new ICMPReplyPacket(segment, query, segment,
 					                                   flag ? ICMPReplyStatus::kICMPReplyStatusUnreachable
@@ -466,24 +466,25 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 
 	} else {
 		// transfer
-		std::pair<IP, int> pair = routeTable.lookup(destination);
-		if (pair.second == -1)
+		std::pair<IP, int> nextHop = routeTable.lookup(destination);
+		if (nextHop.second == -1)
 			// do not know how to transfer
 			return;
+
 		// find the next hop
-		IP ip = pair.first;
-		if (ip == *ipConfiguration.getSegment()) {
-			auto *newBlock = new Block();
-			newBlock->writeIP(source);
+		IPConfiguration configuration = this->configurations.at(nextHop.second);
+		if (nextHop.first == *configuration.getSegment() && nextHop.first == destination) {
+			auto* newBlock = new Block();
+			newBlock->writeIP(destination);
 			newBlock->writeIP(destination);
 			newBlock->writeBlock(block);
 			newBlock->flip();
-			this->receive(id, newBlock);
+			this->receive(nextHop.second, newBlock);
 		} else {
-			// find the next hop mac
+			IP ip = nextHop.first == *configuration.getSegment() ? destination : nextHop.first;
 			MAC mac = this->arpTable.lookup(ip);
 			if (mac.isBroadcast()) {
-				((LinkLayer *) this->lowerLayers[pair.second])->sendARP(*ipConfiguration.getSegment(), ip);
+				((LinkLayer *) this->lowerLayers[nextHop.second])->sendARP(*ipConfiguration.getSegment(), ip);
 				std::this_thread::sleep_for(std::chrono::milliseconds(500));
 				auto *newBlock = new Block(block->getSendCount() - 1);
 				newBlock->writeIP(source);
@@ -499,7 +500,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 				newBlock->writeIP(destination);
 				newBlock->writeBlock(block);
 				newBlock->flip();
-				this->lowerLayers[pair.second]->send(newBlock);
+				this->lowerLayers[nextHop.second]->send(newBlock);
 			}
 		}
 	}

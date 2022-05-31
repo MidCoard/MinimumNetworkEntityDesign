@@ -3,7 +3,7 @@
 
 const IP *kRootIP = new IP("0.0.0.0");
 const IP *kRootMask = new IP("0.0.0.0");
-const IP *kRootGateway = new IP("0.0.0.1");
+const IP *kRootGateway = new IP("0.0.0.0");
 
 ISP::ISP(Network *network) : NetworkEntity(network, 0, new RootAppLayer(this)) {
 }
@@ -50,6 +50,8 @@ std::vector<std::string> ISP::createLayers(int node, std::vector<int> ids) {
 	this->networkLayer->addLowerLayer(emptyLinkLayer);
 	auto *emptyPhysicalLayer = new EmptyPhysicalLayer(0, this);
 	emptyLinkLayer->addLowerLayer(emptyPhysicalLayer);
+	this->networkLayer->setIPConfiguration(0, const_cast<IP *>(kRootIP), const_cast<IP *>(kRootMask),
+	                                       const_cast<IP *>(kRootGateway));
 	for (int id: ids) {
 		networkLayer->setIPConfiguration(id, nullptr, nullptr,
 		                                 nullptr);
@@ -82,6 +84,7 @@ void ISP::dfsAllocateIP(int node, std::vector<bool> *visited, std::vector<IPConf
 void ISP::start() {
 	this->networkLayer->isIPValid = true;
 	this->networkLayer->tables.push_back(new DHCPTable(*kRootIP, *kRootMask));
+	this->networkLayer->routeTable.update(LOCAL0, LOCAL0, 10, LOCAL0, 0);
 	for (int i = 1; i < this->networkLayer->lowerLayers.size(); i++) {
 		auto *layer = (LinkLayer *) this->networkLayer->lowerLayers[i];
 		IPConfiguration configuration = this->networkLayer->getIPConfiguration(i);
@@ -138,6 +141,8 @@ void ISP::start() {
 				}
 			}
 		}
+		IPConfiguration ipConfig = this->networkLayer->getIPConfiguration(i);
+		this->networkLayer->routeTable.update(*ipConfig.getSegment(), *ipConfig.getMask(),0,*ipConfig.getSegment(),i);
 	}
 	NetworkEntity::start();
 }

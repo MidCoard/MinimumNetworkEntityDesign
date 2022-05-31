@@ -5,6 +5,7 @@
 const int kMaxJumps = 10;
 
 std::pair<IP, int> RouteTable::lookup(const IP &ip) {
+	this->check();
 	std::pair<IP, int> last = {ip, -1};
 	int jumps = 0;
 	while (true) {
@@ -26,6 +27,7 @@ void RouteTable::check() {
 }
 
 void RouteTable::update(const IP &ip, const IP &mask, int cost, const IP &nextHop, int id) {
+	this->check();
 	auto time = std::chrono::system_clock::now().time_since_epoch().count();
 	this->table.insert(TableItem(ip, mask, cost, nextHop, id, time + 10LL * 60 * 1000 * 1000));
 }
@@ -49,5 +51,5 @@ RouteTable::TableItem::TableItem(IP ip, IP mask, int cost, IP nextHop, int id, l
                                                                                                  id(id), time(time) {}
 
 bool RouteTable::TableItem::match(const IP &ip) const {
-	return (this->ip & this->mask) == (ip & this->mask);
+	return (this->ip & this->mask) == (ip & this->mask) && ip.intValue() >= this->ip.intValue();
 }

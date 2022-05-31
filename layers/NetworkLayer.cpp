@@ -28,7 +28,6 @@ unsigned long long NetworkLayer::size() {
 }
 
 void NetworkLayer::handleReceive(int id, Block *block) {
-	routeTable.check();
 	if (this->isIPValid)
 		this->checkDHCP();
 	if (id != 0)
@@ -150,7 +149,6 @@ void NetworkLayer::handleReceive(int id, Block *block) {
 }
 
 void NetworkLayer::handleSend(Block *block) {
-	routeTable.check();
 	if (!isIPValid)
 		return;
 	this->checkDHCP();
@@ -161,10 +159,6 @@ void NetworkLayer::handleSend(Block *block) {
 	IP destination = block->readIP();
 	// ip is valid so the ipConfiguration is valid
 	IPConfiguration ipConfiguration = configurations.at(0);
-	if (destination == *ipConfiguration.getSegment()) {
-		error("cannot send packet to yourself");
-		return;
-	}
 	// if PC route table has a route to the destination, send the block using the route
 	std::pair<IP, int> nextHop = this->routeTable.lookup(destination);
 	if (nextHop.second != -1) {
@@ -172,29 +166,39 @@ void NetworkLayer::handleSend(Block *block) {
 		// if the destination is in the same network, send to the target
 		// get the mac address of the target
 		IPConfiguration configuration = this->configurations.at(nextHop.second);
-		MAC mac = this->arpTable.lookup(destination);
-		// if the mac address is not found, send ARP, later send
-		if (mac.isBroadcast()) {
-			// won't happen configuration.getSegment() == nextHop.first
-			((LinkLayer *) this->lowerLayers[nextHop.second])->sendARP(*configuration.getSegment(),
-			                                                           destination);
-			std::this_thread::sleep_for(std::chrono::milliseconds(500));
-			auto *newBlock = new Block(block->getSendCount() - 1);
+		if (nextHop.first == *configuration.getSegment() && nextHop.first == destination) {
+			auto* newBlock = new Block();
+			newBlock->writeIP(destination);
 			newBlock->writeIP(destination);
 			newBlock->writeBlock(block);
 			newBlock->flip();
-			// wait for the ARP reply
-			this->send(newBlock);
+			this->receive(nextHop.second, newBlock);
 		} else {
-			// if the mac address is found, send the block
-			auto *newBlock = new Block();
-			newBlock->writeMAC(mac);
-			newBlock->write(0); // for ip protocol
-			newBlock->writeIP(*configuration.getSegment());
-			newBlock->writeIP(destination);
-			newBlock->writeBlock(block);
-			newBlock->flip();
-			this->lowerLayers[nextHop.second]->send(newBlock);
+			IP ip = nextHop.first == *configuration.getSegment() ? destination : nextHop.first;
+			MAC mac = this->arpTable.lookup(ip);
+			// if the mac address is not found, send ARP, later send
+			if (mac.isBroadcast()) {
+				// won't happen configuration.getSegment() == nextHop.first
+				((LinkLayer *) this->lowerLayers[nextHop.second])->sendARP(*configuration.getSegment(),
+				                                                           ip);
+				std::this_thread::sleep_for(std::chrono::milliseconds(500));
+				auto *newBlock = new Block(block->getSendCount() - 1);
+				newBlock->writeIP(destination);
+				newBlock->writeBlock(block);
+				newBlock->flip();
+				// wait for the ARP reply
+				this->send(newBlock);
+			} else {
+				// if the mac address is found, send the block
+				auto *newBlock = new Block();
+				newBlock->writeMAC(mac);
+				newBlock->write(0); // for ip protocol
+				newBlock->writeIP(*configuration.getSegment());
+				newBlock->writeIP(destination);
+				newBlock->writeBlock(block);
+				newBlock->flip();
+				this->lowerLayers[nextHop.second]->send(newBlock);
+			}
 		}
 	} else if (destination.isInSameNetwork(*ipConfiguration.getSegment(), *ipConfiguration.getMask())) {
 		// special case the destination is in the same network

@@ -11,6 +11,7 @@ MAC ARPTable::lookup(const IP &ip) {
 }
 
 void ARPTable::update(const IP &ip, const MAC &mac) {
+	this->check();
 	auto time = std::chrono::system_clock::now().time_since_epoch().count();
 	this->table.insert_or_assign(ip, std::pair{mac, time + 2LL * 60 * 1000 * 1000});
 }

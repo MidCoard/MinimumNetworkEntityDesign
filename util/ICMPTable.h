@@ -22,6 +22,8 @@ public:
 
 	int lookup(const IP& ip, const IP& query);
 
+	int lookupAndUpdate(const IP& ip, const IP& query, bool flag);
+
 private:
 	// multithreading safe should be considered
 	std::map<std::pair<IP,IP>,int> map;

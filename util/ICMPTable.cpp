@@ -35,3 +35,15 @@ int ICMPTable::lookup(const IP &ip, const IP &query) {
 	this->mtx.unlock();
 	return ret;
 }
+
+int ICMPTable::lookupAndUpdate(const IP& ip, const IP& query, bool flag) {
+	int ret = -1;
+	this->mtx.lock();
+	auto it = this->map.find({ip,query});
+	if (it != this->map.end()) {
+		this->map.at({ip,query}) = flag;
+		ret = flag;
+	}
+	this->mtx.unlock();
+	return ret;
+}
