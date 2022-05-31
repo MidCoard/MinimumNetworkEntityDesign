@@ -7,7 +7,8 @@
 #include <utility>
 
 const int kApplyCount = 20;
-const long long int kDHCPTime = 2LL * 60 * 60 * 1000 * 1000;
+const long long int kDHCPTime = 2LL * 10 * 1000 * 1000;
+//const long long int kDHCPTime = 2LL * 60 * 60 * 1000 * 1000;
 
 std::pair<IP,long long int> DHCPTable::apply() {
 	int count = 0;
@@ -404,6 +405,16 @@ bool DHCPTable::renewal(const IP& ip, const MAC& mac) {
 	auto time = std::chrono::system_clock::now().time_since_epoch().count();
 	this->segments.insert_or_assign(item, std::pair{time + kDHCPTime, mac});
 	return true;
+}
+
+void DHCPTable::print() {
+	std::cout << "IP: " << this->ip.str() << " Mask: " << this->mask.str() << std::endl;
+	for (auto & segment : this->segments) {
+		std::cout << "Segment: " << segment.first.left() << " " << segment.first.right() << " " << segment.second.first << " " << segment.second.second.str() << std::endl;
+	}
+	for (auto & tempSegment : this->tempSegments) {
+		std::cout << "TempSegment: " << tempSegment.first.left() << " " << tempSegment.first.right() << " " << tempSegment.second.first << " " << tempSegment.second.second << std::endl;
+	}
 }
 
 DHCPTable::TableItem::TableItem(long long int start, long long int last) :start(start),last(last) {

@@ -7,12 +7,16 @@
 #include "UDPPacket.h"
 
 int UDPPreTable::tryAllocate(unsigned char *data, int len) {
+	mutex.lock();
 	std::vector<unsigned char> v(data, data + len);
 	this->table.insert_or_assign(this->count, v);
-	return this->count++;
+	int ret = this->count++;
+	mutex.unlock();
+	return ret;
 }
 
 void UDPPreTable::send(int count, int target, const IP& ip) {
+	mutex.lock();
 	if (this->table.find(count) == this->table.end())
 		return;
 	std::vector<unsigned char> v = this->table[count];
@@ -24,6 +28,7 @@ void UDPPreTable::send(int count, int target, const IP& ip) {
 	for (int i = 0; i < size; i++)
 		this->layer->send(begin + i);
 	this->table.erase(count);
+	mutex.unlock();
 }
 
 UDPPreTable::UDPPreTable(AppLayer *layer) {

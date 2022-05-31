@@ -6,6 +6,7 @@
 #include "AppLayer.h"
 
 void UDPTable::add(Block * block) {
+	mutex.lock();
 	int index = block->readInt();
 	int size = block->readInt();
 	int count = block->readInt();
@@ -26,12 +27,15 @@ void UDPTable::add(Block * block) {
 		this->layer->handleUDPData(buffer,wholeLength);
 		delete[] buffer;
 	}
-
+	mutex.unlock();
 }
 
 int UDPTable::tryAllocate() {
+	mutex.lock();
 	this->table.insert_or_assign(this->count, std::map<int,std::vector<unsigned char>>());
-	return this->count++;
+	int result = this->count++;
+	mutex.unlock();
+	return result;
 }
 
 UDPTable::UDPTable(AppLayer *layer) :layer(layer) {}

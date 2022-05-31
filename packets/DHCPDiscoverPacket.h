@@ -7,6 +7,7 @@
 
 
 #include "Packet.h"
+#include "network/MAC.h"
 
 class DHCPDiscoverPacket : public Packet {
 public:

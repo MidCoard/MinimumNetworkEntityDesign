@@ -58,7 +58,6 @@ protected:
 	std::map<int, RouterConfiguration *> routerConfigurations;
 	bool generatedIP = false;
 
-	// mark all
 };
 
 class RouterNetworkLayer : public NetworkLayer {
@@ -76,6 +75,8 @@ public:
 	IP getIP(int id) override;
 
 	std::vector<DHCPTable *> tables;
+
+	void sendDHCPRelease() override;
 };
 
 

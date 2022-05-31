@@ -8,7 +8,7 @@
 
 Block *DHCPRequestPacket::createBlock() {
 	auto *block = new Block();
-	block->writeMAC(BROADCAST_MAC);
+	block->writeMAC(this->target);
 	block->write(0);
 	if (this->gateway.isBroadcast())
 		block->writeIP(LOCAL0);
@@ -32,16 +32,18 @@ unsigned char DHCPRequestPacket::getHeader() {
 DHCPRequestPacket::DHCPRequestPacket(IP segment, IP mask, MAC mac, int dhcpID, bool useSegment) : segment(
 		std::move(segment)), mask(std::move(mask)),
                                                                                                   mac(std::move(mac)),
+                                                                                                  target(BROADCAST_MAC),
                                                                                                   dhcpID(dhcpID),
                                                                                                   useSegment(
 		                                                                                                  useSegment),
                                                                                                   gateway(BROADCAST_IP) {}
 
-DHCPRequestPacket::DHCPRequestPacket(IP segment, IP mask, IP gateway, MAC mac, bool useSegment) : segment(
+DHCPRequestPacket::DHCPRequestPacket(IP segment, IP mask, IP gateway, MAC mac,MAC target, bool useSegment) : segment(
 		std::move(segment)), mask(std::move(mask)),
                                                                                                   gateway(std::move(
 		                                                                                                  gateway)),
                                                                                                   mac(std::move(mac)),
+																								  target(std::move(target)),
                                                                                                   useSegment(
 		                                                                                                  useSegment),
                                                                                                   dhcpID(-1) {}

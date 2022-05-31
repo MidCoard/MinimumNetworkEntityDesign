@@ -20,7 +20,7 @@ public:
 private:
 	int count = 0;
 	std::map<int,std::vector<unsigned char>> table;
-
+	std::mutex mutex;
 	AppLayer *layer;
 };
 

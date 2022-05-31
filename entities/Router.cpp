@@ -110,8 +110,7 @@ RouterNetworkLayer::RouterNetworkLayer(NetworkEntity *networkEntity) : NetworkLa
 RouterNetworkLayer::RouterNetworkLayer(int id, NetworkEntity *networkEntity) : NetworkLayer(id, networkEntity) {}
 
 void RouterNetworkLayer::handleReceive(int id, Block *block) {
-	if (this->isIPValid)
-		this->checkDHCP();
+	this->checkDHCP();
 	if (block->getSendCount() < 0)
 		return;
 	if (block->getRemaining() < 8)
@@ -154,8 +153,8 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 							this->lowerLayers[id]->send(newBlock);
 						}
 					}
-					break;
 				}
+				break;
 			case 0x03:
 				if (id != 0 && source == LOCAL0) {
 					// receive dhcp request, as this is a dhcp server, so handle it!
@@ -165,8 +164,10 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 					int dhcpID = block->readInt();
 					unsigned char useSegment;
 					block->read(&useSegment, 1);
+					log("DHCP request from with segment " + segment.str() + " and mask " + mask.str() + " and mac " + mac.str() + " and dhcpID " + std::to_string(dhcpID));
 					if (useSegment) {
 						if (this->tables[id]->applyIt(&segment, &mask, mac, dhcpID)) {
+							log("Send DHCPACK(Segment) to " + segment.str() + " from " + ipConfiguration.getSegment()->str() + " with segment " + segment.str() + " and mask " + mask.str() + " and mac " + mac.str() + " and dhcpID " + std::to_string(dhcpID));
 							this->routeTable.updateLong(segment, mask,0,segment,id);
 							auto *packet = new DHCPACKPacket(mac, *ipConfiguration.getSegment(), segment, mask,
 							                                 *ipConfiguration.getGateway(),
@@ -175,6 +176,8 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 							delete packet;
 							this->lowerLayers[id]->send(newBlock);
 						} else {
+							error("Send DHCPNAK(Segment) to " + segment.str() + " from " + ipConfiguration.getSegment()->str() + " with segment " + segment.str() + " and mask " + mask.str() + " and mac " + mac.str() + " and dhcpID " + std::to_string(dhcpID));
+							this->tables[id]->print();
 							auto *packet = new DHCPNAKPacket(mac, *ipConfiguration.getSegment());
 							auto *newBlock = packet->createBlock();
 							delete packet;
@@ -182,6 +185,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 						}
 					} else {
 						if (this->tables[id]->applyIt(segment, mac, dhcpID)) {
+							log("Send DHCPACK to " + segment.str() + " from " + ipConfiguration.getSegment()->str()  + " with segment " + segment.str() + " and mask " + mask.str() + " and mac " + mac.str() + " and dhcpID " + std::to_string(dhcpID));
 							auto *packet = new DHCPACKPacket(mac, *ipConfiguration.getSegment(), segment, mask,
 							                                 *ipConfiguration.getGateway(),
 							                                 kDHCPTime);
@@ -189,14 +193,16 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 							delete packet;
 							this->lowerLayers[id]->send(newBlock);
 						} else {
+							error("Send DHCPNAK to " + segment.str() + " from " + ipConfiguration.getSegment()->str()  + " with segment " + segment.str() + " and mask " + mask.str() + " and mac " + mac.str() + " and dhcpID " + std::to_string(dhcpID));
+							this->tables[id]->print();
 							auto *packet = new DHCPNAKPacket(mac, *ipConfiguration.getSegment());
 							auto *newBlock = packet->createBlock();
 							delete packet;
 							this->lowerLayers[id]->send(newBlock);
 						}
 					}
-					break;
 				}
+				break;
 			case 0x06:
 				if (id != 0 && source == LOCAL0) {
 					// dhcp decline
@@ -209,8 +215,8 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 						this->tables[id]->directApplySegment(segment, mask, mac);
 					else
 						this->tables[id]->directApply(segment, mac);
-					break;
 				}
+				break;
 			default: {
 				// this is broadcast packet
 				auto *newBlock = new Block();
@@ -262,8 +268,8 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 						this->setIPConfiguration(0, new IP(segment), new IP(mask), new IP(gateway));
 						this->sendDHCP();
 					}
-					break;
 				}
+				break;
 			case 0x04:
 				if (id == 0) {
 					// receive dhcp ack
@@ -350,8 +356,8 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 						this->routeTable.updateLong(*ipConfig.getSegment(), *ipConfig.getMask(), 0,
 						                            *ipConfig.getSegment(), i);
 					}
-					break;
 				}
+				break;
 			case 0x05:
 				if (id == 0) {
 					// receive dhcp nak
@@ -360,8 +366,8 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 					delete ipConfiguration.getMask();
 					delete ipConfiguration.getGateway();
 					this->setIPConfiguration(0, nullptr, nullptr, nullptr);
-					break;
 				}
+				break;
 			default: {
 				error("Router is not available");
 			}
@@ -408,10 +414,26 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 							this->lowerLayers[id]->send(newBlock);
 						}
 					}
-					break;
 				}
+				break;
+			case 0x04: {
+				if (id == 0) {
+					IP segment = block->readIP();
+					IP mask = block->readIP();
+					IP gateway = block->readIP();
+					this->log("receive DHCP_ACK get segment: " + segment.str() + " mask: " + mask.str() +
+					          " gateway: " + gateway.str());
+					delete ipConfiguration.getSegment();
+					delete ipConfiguration.getMask();
+					delete ipConfiguration.getGateway();
+					this->setIPConfiguration(0, new IP(segment), new IP(mask), new IP(gateway));
+					this->startDHCP = std::chrono::system_clock::now().time_since_epoch().count();
+					this->duration = block->readLong();
+					this->isIPValid = true;
+				}
+				break;
+			}
 			case 0x20: {
-
 				IP segment = block->readIP();
 				IP query = block->readIP();
 				// destination is my address
@@ -461,7 +483,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 				break;
 			}
 			default: {
-				error("Unknown protocol type");
+				error("Unknown protocol type " + std::to_string(header) + " from " + source.str() + " to " + destination.str());
 			}
 		}
 
@@ -519,7 +541,13 @@ RouterNetworkLayer::~RouterNetworkLayer() {
 IP RouterNetworkLayer::getIP(int id) {
 	if (!isIPValid)
 		throw std::invalid_argument("IP is not valid");
-	if (id == 0)
-		return *configurations.at(id).getSegment();
-	else return *configurations.at(id).getGateway();
+//	if (id == 0)
+//		return *configurations.at(id).getSegment();
+//	else return *configurations.at(id).getGateway();
+	//todo need to verify
+	return *configurations.at(id).getSegment();
+}
+
+void RouterNetworkLayer::sendDHCPRelease() {
+	this->sendDHCPRelease0(true);
 }

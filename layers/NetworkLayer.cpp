@@ -5,6 +5,8 @@
 #include "PC.h"
 #include "DHCPDeclinePacket.h"
 #include "ICMPPacket.h"
+#include "DHCPReleasePacket.h"
+#include "DHCPHelper.h"
 #include <utility>
 
 NetworkLayer::NetworkLayer(NetworkEntity *networkEntity) : NetworkLayer(0, networkEntity) {}
@@ -28,8 +30,7 @@ unsigned long long NetworkLayer::size() {
 }
 
 void NetworkLayer::handleReceive(int id, Block *block) {
-	if (this->isIPValid)
-		this->checkDHCP();
+	this->checkDHCP();
 	if (id != 0)
 		this->error("PC must receive on interface 0");
 	if (block->getRemaining() < 8)
@@ -46,6 +47,25 @@ void NetworkLayer::handleReceive(int id, Block *block) {
 		unsigned char header;
 		block->read(&header, 1);
 		switch (header) {
+			case 0x04: {
+				IP ip = block->readIP();
+				IP mask = block->readIP();
+				IP gateway = block->readIP();
+				this->log("receive DHCP_ACK get segment: " + ip.str() + " mask: " + mask.str() + " gateway: " +
+				          gateway.str());
+				auto *pc = (PC *) this->networkEntity;
+				delete pc->ip;
+				delete pc->mask;
+				delete pc->gateway;
+				pc->ip = new IP(ip);
+				pc->mask = new IP(mask);
+				pc->gateway = new IP(gateway);
+				this->setIPConfiguration(0, pc->ip, pc->mask, pc->gateway);
+				this->startDHCP = std::chrono::system_clock::now().time_since_epoch().count();
+				this->duration = block->readLong();
+				this->isIPValid = true;
+				break;
+			}
 			case 0x20: {
 				IP ip = block->readIP();
 				IP query = block->readIP();
@@ -68,7 +88,7 @@ void NetworkLayer::handleReceive(int id, Block *block) {
 				break;
 			}
 			default: {
-				error("Unknown protocol type " + std::to_string(header));
+				error("Unknown protocol type " + std::to_string(header) + " from " + source.str() + " to " + destination.str());
 			}
 		}
 	} else if (!isIPValid) {
@@ -149,9 +169,9 @@ void NetworkLayer::handleReceive(int id, Block *block) {
 }
 
 void NetworkLayer::handleSend(Block *block) {
+	this->checkDHCP();
 	if (!isIPValid)
 		return;
-	this->checkDHCP();
 	if (block->getSendCount() < 0)
 		return;
 	if (block->getRemaining() < 4)
@@ -245,6 +265,7 @@ void NetworkLayer::sendDHCP0(bool useSegment) {
 		delete packet;
 		this->lowerLayers[0]->send(block);
 	} else {
+		log("Send DHCP Request with segment " + ipConfiguration.getSegment()->str() + " and mask " + ipConfiguration.getMask()->str() + " and mac " + linkLayer->getMAC().str() + " and useSegment " + std::to_string(useSegment));
 		auto *packet = new DHCPRequestPacket(*ipConfiguration.getSegment(), *ipConfiguration.getMask(),
 		                                     linkLayer->getMAC(), this->dhcpID, useSegment);
 		Block *block = packet->createBlock();
@@ -261,13 +282,31 @@ void NetworkLayer::sendDHCP() {
 void NetworkLayer::sendDHCPRenewal0(bool useSegment) {
 	if (!this->isIPValid)
 		return;
+	if (!renewable)
+		return;
+	renewable = false;
+	kExecutor.submit([this]() {
+		this->renewable = true;
+	},std::chrono::seconds(1));
 	IPConfiguration ipConfiguration = configurations.at(0);
 	auto *linkLayer = (LinkLayer *) this->lowerLayers[0];
+	MAC target = this->arpTable.lookup(*ipConfiguration.getGateway());
+	this->log("Ready to send DHCP Renewal with segment " + ipConfiguration.getSegment()->str() + " and mask " + ipConfiguration.getMask()->str() + " and mac " + linkLayer->getMAC().str() + " and useSegment " + std::to_string(useSegment));
+	if (target.isBroadcast()) {
+		linkLayer->sendARP(*ipConfiguration.getSegment(), *ipConfiguration.getGateway());
+		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	}
+	target = this->arpTable.lookup(*ipConfiguration.getGateway());
+	if (target.isBroadcast()) {
+		this->error("Send DHCP Renewal failed. Cannot find gateway MAC");
+		return;
+	}
+	this->log("Send DHCP Renewal with segment " + ipConfiguration.getSegment()->str() + " and mask " + ipConfiguration.getMask()->str() + " and mac " + linkLayer->getMAC().str() + " and useSegment " + std::to_string(useSegment));
 	auto *packet = new DHCPRequestPacket(*ipConfiguration.getSegment(), *ipConfiguration.getMask(),
-	                                     *ipConfiguration.getGateway(), linkLayer->getMAC(), useSegment);
+	                                     *ipConfiguration.getGateway(), linkLayer->getMAC(), target, useSegment);
 	Block *block = packet->createBlock();
 	delete packet;
-	this->lowerLayers[0]->send(block);
+	linkLayer->send(block);
 }
 
 void NetworkLayer::sendDHCPRenewal() {
@@ -278,6 +317,14 @@ void NetworkLayer::checkDHCP() {
 	if (this->startDHCP == 0 && this->duration == 0)
 		return;
 	auto now = std::chrono::system_clock::now().time_since_epoch().count();
+	if (now > this->startDHCP + this->duration) {
+		this->isIPValid = false;
+		this->startDHCP = 0;
+		this->duration = 0;
+		this->dhcpID = -1;
+		dhcp::request(this);
+		return;
+	}
 	if (now - this->startDHCP > this->duration * 3 / 4) // for 75%
 		this->sendDHCPRenewal();
 }
@@ -297,5 +344,27 @@ void NetworkLayer::handleICMP(const IP &ip, ICMPReplyStatus status) {
 	if (status == ICMPReplyStatus::kICMPReplyStatusUnreachable)
 		error("IP " + ip.str() + " is unreachable");
 	else log("IP " + ip.str() + " is reachable");
+}
+
+void NetworkLayer::sendDHCPRelease() {
+	this->sendDHCPRelease0(false);
+}
+
+void NetworkLayer::sendDHCPRelease0(bool useSegment) {
+	if (!this->isIPValid) {
+		error("IP is not valid, no need to send DHCP release");
+		return;
+	}
+	if (this->startDHCP == 0 && this->duration == 0) {
+		error("IP is static, no need to send DHCP release");
+		return;
+	}
+	this->isIPValid = false;
+	IPConfiguration ipConfiguration = this->getIPConfiguration(0);
+	auto* linkLayer = (LinkLayer *) this->lowerLayers[0];
+	auto* packet = new DHCPReleasePacket(*ipConfiguration.getSegment(),*ipConfiguration.getMask(),*ipConfiguration.getGateway(),linkLayer->getMAC(),useSegment);
+	auto* block = packet->createBlock();
+	delete packet;
+	this->lowerLayers[0]->send(block);
 }
 

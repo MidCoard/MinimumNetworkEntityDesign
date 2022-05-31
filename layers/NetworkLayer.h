@@ -53,6 +53,8 @@ public:
 
 	virtual IP getIP(int id);
 
+	virtual void sendDHCPRelease();
+
 protected:
 	// for PC : its only one port 0, its ip is segment, its mask is mask, its gateway is gateway
 	// for router : for port 0, its ip is segment, its mask is mask, its gateway is gateway
@@ -65,8 +67,11 @@ protected:
 	long long int duration = 0;
 	long long int startDHCP = 0;
 
+	bool renewable = true;
+
 	void checkDHCP();
 
+	void sendDHCPRelease0(bool useSegment);
 };
 
 

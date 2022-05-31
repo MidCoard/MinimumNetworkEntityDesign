@@ -11,6 +11,7 @@
 #include "random"
 #include "network/MAC.h"
 #include "bitset"
+#include "iostream"
 
 extern const long long int kDHCPTime;
 
@@ -64,6 +65,8 @@ public:
 	bool renewal(const IP& ip, const MAC& mac);
 
 	std::pair<IP, long long int> apply();
+
+	void print();
 
 private:
 
