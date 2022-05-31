@@ -4,6 +4,10 @@
 
 const int kMaxJumps = 10;
 
+const long long kShortDuration = 1LL * 60 * 60 * 1000 * 1000;
+
+const long long kLongDuration = 1000LL * kShortDuration;
+
 std::pair<IP, int> RouteTable::lookup(const IP &ip) {
 	this->check();
 	std::pair<IP, int> last = {ip, -1};
@@ -26,10 +30,16 @@ void RouteTable::check() {
 			it++;
 }
 
-void RouteTable::update(const IP &ip, const IP &mask, int cost, const IP &nextHop, int id) {
+void RouteTable::updateShort(const IP &ip, const IP &mask, int cost, const IP &nextHop, int id) {
 	this->check();
 	auto time = std::chrono::system_clock::now().time_since_epoch().count();
-	this->table.insert(TableItem(ip, mask, cost, nextHop, id, time + 10LL * 60 * 1000 * 1000));
+	this->table.insert(TableItem(ip, mask, cost, nextHop, id, time + kShortDuration));
+}
+
+void RouteTable::updateLong(const IP &ip, const IP &mask, int cost, const IP &nextHop, int id) {
+	this->check();
+	auto time = std::chrono::system_clock::now().time_since_epoch().count();
+	this->table.insert(TableItem(ip, mask, cost, nextHop, id, time + kLongDuration));
 }
 
 std::pair<IP, int> RouteTable::next(const IP &ip) {

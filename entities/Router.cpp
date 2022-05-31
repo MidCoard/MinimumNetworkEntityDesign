@@ -166,8 +166,8 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 					unsigned char useSegment;
 					block->read(&useSegment, 1);
 					if (useSegment) {
-
 						if (this->tables[id]->applyIt(&segment, &mask, mac, dhcpID)) {
+							this->routeTable.updateLong(segment, mask,0,segment,id);
 							auto *packet = new DHCPACKPacket(mac, *ipConfiguration.getSegment(), segment, mask,
 							                                 *ipConfiguration.getGateway(),
 							                                 kDHCPTime);
@@ -287,7 +287,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 					bool flag = this->tables[0]->directApply(segment, layer->getMAC());
 					if (!flag)
 						throw std::runtime_error("apply its segment failed");
-					this->routeTable.update(LOCAL0,LOCAL0,10,gateway,0);
+					this->routeTable.updateLong(LOCAL0, LOCAL0, 10, gateway, 0);
 					for (int i = 1; i < this->lowerLayers.size(); i++) {
 						auto *layer = (LinkLayer *) this->lowerLayers[i];
 						IPConfiguration configuration = this->getIPConfiguration(i);
@@ -347,7 +347,8 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 							}
 						}
 						IPConfiguration ipConfig = this->getIPConfiguration(i);
-						this->routeTable.update(*ipConfig.getSegment(), *ipConfig.getMask(),0,*ipConfig.getSegment(),i);
+						this->routeTable.updateLong(*ipConfig.getSegment(), *ipConfig.getMask(), 0,
+						                            *ipConfig.getSegment(), i);
 					}
 					break;
 				}
@@ -475,7 +476,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 		IPConfiguration configuration = this->configurations.at(nextHop.second);
 		if (nextHop.first == *configuration.getSegment() && nextHop.first == destination) {
 			auto* newBlock = new Block();
-			newBlock->writeIP(destination);
+			newBlock->writeIP(source);
 			newBlock->writeIP(destination);
 			newBlock->writeBlock(block);
 			newBlock->flip();

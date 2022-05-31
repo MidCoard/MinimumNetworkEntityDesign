@@ -84,7 +84,7 @@ void ISP::dfsAllocateIP(int node, std::vector<bool> *visited, std::vector<IPConf
 void ISP::start() {
 	this->networkLayer->isIPValid = true;
 	this->networkLayer->tables.push_back(new DHCPTable(*kRootIP, *kRootMask));
-	this->networkLayer->routeTable.update(LOCAL0, LOCAL0, 10, LOCAL0, 0);
+	this->networkLayer->routeTable.updateLong(LOCAL0, LOCAL0, 10, LOCAL0, 0);
 	for (int i = 1; i < this->networkLayer->lowerLayers.size(); i++) {
 		auto *layer = (LinkLayer *) this->networkLayer->lowerLayers[i];
 		IPConfiguration configuration = this->networkLayer->getIPConfiguration(i);
@@ -142,7 +142,8 @@ void ISP::start() {
 			}
 		}
 		IPConfiguration ipConfig = this->networkLayer->getIPConfiguration(i);
-		this->networkLayer->routeTable.update(*ipConfig.getSegment(), *ipConfig.getMask(),0,*ipConfig.getSegment(),i);
+		this->networkLayer->routeTable.updateLong(*ipConfig.getSegment(), *ipConfig.getMask(), 0,
+		                                          *ipConfig.getSegment(), i);
 	}
 	NetworkEntity::start();
 }

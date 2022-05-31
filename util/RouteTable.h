@@ -33,9 +33,11 @@ public:
 
 	std::pair<IP, int> next(const IP &ip);
 
-	void update(const IP &ip, const IP &mask, int cost, const IP &nextHop, int id);
+	void updateLong(const IP &ip, const IP &mask, int cost, const IP &nextHop, int id);
 
 	void check();
+
+	void updateShort(const IP &ip, const IP &mask, int cost, const IP &nextHop, int id);
 
 private:
 
