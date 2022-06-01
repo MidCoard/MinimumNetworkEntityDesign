@@ -12,6 +12,9 @@
 
 
 namespace util {
+
+	extern bool debugMode;
+
 	std::vector<std::string> readFile(const std::string &filePath);
 
 	std::string trim(const std::string &str);
@@ -41,6 +44,10 @@ namespace util {
 	std::pair<unsigned char *,long long> readBinaryFile(const std::string& filename);
 
 	void writeBinaryFile(const std::string& filename, const unsigned char* data, long long size);
+
+	bool inDebugMode();
+
+	void setDebugMode(bool debug);
 }
 
 #endif //NETWORKDESIGN_UTIL_H

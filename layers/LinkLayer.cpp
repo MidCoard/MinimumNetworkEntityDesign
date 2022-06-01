@@ -68,6 +68,9 @@ void LinkLayer::handleReceive(int id, Block *block) {
 					auto *networkLayer = (NetworkLayer *) this->upperLayers[0];
 					networkLayer->handleARP(ip, source);
 				}
+			default:{
+				error("Unknown protocol type: " + std::to_string(header));
+			}
 		}
 	}
 }

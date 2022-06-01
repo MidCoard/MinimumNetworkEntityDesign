@@ -212,6 +212,7 @@ Network *initialize() {
 Network *network = nullptr;
 
 int main() {
+	util::setDebugMode(true);
 	network = initialize();
 	dhcp::start();
 	while (true) {

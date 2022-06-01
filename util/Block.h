@@ -58,6 +58,8 @@ public:
 
 	void writeLong(long long int i);
 
+	[[nodiscard]] long long size() const;
+
 private:
 	// avoid use pointer
 	std::vector<unsigned char> temp;

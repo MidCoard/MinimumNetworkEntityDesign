@@ -100,3 +100,13 @@ void util::writeBinaryFile(const std::string &filename, const unsigned char *dat
 	file.write((char*) data, size);
 	file.close();
 }
+
+bool util::debugMode = false;
+
+void util::setDebugMode(bool debug) {
+	debugMode = debug;
+}
+
+bool util::inDebugMode() {
+	return debugMode;
+}

@@ -132,4 +132,11 @@ int Layer::getID() const {
 	return this->id;
 }
 
+void Layer::debug(const std::string &message) {
+	if (util::inDebugMode())
+		this->error("[debug]" + message);
+}
+
 Layer::~Layer() = default;
+
+

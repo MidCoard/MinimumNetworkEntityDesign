@@ -46,6 +46,8 @@ public:
 
 	void error(const std::string &message);
 
+	void debug(const std::string &message);
+
 	[[nodiscard]] int getID() const;
 
 	std::vector<Layer *> lowerLayers;

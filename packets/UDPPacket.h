@@ -22,9 +22,9 @@ private:
 	std::vector<unsigned char> data;
 	int count;
 	IP ip;
-	int offset;
-	int size;
-	int pos;
+	int offset = 0;
+	int size = 0;
+	int pos = 0;
 };
 
 

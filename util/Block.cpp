@@ -156,3 +156,7 @@ void Block::writeLong(long long int i) {
 	this->temp.push_back(i);
 }
 
+long long Block::size() const {
+	return this->remaining + this->pos;
+}
+

@@ -29,7 +29,9 @@ void UDPPacket::write(const std::vector<unsigned char>& data) {
 		this->data.push_back(byte);
 }
 
-UDPPacket::UDPPacket(IP ip, int count) :ip(std::move(ip)),count(count) {}
+UDPPacket::UDPPacket(IP ip, int count) :ip(std::move(ip)),count(count) {
+
+}
 
 int UDPPacket::getSize() const {
 	return this->size;
