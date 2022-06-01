@@ -39,10 +39,20 @@ void NetworkLayer::handleReceive(int id, Block *block) {
 	IP destination = block->readIP();
 	IPConfiguration ipConfiguration = configurations.at(0);
 	if (destination.isBroadcast() && isIPValid) {
-		auto *newBlock = new Block();
-		newBlock->writeBlock(block);
-		newBlock->flip();
-		this->upperLayers[0]->receive(this->getID(), newBlock);
+		unsigned char header;
+		block->read(&header, 1);
+		switch (header) {
+			case 0x00: {
+				auto *newBlock = new Block();
+				newBlock->writeBlock(block);
+				newBlock->flip();
+				this->upperLayers[0]->receive(this->getID(), newBlock);
+				break;
+			}
+			default:{
+				error("Unknown protocol type for broadcast " + std::to_string(header) + " from " + source.str());
+			}
+		}
 	} else if (isIPValid && *ipConfiguration.getSegment() == destination) {
 		unsigned char header;
 		block->read(&header, 1);
@@ -153,6 +163,7 @@ void NetworkLayer::handleReceive(int id, Block *block) {
 				this->startDHCP = std::chrono::system_clock::now().time_since_epoch().count();
 				this->duration = block->readLong();
 				this->isIPValid = true;
+				this->routeTable.updateShort(LOCAL0,LOCAL0,10,gateway,0);
 				break;
 			}
 			case 0x05: {
