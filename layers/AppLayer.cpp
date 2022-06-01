@@ -30,8 +30,8 @@ void AppLayer::handleReceive(int id, Block *block) {
 			int size = block->readInt();
 			int count = block->readInt();
 			int wholeLength = block->readInt();
-			log("Receive UDP Packet index: " + std::to_string(index) + " size: " + std::to_string(size) + " count: " + std::to_string(count) + " wholeLength: " + std::to_string(wholeLength));
-			this->udpTable.add(block, index, size,count, wholeLength);
+			int length = this->udpTable.add(block, index, size,count, wholeLength);
+			log("Receive UDP Packet index: " + std::to_string(index) + " size: " + std::to_string(size) + " count: " + std::to_string(count) + " length: " + std::to_string(length));
 			break;
 		}
 		case 0x65: {
@@ -54,6 +54,9 @@ void AppLayer::handleReceive(int id, Block *block) {
 			this->log("Send UDP Packet to ip " + ip.str() + " pre_id " + std::to_string(count) + " packet_id " + std::to_string(target));
 			this->table.send(count,target, ip);
 			break;
+		}
+		default:{
+			error("Unknown protocol: " + std::to_string(header));
 		}
 	}
 }
@@ -106,5 +109,11 @@ void AppLayer::stop() {
 	}
 	Layer::stop();
 }
+
+void AppLayer::receive(int id, Block *block) {
+	Layer::receive(id, block);
+}
+
+
 
 

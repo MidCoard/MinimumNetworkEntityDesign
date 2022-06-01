@@ -17,8 +17,10 @@ int UDPPreTable::tryAllocate(unsigned char *data, int len) {
 
 void UDPPreTable::send(int count, int target, const IP& ip) {
 	mutex.lock();
-	if (this->table.find(count) == this->table.end())
+	if (this->table.find(count) == this->table.end()) {
+		mutex.unlock();
 		return;
+	}
 	std::vector<unsigned char> v = this->table[count];
 	auto* packet = new UDPPacket(ip, target);
 	packet->write(v);

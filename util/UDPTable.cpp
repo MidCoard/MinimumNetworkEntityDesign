@@ -5,10 +5,12 @@
 #include "UDPTable.h"
 #include "AppLayer.h"
 
-void UDPTable::add(Block * block,int index ,int size,int count ,int wholeLength) {
+int UDPTable::add(Block * block, int index , int size, int count , int wholeLength) {
 	mutex.lock();
-	if (this->table.find(count) == this->table.end())
-		return;
+	if (this->table.find(count) == this->table.end()) {
+		mutex.unlock();
+		return 0;
+	}
 	std::vector<unsigned char> data = block->read();
 	this->table[count].insert_or_assign(index,data );
 	if (this->table[count].size() == size) {
@@ -24,6 +26,7 @@ void UDPTable::add(Block * block,int index ,int size,int count ,int wholeLength)
 		delete[] buffer;
 	}
 	mutex.unlock();
+	return data.size();
 }
 
 int UDPTable::tryAllocate() {

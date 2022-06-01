@@ -28,6 +28,8 @@ public:
 
 	void sendUDPData(const IP& ip, unsigned char *data, long long length);
 
+	void receive(int id, Block *block) override;
+
 private:
 	void sendUDPData0(const IP& ip, unsigned char *data, int len);
 	std::thread * thread = nullptr;

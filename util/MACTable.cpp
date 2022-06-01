@@ -5,14 +5,22 @@
 #include "MACTable.h"
 
 int MACTable::lookup(const MAC &mac) {
+	int ret;
+	mutex.lock();
+	check();
 	if (this->table.find(mac) == this->table.end())
-		return -1;
-	return this->table[mac].first;
+		ret = -1;
+	ret = this->table[mac].first;
+	mutex.unlock();
+	return ret;
 }
 
 void MACTable::update(const MAC &mac, int port) {
+	this->mutex.lock();
+	check();
 	auto time = std::chrono::system_clock::now().time_since_epoch().count();
 	this->table.insert_or_assign(mac, std::pair{port, time + 5LL * 60 * 1000 * 1000});
+	this->mutex.unlock();
 }
 
 void MACTable::check() {

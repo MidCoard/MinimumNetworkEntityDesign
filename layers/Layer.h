@@ -27,9 +27,9 @@ public:
 
 	std::vector<std::string> generateGraph(int node);
 
-	void send(Block *block);
+	virtual void send(Block *block);
 
-	void receive(int id, Block *block);
+	virtual void receive(int id, Block *block);
 
 	virtual void start();
 
