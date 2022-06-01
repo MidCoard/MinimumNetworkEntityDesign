@@ -72,6 +72,7 @@ void NetworkLayer::handleReceive(int id, Block *block) {
 				this->startDHCP = std::chrono::system_clock::now().time_since_epoch().count();
 				this->duration = block->readLong();
 				this->isIPValid = true;
+				this->routeTable.updateShort(LOCAL0,LOCAL0,10,gateway,0);
 				break;
 			}
 			case 0x20: {
@@ -251,7 +252,8 @@ void NetworkLayer::handleSend(Block *block) {
 			this->lowerLayers[0]->send(newBlock);
 		}
 
-	}
+	} else
+		error("Don't know how to send the packet");
 }
 
 IP NetworkLayer::getIP(int id) {
