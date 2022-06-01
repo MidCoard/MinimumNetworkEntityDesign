@@ -47,6 +47,14 @@ void NetworkLayer::handleReceive(int id, Block *block) {
 		unsigned char header;
 		block->read(&header, 1);
 		switch (header) {
+			case 0x00: {
+				if (this->upperLayers.empty())
+					this->error("No upper layer");
+				else {
+					this->upperLayers[0]->receive(id,new Block(block));
+				}
+				break;
+			}
 			case 0x04: {
 				IP ip = block->readIP();
 				IP mask = block->readIP();

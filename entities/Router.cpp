@@ -153,7 +153,6 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 							this->lowerLayers[id]->send(newBlock);
 						}
 					}
-					this->tables[id]->print();
 				}
 				break;
 			case 0x03:

@@ -79,3 +79,8 @@ void PC::releaseIP() {
 void PC::applyIP() {
 	this->networkLayer->sendDHCP();
 }
+
+void PC::send(const IP& ip,unsigned char *buffer, long long int size) {
+	auto appLayer = (AppLayer *) this->layer;
+	appLayer->sendUDPData(ip, buffer, size);
+}

@@ -15,12 +15,16 @@ public:
 	[[nodiscard]] int getSize() const;
 	unsigned char getHeader() override;
 	void write(const std::vector<unsigned char>& data);
+
+	void init();
+
 private:
 	std::vector<unsigned char> data;
 	int count;
 	IP ip;
-	Block **blocks = nullptr;
+	int offset;
 	int size;
+	int pos;
 };
 
 

@@ -80,3 +80,23 @@ std::string util::toHex(unsigned char c) {
 std::string util::completeWith(std::string str, int length, char c) {
 	return str.append(length - str.size(), c);
 }
+std::pair<
+unsigned char*,long long> util::readBinaryFile(const std::string& filename) {
+	std::ifstream file(filename, std::ios::binary);
+	if (!file.is_open())
+		return {nullptr,0};
+	file.seekg(0, std::ios::end);
+	unsigned long long size = file.tellg();
+	auto * buffer = new unsigned char[size];
+	file.seekg(0, std::ios::beg);
+	file.read((char*) buffer, size);
+	file.close();
+	return {buffer,size};
+}
+
+
+void util::writeBinaryFile(const std::string &filename, const unsigned char *data, long long size) {
+	std::ofstream file(filename, std::ios::binary);
+	file.write((char*) data, size);
+	file.close();
+}

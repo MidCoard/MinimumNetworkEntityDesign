@@ -22,11 +22,11 @@ void UDPPreTable::send(int count, int target, const IP& ip) {
 	std::vector<unsigned char> v = this->table[count];
 	auto* packet = new UDPPacket(ip, target);
 	packet->write(v);
-	Block * begin = packet->createBlock();
+	packet->init();
 	int size = packet->getSize();
-	delete packet;
 	for (int i = 0; i < size; i++)
-		this->layer->send(begin + i);
+		this->layer->send(packet->createBlock());
+	delete packet;
 	this->table.erase(count);
 	mutex.unlock();
 }

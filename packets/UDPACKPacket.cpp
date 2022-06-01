@@ -13,6 +13,7 @@ unsigned char UDPACKPacket::getHeader() {
 Block *UDPACKPacket::createBlock() {
 	auto* block = new Block();
 	block->writeIP(this->ip);
+	block->write(0);
 	block->writeHeader(this);
 	block->writeIP(this->source);
 	block->writeInt(this->count);
@@ -21,4 +22,4 @@ Block *UDPACKPacket::createBlock() {
 	return block;
 }
 
-UDPACKPacket::UDPACKPacket(IP ip,IP source, int count, int target) : ip(std::move(ip)),source(source), count(count), target(target) {}
+UDPACKPacket::UDPACKPacket(IP ip,IP source, int count, int target) : ip(std::move(ip)),source(std::move(source)), count(count), target(target) {}

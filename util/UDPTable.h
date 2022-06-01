@@ -14,7 +14,7 @@ class AppLayer;
 class UDPTable {
 public:
 	explicit UDPTable(AppLayer *layer);
-	void add(Block *block);
+	void add(Block *block, int index, int size,int count,int wholeLength);
 	int tryAllocate();
 private:
 	std::map<int,std::map<int,std::vector<unsigned char>>> table;

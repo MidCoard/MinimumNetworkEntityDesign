@@ -5,12 +5,8 @@
 #include "UDPTable.h"
 #include "AppLayer.h"
 
-void UDPTable::add(Block * block) {
+void UDPTable::add(Block * block,int index ,int size,int count ,int wholeLength) {
 	mutex.lock();
-	int index = block->readInt();
-	int size = block->readInt();
-	int count = block->readInt();
-	int wholeLength = block->readInt();
 	if (this->table.find(count) == this->table.end())
 		return;
 	std::vector<unsigned char> data = block->read();

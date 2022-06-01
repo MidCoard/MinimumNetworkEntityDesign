@@ -254,6 +254,17 @@ int main() {
 			std::cin>>node;
 			auto* pc = (PC*)network->getNodes()[node];
 			pc->applyIP();
+		} else if (op == 7) {
+			int a, b;
+			std::cin>>a>>b;
+			PC* pc1 = (PC*)network->getNodes()[a];
+			PC* pc2 = (PC*)network->getNodes()[b];
+			auto pair = util::readBinaryFile("network.jpeg");
+			if (pair.first != nullptr) {
+				pc1->send(*pc2->ip, pair.first,pair.second);
+				delete[] pair.first;
+			} else
+				std::cerr<<"File not found"<<std::endl;
 		}
 	}
 	if (network != nullptr) {
