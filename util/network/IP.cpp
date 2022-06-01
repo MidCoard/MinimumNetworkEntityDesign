@@ -102,7 +102,7 @@ bool IP::operator>(const IP &ip) const {
 int IP::getRightZero() const {
 	unsigned int raw = intValue();
 	int i = 0;
-	while ((raw & (1u << i)) == 0 && i < 32)
+	while (i < 32 && (raw & (1u << i)) == 0)
 		i++;
 	return i;
 }

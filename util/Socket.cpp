@@ -13,13 +13,16 @@ Socket::Socket(int port) : port(port) {
 	int option = 1;
 	if (setsockopt(this->internal, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)))
 		throw std::runtime_error("set socket option failed");
+	option = 1048576;
+	if (setsockopt(this->internal, SOL_SOCKET, SO_RCVBUF, &option, sizeof(option)))
+		throw std::runtime_error("set socket size option failed");
 	struct sockaddr_in addr{};
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(port);
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	if (bind(this->internal, (struct sockaddr *) &addr, sizeof(addr)))
 		throw std::runtime_error("bind socket failed");
-	if (::listen(this->internal, 100))
+	if (::listen(this->internal, 1000))
 		throw std::runtime_error("listen socket failed");
 }
 
@@ -37,7 +40,15 @@ void Socket::run(PhysicalLayer *physicalLayer) const {
 		while ((len = recv(client, temp, sizeof(temp), 0)) != 0)
 			block->write(temp, len);
 		block->flip();
-		physicalLayer->receive(physicalLayer->getID(), block);
+		shutdown(client, SHUT_RD);
+		if (block->size() >= 13)
+			physicalLayer->log("[SOCKET]from source " + block->viewMAC(0).str() + " to " + block->viewMAC(6).str() + " use Protocol " + std::to_string(block->view(12)));
+		if (block->size() >= 22 && block->view(12) == 0)
+			physicalLayer->log("[SOCKET]from source " + block->viewIP(13).str() + " to " + block->viewIP(17).str() + " use Protocol " + std::to_string(block->view(21)));
+		if (block->size() >= 23 && block->view(21) == 0)
+			physicalLayer->log("[SOCKET]app layer protocol " + std::to_string(block->view(22)));
+		if (block->size() < 23 || block->view(22) != 0x60 || physicalLayer->getID() != 3)
+			physicalLayer->receive(physicalLayer->getID(), block);
 	}
 }
 
@@ -57,12 +68,18 @@ void Socket::send(const INetAddress &address, Block *block) {
 		std::cerr << "connect to " << address.str() << " failed" << std::endl;
 		return;
 	}
+	if (block->size() >= 13)
+		printf("%s", ("[SOCKET]from source " + block->viewMAC(0).str() + " to " + block->viewMAC(6).str() + " use Protocol " + std::to_string(block->view(12))).c_str());
+	if (block->size() >= 22 && block->view(12) == 0)
+		printf("%s", ("[SOCKET]from source " + block->viewIP(13).str() + " to " + block->viewIP(17).str() + " use Protocol " + std::to_string(block->view(21))).c_str());
+	if (block->size() >= 23 && block->view(21) == 0)
+		printf("%s", ("[SOCKET]app layer protocol " + std::to_string(block->view(22))).c_str());
 	while (block->getRemaining() > 0) {
 		int len = block->read(temp, sizeof(temp));
 		if (::send(client, temp, len, 0) == -1)
 			throw std::runtime_error("send socket failed");
 	}
-	shutdown(client, SHUT_RDWR);
+	shutdown(client, SHUT_WR);
 }
 
 void Socket::close() {

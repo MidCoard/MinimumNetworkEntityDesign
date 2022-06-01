@@ -164,6 +164,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 					int dhcpID = block->readInt();
 					unsigned char useSegment;
 					block->read(&useSegment, 1);
+					// todo check if mac is same with in the mac, send ACK not NAK
 					log("DHCP request from with segment " + segment.str() + " and mask " + mask.str() + " and mac " + mac.str() + " and dhcpID " + std::to_string(dhcpID));
 					if (useSegment) {
 						if (this->tables[id]->applyIt(&segment, &mask, mac, dhcpID)) {

@@ -24,10 +24,11 @@ void dhcp::start() {
 			else {
 				NetworkLayer *layer = nullptr;
 				code_machina::BlockingCollectionStatus status = layers.take(layer);
-				if (status == code_machina::BlockingCollectionStatus::Ok && !layer->isIPValid) {
+				if (status == code_machina::BlockingCollectionStatus::Ok) {
 					layer->sendDHCP();
 					std::this_thread::sleep_for(std::chrono::seconds(1));
-					layers.emplace(layer);
+					if (!layer->isIPValid)
+						layers.emplace(layer);
 				}
 			}
 		}

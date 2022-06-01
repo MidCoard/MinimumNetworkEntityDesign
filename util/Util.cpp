@@ -78,7 +78,10 @@ std::string util::toHex(unsigned char c) {
 }
 
 std::string util::completeWith(std::string str, int length, char c) {
-	return str.append(length - str.size(), c);
+	// append c to the head of str until str is of length length
+	while (str.size() < length)
+		str = c + str;
+	return str;
 }
 std::pair<
 unsigned char*,long long> util::readBinaryFile(const std::string& filename) {

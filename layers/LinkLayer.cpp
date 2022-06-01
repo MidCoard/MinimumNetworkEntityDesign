@@ -24,7 +24,7 @@ void LinkLayer::handleSend(Block *block) {
 	newBlock->writeMAC(source);
 	newBlock->writeBlock(block);
 	newBlock->flip();
-	std::this_thread::sleep_for(std::chrono::milliseconds(40));
+//	std::this_thread::sleep_for(std::chrono::milliseconds(40));
 	this->lowerLayers[0]->send(newBlock);
 }
 
@@ -68,6 +68,7 @@ void LinkLayer::handleReceive(int id, Block *block) {
 					auto *networkLayer = (NetworkLayer *) this->upperLayers[0];
 					networkLayer->handleARP(ip, source);
 				}
+				break;
 			default:{
 				error("Unknown protocol type: " + std::to_string(header));
 			}

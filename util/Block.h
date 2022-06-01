@@ -60,12 +60,19 @@ public:
 
 	[[nodiscard]] long long size() const;
 
+	unsigned char view(int pos);
+
+	MAC viewMAC(int pos);
+
+	IP viewIP(int pos);
+
 private:
 	// avoid use pointer
 	std::vector<unsigned char> temp;
 	int remaining;
 	int pos;
 	int sendCount;
+	std::mutex mutex;
 };
 
 

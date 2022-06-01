@@ -74,8 +74,9 @@ void SwitchLinkLayer::handleReceive(int id, Block *block) {
 				if (layer->getID() != id) {
 					layer->send(newBlock->copy());
 				}
-		} else
+		} else {
 			this->lowerLayers.at(interface)->send(newBlock->copy());
+		}
 	}
 	delete newBlock;
 }
@@ -83,9 +84,3 @@ void SwitchLinkLayer::handleReceive(int id, Block *block) {
 void SwitchLinkLayer::handleSend(Block *block) {
 	// do nothing
 }
-
-void SwitchLinkLayer::receive(int id, Block *block) {
-	debug("from interface " + std::to_string(id) + " size " + std::to_string(block->size()));
-	Layer::receive(id, block);
-}
-

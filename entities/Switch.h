@@ -51,9 +51,6 @@ public:
 	void handleReceive(int id, Block *block) override;
 
 	void handleSend(Block *block) override;
-
-	void receive(int id,Block * block) override;
-
 private:
 
 	MACTable macTable;

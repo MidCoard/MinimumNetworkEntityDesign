@@ -21,6 +21,7 @@ public:
 
 private:
 	std::map<IP, std::pair<MAC, long long>> table;
+	std::mutex mutex;
 };
 
 

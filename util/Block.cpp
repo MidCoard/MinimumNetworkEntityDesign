@@ -3,6 +3,7 @@
 //
 
 #include "Block.h"
+#include "iostream"
 
 Block::Block() {
 	this->temp = {};
@@ -12,11 +13,14 @@ Block::Block() {
 }
 
 void Block::write(unsigned char *data, int len) {
+	this->mutex.lock();
 	this->temp.insert(this->temp.end(), data, data + len);
+	this->mutex.unlock();
 }
 
 void Block::flip() {
 	this->remaining = this->temp.size();
+	this->pos = 0;
 }
 
 int Block::getRemaining() const {
@@ -24,11 +28,13 @@ int Block::getRemaining() const {
 }
 
 int Block::read(unsigned char *data, int len) {
+	this->mutex.lock();
 	if (len > this->remaining)
 		len = this->remaining;
 	for (int i = 0; i < len; i++)
 		data[i] = this->temp[this->pos++];
 	this->remaining -= len;
+	this->mutex.unlock();
 	return len;
 }
 
@@ -105,7 +111,7 @@ Block *Block::copy() {
 	auto *block = new Block(this->sendCount);
 	block->pos = this->pos;
 	block->remaining = this->remaining;
-	for (unsigned char i: this->temp)
+	for (unsigned char i : this->temp)
 		block->temp.push_back(i);
 	return block;
 }
@@ -158,5 +164,23 @@ void Block::writeLong(long long int i) {
 
 long long Block::size() const {
 	return this->remaining + this->pos;
+}
+
+// used for debug
+unsigned char Block::view(int pos) {
+	return this->temp[pos];
+}
+
+// used for debug
+MAC Block::viewMAC(int pos) {
+	MAC mac = MAC(this->temp[pos], this->temp[pos + 1], this->temp[pos + 2], this->temp[pos + 3], this->temp[pos + 4],
+	              this->temp[pos + 5]);
+	return mac;
+}
+
+// used for debug
+IP Block::viewIP(int pos) {
+	IP ip = IP(this->temp[pos], this->temp[pos + 1], this->temp[pos + 2], this->temp[pos + 3]);
+	return ip;
 }
 

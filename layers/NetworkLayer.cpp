@@ -278,6 +278,8 @@ void NetworkLayer::handleARP(const IP &ip, const MAC &mac) {
 }
 
 void NetworkLayer::sendDHCP0(bool useSegment) {
+	if (isIPValid)
+		return;
 	IPConfiguration ipConfiguration = configurations.at(0);
 	auto *linkLayer = (LinkLayer *) this->lowerLayers[0];
 	if (!ipConfiguration.isConfigurable()) {
