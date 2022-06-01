@@ -73,6 +73,10 @@ public:
 
 	void decline(IP ip, MAC mac);
 
+	bool applyItOrMAC(IP *ip, IP *mask, const MAC& mac, int id);
+
+	bool applyItOrMAC(const IP& ip, const MAC& mac, int id);
+
 private:
 
 	long long int dhcpID = 0;

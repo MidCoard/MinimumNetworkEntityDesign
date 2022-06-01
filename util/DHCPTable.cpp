@@ -471,6 +471,25 @@ void DHCPTable::decline(IP ip, MAC mac) {
 	this->directApply(ip, mac);
 }
 
+bool DHCPTable::applyItOrMAC(IP *ip, IP *mask, const MAC& mac, int id) {
+	this->check();
+	int zeros = mask->getRightZero();
+	TableItem item(ip->intValue() - this->ip.intValue(), (1LL<<zeros) - (ip->intValue() - (*ip & *mask).intValue()));
+	auto it = this->segments.find(item);
+	if (it != this->segments.end() && it->second.second == mac)
+		return true;
+	return applyIt(ip, mask, mac, id);
+}
+
+bool DHCPTable::applyItOrMAC(const IP& ip, const MAC& mac, int id) {
+	this->check();
+	TableItem item(ip.intValue() - this->ip.intValue(), 1);
+	auto it = this->segments.find(item);
+	if (it != this->segments.end() && it->second.second == mac)
+		return true;
+	return applyIt(ip, mac, id);
+}
+
 DHCPTable::TableItem::TableItem(long long int start, long long int last) :start(start),last(last) {
 }
 

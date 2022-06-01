@@ -61,6 +61,7 @@ PC::~PC() {
 void PC::start() {
 	NetworkEntity::start();
 	if (!this->networkLayer->isIPValid) {
+		this->networkLayer->sendDHCP();
 		dhcp::request(this->networkLayer);
 	}
 }

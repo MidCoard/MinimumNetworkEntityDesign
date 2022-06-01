@@ -47,8 +47,8 @@ void Socket::run(PhysicalLayer *physicalLayer) const {
 			physicalLayer->log("[SOCKET]from source " + block->viewIP(13).str() + " to " + block->viewIP(17).str() + " use Protocol " + std::to_string(block->view(21)));
 		if (block->size() >= 23 && block->view(21) == 0)
 			physicalLayer->log("[SOCKET]app layer protocol " + std::to_string(block->view(22)));
-		if (block->size() < 23 || block->view(22) != 0x60 || physicalLayer->getID() != 3)
-			physicalLayer->receive(physicalLayer->getID(), block);
+//		if (block->size() < 23 || block->view(22) != 0x60 || physicalLayer->getID() != 3)
+		physicalLayer->receive(physicalLayer->getID(), block);
 	}
 }
 
@@ -69,11 +69,11 @@ void Socket::send(const INetAddress &address, Block *block) {
 		return;
 	}
 	if (block->size() >= 13)
-		printf("%s", ("[SOCKET]from source " + block->viewMAC(0).str() + " to " + block->viewMAC(6).str() + " use Protocol " + std::to_string(block->view(12))).c_str());
+		printf("%s\n", ("[SOCKET]from source " + block->viewMAC(0).str() + " to " + block->viewMAC(6).str() + " use Protocol " + std::to_string(block->view(12))).c_str());
 	if (block->size() >= 22 && block->view(12) == 0)
-		printf("%s", ("[SOCKET]from source " + block->viewIP(13).str() + " to " + block->viewIP(17).str() + " use Protocol " + std::to_string(block->view(21))).c_str());
+		printf("%s\n", ("[SOCKET]from source " + block->viewIP(13).str() + " to " + block->viewIP(17).str() + " use Protocol " + std::to_string(block->view(21))).c_str());
 	if (block->size() >= 23 && block->view(21) == 0)
-		printf("%s", ("[SOCKET]app layer protocol " + std::to_string(block->view(22))).c_str());
+		printf("%s\n", ("[SOCKET]app layer protocol " + std::to_string(block->view(22))).c_str());
 	while (block->getRemaining() > 0) {
 		int len = block->read(temp, sizeof(temp));
 		if (::send(client, temp, len, 0) == -1)

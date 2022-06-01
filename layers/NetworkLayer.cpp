@@ -143,6 +143,7 @@ void NetworkLayer::handleReceive(int id, Block *block) {
 					pc->mask = new IP(mask);
 					pc->gateway = new IP(gateway);
 					this->setIPConfiguration(0, pc->ip, pc->mask, pc->gateway);
+					this->sendDHCP();
 				}
 				break;
 			}
