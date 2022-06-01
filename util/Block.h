@@ -66,6 +66,8 @@ public:
 
 	IP viewIP(int pos);
 
+	void clear();
+
 private:
 	// avoid use pointer
 	std::vector<unsigned char> temp;

@@ -26,8 +26,9 @@ void UDPPreTable::send(int count, int target, const IP& ip) {
 	packet->write(v);
 	packet->init();
 	int size = packet->getSize();
-	for (int i = 0; i < size; i++)
+	for (int i = 0; i < size; i++) {
 		this->layer->send(packet->createBlock());
+	}
 	delete packet;
 	this->table.erase(count);
 	mutex.unlock();

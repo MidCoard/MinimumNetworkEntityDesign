@@ -7,57 +7,28 @@
 
 #include "vector"
 #include "network/INetAddress.h"
-
-const char kFrameHeader = 0;
-const char kFrameFooter = 0;
-const char kFrameEscape = '\\';
-
-// 1 + 20 + 1300 + 1 = 1322
-const unsigned int kFrameSize = 1322; // byte
-
-
-/**
- * one byte header 1byte
- *
- * sequence number 4byte
- * ip address (port) 6byte
- * packet size < 800 byte 2byte
- * 12 * 13 = 156 bit + 4(0x0000)bit = 160bit = 20byte
- *
- *
- * packet content 800byte
- * // one byte + 1bit
- * // 9 bit -> Hamming code -> 4 bit
- * // 13 bit 1300byte
- * one byte footer 1byte
- */
-
-
-//
+#include "Block.h"
+#include "random"
+#include "bitset"
 
 class Frame {
 public:
 
-	Frame(unsigned int sequenceNumber, const INetAddress &address, unsigned short size);
+	explicit Frame(Block* block);
 
-	~Frame();
+	[[nodiscard]] int getSize() const;
 
-	unsigned int getLength() const;
+	Block *createBlock(int pos);
 
-	unsigned int getSize() const;
-
-	void putData(const char *data, unsigned int len);
+	[[nodiscard]] int getStart() const;
 
 private:
-	char *data;
-	unsigned int sequenceNumber;
-	const INetAddress &address;
-	unsigned short size;
-	unsigned int length;
+	std::vector<unsigned char> data;
+	int size = 0;
+
+	Block *recreateBlock(int sequenceNumber);
+
+	int startSequenceNumber;
 };
-
-std::vector<Frame>
-createFrames(unsigned int sequenceNumber, const char *data, unsigned int len, const INetAddress &address);
-
 
 #endif //NETWORKDESIGN_FRAME_H

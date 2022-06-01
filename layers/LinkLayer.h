@@ -13,6 +13,7 @@
 #include <utility>
 #include "map"
 #include "MACTable.h"
+#include "FrameTable.h"
 
 class LinkLayer : public Layer {
 public:
@@ -39,6 +40,9 @@ private:
 	std::map<int, MAC> idMacMap;
 
 	void sendARPReply(const MAC &mac, const IP &source, const IP &destination);
+
+protected:
+	FrameTable frameTable = FrameTable(this);
 };
 
 

@@ -24,12 +24,20 @@ void LinkLayer::handleSend(Block *block) {
 	newBlock->writeMAC(source);
 	newBlock->writeBlock(block);
 	newBlock->flip();
-//	std::this_thread::sleep_for(std::chrono::milliseconds(40));
-	this->lowerLayers[0]->send(newBlock);
+	auto *frame = new Frame(newBlock);
+	delete newBlock;
+	int size = frame->getSize();
+	for (int i = 0;i<size;i++) {
+		this->lowerLayers[0]->send(frame->createBlock(i));
+	}
+	this->frameTable.add(frame);
 }
 
 // the id for PC this should always be 0
-void LinkLayer::handleReceive(int id, Block *block) {
+void LinkLayer::handleReceive(int id, Block *block0) {
+	Block * block = this->frameTable.readFrame(block0);
+	if (block == nullptr)
+		return;
 	if (block->getRemaining() < 12)
 		return;
 	MAC source = block->readMAC();
@@ -74,6 +82,7 @@ void LinkLayer::handleReceive(int id, Block *block) {
 			}
 		}
 	}
+	delete block;
 }
 
 void LinkLayer::sendARP(const IP &ip, const IP &query) {
@@ -85,10 +94,10 @@ void LinkLayer::sendARP(const IP &ip, const IP &query) {
 }
 
 void LinkLayer::sendARPReply(const MAC &mac, const IP &source, const IP &destination) {
-	auto *packet = new ARPReplyPacket(source, destination,getMAC(), mac);
+	auto *packet = new ARPReplyPacket(source, destination, mac);
 	auto *block = packet->createBlock();
 	delete packet;
-	this->lowerLayers[0]->send(block);
+	this->send(block);
 }
 
 MAC LinkLayer::getMAC() {

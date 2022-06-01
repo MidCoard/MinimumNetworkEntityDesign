@@ -184,3 +184,9 @@ IP Block::viewIP(int pos) {
 	return ip;
 }
 
+void Block::clear() {
+	this->temp.clear();
+	this->pos = 0;
+	this->remaining = 0;
+}
+

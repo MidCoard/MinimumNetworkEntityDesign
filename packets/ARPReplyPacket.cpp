@@ -12,7 +12,6 @@ unsigned char ARPReplyPacket::getHeader() {
 
 Block *ARPReplyPacket::createBlock() {
 	auto *block = new Block();
-	block->writeMAC(source);
 	block->writeMAC(destination);
 	block->writeHeader(this);
 	block->writeIP(ip);
@@ -21,5 +20,5 @@ Block *ARPReplyPacket::createBlock() {
 	return block;
 }
 
-ARPReplyPacket::ARPReplyPacket(IP ip, IP reply, MAC source,MAC destination) : ip(std::move(ip)), reply(std::move(reply)),
-                                                                              source(std::move(source)), destination(std::move(destination)) {}
+ARPReplyPacket::ARPReplyPacket(IP ip, IP reply,MAC destination) : ip(std::move(ip)), reply(std::move(reply)),
+                                                                               destination(std::move(destination)) {}
