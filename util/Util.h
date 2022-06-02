@@ -48,6 +48,8 @@ namespace util {
 	bool inDebugMode();
 
 	void setDebugMode(bool debug);
+
+	unsigned int CRC(const unsigned char *data, int length);
 }
 
 #endif //NETWORKDESIGN_UTIL_H

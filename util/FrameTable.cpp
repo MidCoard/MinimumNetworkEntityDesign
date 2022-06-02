@@ -8,6 +8,7 @@
 const unsigned char kFrameHeader = 0xf8;
 const unsigned char kFrameFooter = 0xc6;
 const unsigned char kFrameEscape = '\\';
+const int kFramePacketSize = 800; // byte
 
 const long long kFrameTime = 2LL * 60 * 1000 * 1000;
 
@@ -20,10 +21,15 @@ void FrameTable::add(Frame *frame) {
 void FrameTable::check() {
 	auto now = std::chrono::system_clock::now().time_since_epoch().count();
 	for (auto it = this->frameTable.begin(); it != this->frameTable.end();)
-		if (now - it->second.second > kFrameTime) {
+		if (now > it->second.second) {
 			delete it->second.first;
 			it = this->frameTable.erase(it);
 		} else
+			++it;
+	for (auto it = this->table.begin(); it != this->table.end();)
+		if (now > it->second.first)
+			it = this->table.erase(it);
+		else
 			++it;
 }
 
@@ -51,21 +57,6 @@ unsigned char get(std::vector<bool> *vector, int index) {
 		byte |= vector->at(index + i);
 	}
 	return byte;
-}
-
-unsigned int CRC(const unsigned char* data, int length) {
-	unsigned int crc = 0xffffffff;
-	for (int i = 0; i < length; i++) {
-		crc = crc ^ data[i];
-		for (int j = 0; j < 8; j++) {
-			if ((crc & 0x1) == 1) {
-				crc = (crc >> 1) ^ 0xedb88320;
-			} else {
-				crc = crc >> 1;
-			}
-		}
-	}
-	return crc;
 }
 
 Block *FrameTable::readFrame(Block *block) {
@@ -104,44 +95,108 @@ Block *FrameTable::readFrame(Block *block) {
 		}
 	}
 	block->flip();
-	if (block->getRemaining() < 21) {
-//		this->layer->send()
-// todo send repacket
+	if (block->getRemaining() < 21)
 		return nullptr;
-	}
 	unsigned char header;
 	block->read(&header, 1);
-	if (header != kFrameHeader) {
-		//todo re
+	if (header != kFrameHeader)
 		return nullptr;
-	}
-	int sequenceNumber = block->readInt();
-	int index = block->readInt();
-	int count = block->readInt();
+	int sequence = block->readInt();// sequence
+	int index = block->readInt();// index
+	int count = block->readInt();// count
 	int length = block->readInt();
 	int newLen = length % 8 == 0 ? length : length + 8 - length % 8;
 	newLen = newLen / 8 * 13;
-	if (block->getRemaining() < newLen) {
-		//todo re
+	if (block->getRemaining() < newLen)
 		return nullptr;
-	}
 	auto * content = new unsigned char[newLen];
 	block->read(content, newLen);
+	std::bitset<kFramePacketSize * 13> newbits;
+	for (int i = 0;i<newLen;i++) {
+		newbits.set(i * 8, content[i] & 0x80);
+		newbits.set(i * 8 + 1, content[i] & 0x40);
+		newbits.set(i * 8 + 2, content[i] & 0x20);
+		newbits.set(i * 8 + 3, content[i] & 0x10);
+		newbits.set(i * 8 + 4, content[i] & 0x08);
+		newbits.set(i * 8 + 5, content[i] & 0x04);
+		newbits.set(i * 8 + 6, content[i] & 0x02);
+		newbits.set(i * 8 + 7, content[i] & 0x01);
+	}
+	unsigned char t[13];
+	for (int i = 0; i < newLen * 8; i+=13) {
+		bool q1 = newbits.test(i);
+		bool q2 = newbits.test(i + 1);
+		bool a9 = newbits.test(i + 2);
+		bool q3 = newbits.test(i + 3);
+		bool a8 = newbits.test(i + 4);
+		bool a7 = newbits.test(i + 5);
+		bool a6 = newbits.test(i + 6);
+		bool q4 = newbits.test(i + 7);
+		bool a5 = newbits.test(i + 8);
+		bool a4 = newbits.test(i + 9);
+		bool a3 = newbits.test(i + 10);
+		bool a2 = newbits.test(i + 11);
+		bool a1 = newbits.test(i + 12);
+		bool b1 = q1 ^ a9 ^ a8 ^ a6 ^ a5 ^ a3 ^ a1;
+		bool b2 = q2 ^ a9 ^ a7 ^ a6 ^ a4 ^ a3;
+		bool b3 = q3 ^ a8 ^ a7 ^ a6 ^ a2 ^ a1;
+		bool b4 = q4 ^ a5 ^ a4 ^ a3 ^ a2 ^ a1;
+		unsigned char status = b1 | (b2 << 1) | (b3 << 2) | (b4 << 3);
+		t[0] = q1;
+		t[1] = q2;
+		t[2] = a9;
+		t[3] = q3;
+		t[4] = a8;
+		t[5] = a7;
+		t[6] = a6;
+		t[7] = q4;
+		t[8] = a5;
+		t[9] = a4;
+		t[10] = a3;
+		t[11] = a2;
+		t[12] = a1;
+		t[status-1] = !t[status-1];
+		if (t[2] != (a1 ^ a2 ^ a3 ^ a4 ^ a5 ^ a6 ^ a7 ^ a8)) {
+			delete[] content;
+			return nullptr;
+		}
+		unsigned char c = (a1 << 7) | (a2 << 6) | (a3 << 5) | (a4 << 4) | (a5 << 3) | (a6 << 2) | (a7 << 1) | a8;
+		content[i / 13] = c;
+	}
 	if (block->getRemaining() < 5) {
-		//todo re
+		delete[] content;
 		return nullptr;
 	}
+	newLen = newLen / 13 * 8;
 	int crc = block->readInt();
-	if (CRC(content, newLen) != crc) {
-		//todo re
+	if (util::CRC(content, newLen) != crc) {
+		delete[] content;
 		return nullptr;
 	}
 	block->read(&header, 1);
 	if (header != kFrameFooter) {
-		//todo re
 		delete[] content;
 		return nullptr;
 	}
-	auto *frame = this->get(sequenceNumber);
-	//todo
+	auto *ret = this->write(sequence, index, count, content, newLen);
+	delete[] content;
+	return ret;
+}
+
+Block * FrameTable::write(int sequence, int index, int count, unsigned char *buffer, int len) {
+	auto time = std::chrono::system_clock::now().time_since_epoch().count() + kFrameTime;
+	if (this->table.find(sequence) == this->table.end())
+		this->table.insert_or_assign(sequence, std::make_pair(time, std::map<int,std::vector<unsigned char>>()));
+	std::vector<unsigned char> vector(buffer, buffer + len);
+	auto& pair = this->table[sequence];
+	auto& map = pair.second;
+	map.insert_or_assign(index, vector);
+	if (map.size() == count) {
+		auto* block = new Block();
+		for (auto& p : map)
+			block->write(p.second.data(), p.second.size());
+		block->flip();
+		return block;
+	}
+	return nullptr;
 }

@@ -113,3 +113,18 @@ void util::setDebugMode(bool debug) {
 bool util::inDebugMode() {
 	return debugMode;
 }
+
+unsigned int util::CRC(const unsigned char* data, int length) {
+	unsigned int crc = 0xffffffff;
+	for (int i = 0; i < length; i++) {
+		crc = crc ^ data[i];
+		for (int j = 0; j < 8; j++) {
+			if ((crc & 0x1) == 1) {
+				crc = (crc >> 1) ^ 0xedb88320;
+			} else {
+				crc = crc >> 1;
+			}
+		}
+	}
+	return crc;
+}

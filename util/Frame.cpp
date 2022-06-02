@@ -35,21 +35,6 @@ const int kFramePacketSize = 800; // byte
 std::default_random_engine _generator;
 std::uniform_int_distribution<int> _distribution(0, 2100000000);
 
-unsigned int CRC(const unsigned char* data, int length) {
-	unsigned int crc = 0xffffffff;
-	for (int i = 0; i < length; i++) {
-		crc = crc ^ data[i];
-		for (int j = 0; j < 8; j++) {
-			if ((crc & 0x1) == 1) {
-				crc = (crc >> 1) ^ 0xedb88320;
-			} else {
-				crc = crc >> 1;
-			}
-		}
-	}
-	return crc;
-}
-
 int Frame::getSize() const {
 	return this->size;
 }
@@ -118,7 +103,7 @@ Block *Frame::createBlock(int pos) {
 	block->writeInt(this->size);
 	block->writeInt(actualSize);
 	block->write(temp, newLen);
-	block->writeInt(CRC(temp, newLen));
+	block->writeInt(util::CRC(this->data.data() + pos * kFramePacketSize, newLen));
 	block->write(kFrameFooter);
 	delete[] temp;
 	block->flip();

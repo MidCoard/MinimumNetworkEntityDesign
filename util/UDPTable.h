@@ -18,8 +18,8 @@ public:
 	int tryAllocate();
 private:
 	std::map<int,std::map<int,std::vector<unsigned char>>> table;
-	int count = 0;
 	std::mutex mutex;
+	int count = 0;
 	AppLayer *layer;
 };
 
