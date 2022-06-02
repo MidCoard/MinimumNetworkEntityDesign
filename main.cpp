@@ -275,17 +275,45 @@ int main() {
 //	}
 //	dhcp::stop();
 //	delete network;
-	auto* block = new Block();
-	block->writeMAC(generateMAC());
-	block->writeMAC(generateMAC());
-	block->flip();
-	auto* frame = new Frame(block);
-	delete block;
-	for (int i = 0;i<frame->getSize();i++) {
-		Block * block1 = frame->createBlock(i);
-		auto* ret = FrameTable::readFrame(block1);
 
-	}
+
+//	auto* block = new Block();
+//	MAC a = generateMAC();
+//	MAC b = generateMAC();
+//	std::cout<<a.str()<<std::endl;
+//	std::cout<<b.str()<<std::endl;
+//	block->writeMAC(a);
+//	block->writeMAC(b);
+//	block->flip();
+//	block->print();
+//	auto* frame = new Frame(block);
+//	delete block;
+//	FrameTable table = FrameTable();
+//
+//	for (int i = 0;i<frame->getSize();i++) {
+//		Block * block1 = frame->createBlock(i);
+//		auto* ret = table.readFrame(block1);
+//		if (ret != nullptr) {
+//			std::cout<<ret->readMAC().str()<<std::endl;
+//			std::cout<<ret->readMAC().str()<<std::endl;
+//		}
+//	}
+	std::cout<<util::toHex('\\')<<std::endl;
+	unsigned char source[12] = {0x58,0x16,0x29,0x15,0x5c,0x13,0x3f,0x4b,0x78,0x3f,0x1d,0xb6};
+	auto* b = new Block();
+	b->write(source, 12);
+	b->flip();
+	Frame * frame = new Frame(b);
+	Block* a = frame->createBlock(0);
+	using std::cout, std::endl;
+	cout<<(a==nullptr)<<endl;
+	unsigned char data[48] = {0xf8,0x70,0x38,0x47,0x43,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1,0x0,0x0,0x0,0xd,0x31,0xd1,0x3a,0xe,0x29,0xd6,0x80,0x3d,0x1,0xe9,0xb5,0x3,0xfc,0x5c,0x90,0x87,0x87,0xf9,0x15,0x87,0x76,0x80,0x0,0x0,0x0,0x0,0x3a,0x75,0xb0,0x60,0xc6};
+	auto* block = new Block();
+	block->write(data, 48);
+	block->flip();
+	FrameTable frameTable;
+	frameTable.readFrame(block);
+	frameTable.readFrame(a);
 	kExecutor.stop();
 	return 0;
 }

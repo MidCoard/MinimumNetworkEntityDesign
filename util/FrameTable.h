@@ -12,7 +12,6 @@ class LinkLayer;
 class FrameTable {
 
 public:
-	explicit FrameTable(LinkLayer *layer);
 
 	void add(Frame *frame);
 
@@ -24,10 +23,7 @@ private:
 	void check();
 
 	Frame *get(int start);
-
-	LinkLayer *layer;
 	std::map<int,std::pair<long long, std::map<int,std::vector<unsigned char>>>> table;
-	std::mutex mutex;
 
 	Block * write(int sequence, int index, int count, unsigned char *buffer, int len);
 };

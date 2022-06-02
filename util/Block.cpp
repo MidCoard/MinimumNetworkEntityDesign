@@ -13,9 +13,7 @@ Block::Block() {
 }
 
 void Block::write(unsigned char *data, int len) {
-	this->mutex.lock();
 	this->temp.insert(this->temp.end(), data, data + len);
-	this->mutex.unlock();
 }
 
 void Block::flip() {
@@ -28,13 +26,11 @@ int Block::getRemaining() const {
 }
 
 int Block::read(unsigned char *data, int len) {
-	this->mutex.lock();
 	if (len > this->remaining)
 		len = this->remaining;
 	for (int i = 0; i < len; i++)
 		data[i] = this->temp[this->pos++];
 	this->remaining -= len;
-	this->mutex.unlock();
 	return len;
 }
 
@@ -42,6 +38,12 @@ std::vector<unsigned char> Block::read() {
 	std::vector<unsigned char> data = {this->temp.begin() + this->pos, this->temp.end()};
 	this->pos = this->remaining;
 	this->remaining = 0;
+	return data;
+}
+
+unsigned char Block::readUnsignChar() {
+	unsigned char data = this->temp[this->pos++];
+	this->remaining--;
 	return data;
 }
 
@@ -188,5 +190,11 @@ void Block::clear() {
 	this->temp.clear();
 	this->pos = 0;
 	this->remaining = 0;
+}
+
+void Block::print() {
+	for (unsigned char i : this->temp)
+		std::cout << "0x" << util::toHex(i) << ",";
+	std::cout << std::endl;
 }
 

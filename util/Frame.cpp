@@ -8,12 +8,7 @@ const unsigned char kFrameHeader = 0xf8;
 const unsigned char kFrameFooter = 0xc6;
 const unsigned char kFrameEscape = '\\';
 
-// 1 + 20 + 1300 + 1 = 1322
-const unsigned int kFrameSize = 1318; // byte
-
-const int kFramePacketSize = 800; // byte
-
-
+const int kFramePacketSize = 1300; // byte
 
 /**
  * one byte header 1byte
@@ -21,6 +16,7 @@ const int kFramePacketSize = 800; // byte
  * 4 byte sequenceNumber
  * 4 byte size
  * 4 byte length
+ * 4 byte whole length
  * packet content 800byte
  * // one byte + 1bit
  * // 9 bit -> Hamming code -> 4 bit
@@ -29,10 +25,7 @@ const int kFramePacketSize = 800; // byte
  * one byte footer 1byte
  */
 
-
-//
-
-std::default_random_engine _generator;
+std::default_random_engine _generator(std::chrono::system_clock::now().time_since_epoch().count());
 std::uniform_int_distribution<int> _distribution(0, 2100000000);
 
 int Frame::getSize() const {
@@ -41,15 +34,40 @@ int Frame::getSize() const {
 
 Frame::Frame(Block *block) {
 	this->startSequenceNumber = _distribution(_generator);
-	int len = block->getRemaining();
-	auto* temp = new unsigned char[len];
-	block->read(temp, len);
-	for (int i = 0;i<len;i++) {
-		if (temp[i] == kFrameHeader || temp[i] == kFrameFooter || temp[i] == kFrameEscape)
-			this->data.push_back(kFrameEscape);
-		this->data.push_back(temp[i]);
+	std::vector<bool> bits;
+	std::vector<bool> newbits;
+	this->length = block->getRemaining();
+	int newLength = length % 8 == 0 ? length : length + 8 - length % 8;
+	while (block->getRemaining())
+		util::put(&bits, block->readUnsignChar());
+	bool temp[13];
+	for (int i = 0; i < length * 8; i+=13) {
+		temp[2] = bits[i];
+		temp[4] = bits[i + 1];
+		temp[5] = bits[i + 2];
+		temp[6] = bits[i + 3];
+		temp[8] = bits[i + 4];
+		temp[9] = bits[i + 5];
+		temp[10] = bits[i + 6];
+		temp[11] = bits[i + 7];
+		temp[12] = temp[2] ^ temp[4] ^ temp[5] ^ temp[6] ^ temp[8] ^ temp[9] ^ temp[10] ^ temp[11];
+		temp[0] = temp[2] ^ temp[4] ^ temp[6] ^ temp[8] ^ temp[10] ^ temp[12];
+		temp[1] = temp[2] ^ temp[5] ^ temp[6] ^ temp[9] ^ temp[10];
+		temp[3] = temp[4] ^ temp[5] ^ temp[6] ^ temp[11] ^ temp[12];
+		temp[7] = temp[8] ^ temp[9] ^ temp[10] ^ temp[11] ^ temp[12];
+		for (bool & j : temp)
+			newbits.push_back(j);
 	}
-	delete[] temp;
+	for (int i = 0; i < (newLength - length) * 8; i++)
+		newbits.push_back(false);
+	for (int i = 0; i < newLength; i ++) {
+		unsigned char c = 0;
+		for (int j = 0; j < 8; j++)
+			c |= newbits[i * 8 + j] << j;
+		if (c == kFrameEscape || c == kFrameHeader || c == kFrameFooter)
+			this->data.push_back(kFrameEscape);
+		this->data.push_back(c);
+	}
 	this->size = this->data.size() % kFramePacketSize == 0 ? this->data.size() / kFramePacketSize : this->data.size() / kFramePacketSize + 1;
 }
 
@@ -57,55 +75,16 @@ Block *Frame::createBlock(int pos) {
 	if (pos >= this->size)
 		return nullptr;
 	auto* block = new Block();
-	int actualSize = pos - 1 != this->size ? kFramePacketSize : this->data.size() - pos * kFramePacketSize;
-	int len = actualSize % 8 == 0 ? actualSize : actualSize + 8 - actualSize % 8;
-	std::bitset<kFramePacketSize * 13> bits;
-	for (int i = 0;i<len;i++) {
-		unsigned char c = i < actualSize ? this->data[pos * kFramePacketSize + i] : 0;
-		// using 9 bits to get hamming code ( 8 bits data and one bit parity )
-		bool a1 = c >> 7 & 1; // high bit
-		bool a2 = c >> 6 & 1;
-		bool a3 = c >> 5 & 1;
-		bool a4 = c >> 4 & 1;
-		bool a5 = c >> 3 & 1;
-		bool a6 = c >> 2 & 1;
-		bool a7 = c >> 1 & 1;
-		bool a8 = c >> 0 & 1;
-		bool a9 = a1 ^ a2 ^ a3 ^ a4 ^ a5 ^ a6 ^ a7 ^ a8; // low bit
-		// generate 13 bits hamming code
-		bits.set(i * 13 + 0, a9 ^ a8 ^ a6 ^ a5 ^ a3 ^ a1);
-		bits.set(i * 13 + 1, a9 ^ a7 ^ a6 ^ a4 ^ a3);
-		bits.set(i * 13 + 2, a9);
-		bits.set(i * 13 + 3, a8 ^ a7 ^ a6 ^ a2 ^ a1);
-		bits.set(i * 13 + 4, a8);
-		bits.set(i * 13 + 5, a7);
-		bits.set(i * 13 + 6, a6);
-		bits.set(i * 13 + 7,  a5 ^ a4 ^ a3 ^ a2 ^ a1);
-		bits.set(i * 13 + 8, a5);
-		bits.set(i * 13 + 9, a4);
-		bits.set(i * 13 + 10, a3);
-		bits.set(i * 13 + 11, a2);
-		bits.set(i * 13 + 12, a1);
-	}
-	// convert to unsigned char 8 bit
-	int newLen = len / 8 * 13;
-	auto* temp = new unsigned char[newLen];
-	for (int i = 0;i<newLen;i++) {
-		unsigned char c = 0;
-		for (int j = 0;j<8;j++) {
-			c <<= 1;
-			c |= bits.test(i * 8 + j) ? 1 : 0;
-		}
-	}
+	int actualSize = pos != this->size - 1 ? kFramePacketSize : this->data.size() - pos * kFramePacketSize;
 	block->write(kFrameHeader);
 	block->writeInt(this->startSequenceNumber);
-	block->writeInt(this->startSequenceNumber + pos);
+	block->writeInt(pos);
 	block->writeInt(this->size);
 	block->writeInt(actualSize);
-	block->write(temp, newLen);
-	block->writeInt(util::CRC(this->data.data() + pos * kFramePacketSize, newLen));
+	block->writeInt(this->length);
+	block->write(this->data.data() + pos * kFramePacketSize, actualSize);
+	block->writeInt(util::CRC(this->data.data() + pos * kFramePacketSize, actualSize));
 	block->write(kFrameFooter);
-	delete[] temp;
 	block->flip();
 	return block;
 }

@@ -68,13 +68,17 @@ public:
 
 	void clear();
 
+	void print();
+
+	unsigned char readUnsignChar();
+
 private:
 	// avoid use pointer
 	std::vector<unsigned char> temp;
 	int remaining;
 	int pos;
 	int sendCount;
-	std::mutex mutex;
+
 };
 
 

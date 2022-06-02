@@ -29,6 +29,7 @@ private:
 	Block *recreateBlock(int sequenceNumber);
 
 	int startSequenceNumber;
+	int length;
 };
 
 #endif //NETWORKDESIGN_FRAME_H

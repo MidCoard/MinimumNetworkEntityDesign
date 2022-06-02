@@ -42,7 +42,7 @@ private:
 	void sendARPReply(const MAC &mac, const IP &source, const IP &destination);
 
 protected:
-	FrameTable frameTable = FrameTable(this);
+	FrameTable frameTable;
 };
 
 

@@ -1,4 +1,5 @@
 #include "Util.h"
+#include "iostream"
 
 std::vector<std::string> util::readFile(const std::string &filePath) {
 	std::ifstream file(filePath);
@@ -127,4 +128,20 @@ unsigned int util::CRC(const unsigned char* data, int length) {
 		}
 	}
 	return crc;
+}
+
+void util::put(std::vector<bool> *vector, unsigned char byte) {
+	for (int i = 0; i < 8; ++i) {
+		vector->push_back(byte & 0x80);
+		byte <<= 1;
+	}
+}
+
+unsigned char util::get(std::vector<bool> *vector, int index) {
+	unsigned char byte = 0;
+	for (int i = 0; i < 8; ++i) {
+		byte <<= 1;
+		byte |= vector->at(index + i);
+	}
+	return byte;
 }

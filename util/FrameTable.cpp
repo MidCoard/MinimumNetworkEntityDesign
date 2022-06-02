@@ -41,37 +41,16 @@ Frame *FrameTable::get(int start) {
 	return it->second.first;
 }
 
-FrameTable::FrameTable(LinkLayer *layer) : layer(layer) {}
-
-void put(std::vector<bool> *vector, unsigned char byte) {
-	for (int i = 0; i < 8; ++i) {
-		vector->push_back(byte & 0x80);
-		byte <<= 1;
-	}
-}
-
-unsigned char get(std::vector<bool> *vector, int index) {
-	unsigned char byte = 0;
-	for (int i = 0; i < 8; ++i) {
-		byte <<= 1;
-		byte |= vector->at(index + i);
-	}
-	return byte;
-}
-
 Block *FrameTable::readFrame(Block *block) {
 	int size = block->getRemaining();
-	auto *temp = new unsigned char[size];
-	block->read(temp, size);
 	std::vector<bool> bits;
-	for (int i = 0; i < size; i++)
-		put(&bits, temp[i]);
-	delete[] temp;
+	while (block->getRemaining())
+		util::put(&bits, block->readUnsignChar());
 	bool isStart = false;
 	bool isEscape = false;
 	auto* b = new Block();
 	for (int i = 0; i + 8 <= bits.size(); i++) {
-		unsigned char c = ::get(&bits, i);
+		unsigned char c = util::get(&bits, i);
 		if (isEscape) {
 			isEscape = false;
 			b->write(c);
@@ -94,38 +73,29 @@ Block *FrameTable::readFrame(Block *block) {
 			i += 7;
 		}
 	}
-	block->flip();
-	if (block->getRemaining() < 21)
+	b->flip();
+	if (b->getRemaining() < 21)
 		return nullptr;
 	unsigned char header;
-	block->read(&header, 1);
+	b->read(&header, 1);
 	if (header != kFrameHeader)
 		return nullptr;
-	int sequence = block->readInt();// sequence
-	int index = block->readInt();// index
-	int count = block->readInt();// count
-	int length = block->readInt();
-	int newLen = length % 8 == 0 ? length : length + 8 - length % 8;
-	newLen = newLen / 8 * 13;
-	if (block->getRemaining() < newLen)
+	int sequence = b->readInt();// sequence
+	int index = b->readInt();// index
+	int count = b->readInt();// count
+	int length = b->readInt();
+	int wholeLength = b->readInt();
+	if (b->getRemaining() < length)
 		return nullptr;
-	auto * content = new unsigned char[newLen];
-	block->read(content, newLen);
-	std::bitset<kFramePacketSize * 13> newbits;
-	for (int i = 0;i<newLen;i++) {
-		newbits.set(i * 8, content[i] & 0x80);
-		newbits.set(i * 8 + 1, content[i] & 0x40);
-		newbits.set(i * 8 + 2, content[i] & 0x20);
-		newbits.set(i * 8 + 3, content[i] & 0x10);
-		newbits.set(i * 8 + 4, content[i] & 0x08);
-		newbits.set(i * 8 + 5, content[i] & 0x04);
-		newbits.set(i * 8 + 6, content[i] & 0x02);
-		newbits.set(i * 8 + 7, content[i] & 0x01);
-	}
-	unsigned char t[13];
-	for (int i = 0; i < newLen * 8; i+=13) {
-		bool q1 = newbits.test(i);
-		bool q2 = newbits.test(i + 1);
+	auto * content = new unsigned char[length];
+	b->read(content, length);
+	std::vector<bool> newbits;
+	for (int i = 0;i<length;i++)
+		util::put(&newbits, content[i]);
+	bool temp[13];
+	for (int i = 0; i < length * 8; i+=13) {
+		bool q1 = newbits[i];
+		bool q2 = newbits[i + 1];
 		bool a9 = newbits.test(i + 2);
 		bool q3 = newbits.test(i + 3);
 		bool a8 = newbits.test(i + 4);
@@ -142,43 +112,46 @@ Block *FrameTable::readFrame(Block *block) {
 		bool b3 = q3 ^ a8 ^ a7 ^ a6 ^ a2 ^ a1;
 		bool b4 = q4 ^ a5 ^ a4 ^ a3 ^ a2 ^ a1;
 		unsigned char status = b1 | (b2 << 1) | (b3 << 2) | (b4 << 3);
-		t[0] = q1;
-		t[1] = q2;
-		t[2] = a9;
-		t[3] = q3;
-		t[4] = a8;
-		t[5] = a7;
-		t[6] = a6;
-		t[7] = q4;
-		t[8] = a5;
-		t[9] = a4;
-		t[10] = a3;
-		t[11] = a2;
-		t[12] = a1;
-		t[status-1] = !t[status-1];
-		if (t[2] != (a1 ^ a2 ^ a3 ^ a4 ^ a5 ^ a6 ^ a7 ^ a8)) {
+		temp[0] = q1;
+		temp[1] = q2;
+		temp[2] = a9;
+		temp[3] = q3;
+		temp[4] = a8;
+		temp[5] = a7;
+		temp[6] = a6;
+		temp[7] = q4;
+		temp[8] = a5;
+		temp[9] = a4;
+		temp[10] = a3;
+		temp[11] = a2;
+		temp[12] = a1;
+
+		if (status != 0)
+			temp[status - 1] = !temp[status - 1];
+		//todo modify
+		if (temp[2] != (a1 ^ a2 ^ a3 ^ a4 ^ a5 ^ a6 ^ a7 ^ a8)) {
+			std::cout<<"Hello?"<<std::endl;
 			delete[] content;
 			return nullptr;
 		}
 		unsigned char c = (a1 << 7) | (a2 << 6) | (a3 << 5) | (a4 << 4) | (a5 << 3) | (a6 << 2) | (a7 << 1) | a8;
 		content[i / 13] = c;
 	}
-	if (block->getRemaining() < 5) {
+	if (b->getRemaining() < 5) {
 		delete[] content;
 		return nullptr;
 	}
-	newLen = newLen / 13 * 8;
-	int crc = block->readInt();
-	if (util::CRC(content, newLen) != crc) {
+	unsigned int crc = b->readInt();
+	if (util::CRC(content, length) != crc) {
 		delete[] content;
 		return nullptr;
 	}
-	block->read(&header, 1);
+	b->read(&header, 1);
 	if (header != kFrameFooter) {
 		delete[] content;
 		return nullptr;
 	}
-	auto *ret = this->write(sequence, index, count, content, newLen);
+	auto *ret = this->write(sequence, index, count, content, length);
 	delete[] content;
 	return ret;
 }

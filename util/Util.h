@@ -50,6 +50,10 @@ namespace util {
 	void setDebugMode(bool debug);
 
 	unsigned int CRC(const unsigned char *data, int length);
+
+	void put(std::vector<bool> *vector, unsigned char byte);
+
+	unsigned char get(std::vector<bool> *vector, int index);
 }
 
 #endif //NETWORKDESIGN_UTIL_H
