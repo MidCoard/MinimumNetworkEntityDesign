@@ -42,7 +42,10 @@ void DefaultRouter::generateIP() {
 		}
 		delete ipConfiguration.getSegment();
 		delete ipConfiguration.getMask();
-		networkLayer->setIPConfiguration(port, new IP(defaultIP), new IP(defaultMask), defaultGateway);
+		if (defaultGateway == nullptr || defaultGateway == ipConfiguration.getGateway())
+			networkLayer->setIPConfiguration(port, new IP(defaultIP), new IP(defaultMask), defaultGateway);
+		else
+			networkLayer->setIPConfiguration(port, new IP(defaultIP), new IP(defaultMask), new IP(*defaultGateway));
 	}
 	std::vector<IPConfiguration> configurations;
 	for (int i = 0; i<networkLayer->lowerLayers.size(); i++)

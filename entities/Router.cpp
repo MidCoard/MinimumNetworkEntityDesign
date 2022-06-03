@@ -98,9 +98,6 @@ INetAddress *RouterConfiguration::getLinkAddress() {
 }
 
 RouterConfiguration::~RouterConfiguration() {
-	delete segment;
-	delete mask;
-	delete gateway;
 	delete mac;
 	delete linkAddress;
 	delete physicalAddress;
