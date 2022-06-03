@@ -28,7 +28,11 @@ void UDPPreTable::send(const IP &ip, const IP &source, int count, int target) {
 		mutex.unlock();
 		return;
 	}
-	it->second.second.first = 0;
+	if (it->second.second.first == -1) {
+		mutex.unlock();
+		return;
+	}
+	it->second.second.first = -1;
 	auto* packet = it->second.first;
 	packet->init(target);
 	int size = packet->getSize();

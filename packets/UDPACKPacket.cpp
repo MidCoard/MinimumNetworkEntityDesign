@@ -16,7 +16,7 @@ Block *UDPACKPacket::createBlock() {
 	block->write(0);
 	block->writeHeader(this);
 	block->writeIP(this->source);
-	block->write(count);
+	block->writeInt(count);
 	block->flip();
 	return block;
 }

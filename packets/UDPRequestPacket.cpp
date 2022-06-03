@@ -12,7 +12,7 @@ Block *UDPRequestPacket::createBlock() {
 	block->write(0);
 	block->writeHeader(this);
 	block->writeIP(this->source);
-	block->write(count);
+	block->writeInt(count);
 	for (int id : this->ids)
 		block->writeInt(id);
 	block->flip();

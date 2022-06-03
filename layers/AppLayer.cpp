@@ -96,7 +96,7 @@ void AppLayer::resendPre(const IP& ip, std::pair<int,int> pair, int len) {
 					this->send(block);
 					this->resendPre(ip, pair, len);
 				}
-			}, std::chrono::milliseconds(2000));
+			}, std::chrono::milliseconds (3000));
 }
 
 void AppLayer::sendUDPData0(const IP& ip, unsigned char* data, int len) {

@@ -16,7 +16,6 @@ void dhcp::request(NetworkLayer *layer) {
 
 void dhcp::start() {
 	dhcpThread = new std::thread([]() {
-		std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 		while (true) {
 			if (shouldStop)
 				break;
@@ -27,7 +26,7 @@ void dhcp::start() {
 				code_machina::BlockingCollectionStatus status = layers.take(layer);
 				if (status == code_machina::BlockingCollectionStatus::Ok && !layer->isIPValid ) {
 					layer->sendDHCP();
-					std::this_thread::sleep_for(std::chrono::milliseconds (2000));
+					std::this_thread::sleep_for(std::chrono::milliseconds (1100));
 					if (!layer->isIPValid)
 						layers.emplace(layer);
 				}
