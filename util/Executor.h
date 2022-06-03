@@ -5,6 +5,7 @@
 #ifndef NETWORKDESIGN_EXECUTOR_H
 #define NETWORKDESIGN_EXECUTOR_H
 
+#include <functional>
 #include "BlockingCollection.h"
 #include "vector"
 #include "thread"

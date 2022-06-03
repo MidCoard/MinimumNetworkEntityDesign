@@ -37,7 +37,7 @@ void AppLayer::handleReceive(int id, Block *block) {
 			log("Receive UDP Packet index: " + std::to_string(index) + " count: " + std::to_string(count) +
 			    " length: " + std::to_string(length));
 			auto time = std::chrono::system_clock::now().time_since_epoch().count();
-			this->queue2.emplace(new std::pair(std::pair(ip, count), time + kPacketTime));
+			this->queue2.emplace(new std::pair{std::pair{ip, count}, time + kPacketTime});
 			break;
 		}
 		case 0x65: {
@@ -76,7 +76,7 @@ void AppLayer::handleReceive(int id, Block *block) {
 			int count = block->readInt();
 			this->log("Receive UDP ACK Packet ip " + ip.str() + " pre_id " + std::to_string(count));
 			auto time = std::chrono::system_clock::now().time_since_epoch().count();
-			this->queue2.emplace(new std::pair(std::pair(ip, count), time + kPacketTime));
+			this->queue2.emplace(new std::pair{std::pair{ip, count}, time + kPacketTime});
 			this->udpTable.ack(ip, count);
 			break;
 		}

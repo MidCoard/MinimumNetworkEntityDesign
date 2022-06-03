@@ -37,7 +37,7 @@ bool IP::operator==(IP ip) const {
 	return true;
 }
 
-bool IP::operator!=(IP &ip) const {
+bool IP::operator!=(IP ip) const {
 	return !(*this == ip);
 }
 

@@ -1,9 +1,13 @@
+#ifdef WINDOWS
+#include <wspiapi.h>
+#endif
+
 #include <iostream>
 #include <utility>
 #include <vector>
 #include <map>
-#include <QApplication>
-#include <QtWidgets/qpushbutton.h>
+//#include <QApplication>
+//#include <QtWidgets/qpushbutton.h>
 #include "Util.h"
 #include "Layer.h"
 #include "PC.h"
@@ -15,8 +19,8 @@
 #include "Network.h"
 #include "DefaultRouter.h"
 #include "NetworkEntity.h"
-#include "BlockingCollection.h"
 #include "DHCPHelper.h"
+#include "BlockingCollection.h"
 
 std::vector<std::string>
 availableLine(std::vector<std::string>::iterator *begin, std::vector<std::string>::iterator end) {
@@ -214,9 +218,19 @@ Network *initialize() {
 Network *network = nullptr;
 
 int main(int argc, char *argv[]) {
-	util::setDebugMode(true);
-	network = initialize();
-	dhcp::start();
+#ifdef WINDOWS
+	WSADATA Data;
+	WSAStartup(MAKEWORD(2,2),&Data);
+#endif
+	INetAddress i = createINetAddress("127.0.0.1:12100");
+	Block *b = new Block();
+	b->write(255);
+	b->write(1);
+	b->flip();
+	i.createSocket().send(i, b);
+//	util::setDebugMode(true);
+//	network = initialize();
+//	dhcp::start();
 //	while (true) {
 //		int op;
 //		std::cin>>op;
@@ -270,17 +284,21 @@ int main(int argc, char *argv[]) {
 //				std::cerr<<"File not found"<<std::endl;
 //		}
 //	}
-	if (network != nullptr) {
-		QApplication a(argc, argv);
-		QPushButton button("Hello world!", nullptr);
-		button.resize(200, 100);
-		button.show();
-		QApplication::exec();
-		for (auto node: network->getNodes())
-			node->stop();
-	}
-	dhcp::stop();
-	delete network;
-	kExecutor.stop();
+//	if (network != nullptr) {
+////		QApplication a(argc, argv);
+////		QPushButton button("Hello world!", nullptr);
+////		button.resize(200, 100);
+////		button.show();
+////		QApplication::exec();
+//		for (auto node: network->getNodes())
+//			node->stop();
+//	}
+//	dhcp::stop();
+//	delete network;
+//	kExecutor.stop();
+//
+#ifdef WINDOWS
+	WSACleanup();
+#endif
 	return 0;
 }

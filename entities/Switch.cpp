@@ -78,8 +78,8 @@ void SwitchLinkLayer::handleReceive(int id, Block *block0) {
 				this->frameTable.add(frame);
 			}
 	} else {
-		int interface = macTable.lookup(destination);
-		if (interface == -1) {
+		int interface0 = macTable.lookup(destination);
+		if (interface0 == -1) {
 			for (auto layer: this->lowerLayers)
 				if (layer->getID() != id) {
 					auto *b = newBlock->copy();
@@ -97,7 +97,7 @@ void SwitchLinkLayer::handleReceive(int id, Block *block0) {
 			delete b;
 			int size = frame->getSize();
 			for (int i = 0; i < size; i++) {
-				this->lowerLayers.at(interface)->send(frame->createBlock(i));
+				this->lowerLayers.at(interface0)->send(frame->createBlock(i));
 			}
 			this->frameTable.add(frame);
 		}

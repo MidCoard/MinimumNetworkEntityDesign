@@ -3,6 +3,7 @@
 //
 
 #include "MAC.h"
+#include "chrono"
 
 
 MAC::MAC(std::string mac) : mac(std::move(mac)) {
@@ -74,6 +75,10 @@ bool MAC::isBroadcast() const {
 
 std::string MAC::str() {
 	return this->mac;
+}
+
+bool MAC::operator!=(const MAC &mac) const {
+	return !(this->operator==(mac));
 }
 
 MAC generateMAC() {

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
+#include <functional>
 
 class Timer {
 	std::thread th;

@@ -28,7 +28,7 @@ public:
 
 	bool operator==(IP ip) const;
 
-	bool operator!=(IP &ip) const;
+	bool operator!=(IP ip) const;
 
 	[[nodiscard]] bool isBroadcast() const;
 

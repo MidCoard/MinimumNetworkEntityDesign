@@ -7,8 +7,15 @@
 
 class PhysicalLayer;
 
+#ifdef WINDOWS
+#include <wspiapi.h>
+#else
+
 #include <sys/socket.h>
 #include <netinet/in.h>
+
+#endif
+
 #include "thread"
 #include "network/INetAddress.h"
 #include "Block.h"
@@ -26,7 +33,11 @@ public:
 	void close();
 
 private:
+#ifdef WINDOWS
+	SOCKET internal;
+#else
 	int internal;
+#endif
 	unsigned char *temp;
 
 	std::thread *thread = nullptr;
