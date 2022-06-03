@@ -7,7 +7,7 @@
 #include "UDPPacket.h"
 #include "UDPACKPacket.h"
 
-const int kPacketTime = 2LL * 60 * 1000 * 1000;
+const long long kPacketTime = 2LL * 60 * 1000 * 1000;
 
 std::pair<int, int> UDPPreTable::tryAllocate(const IP& ip,const IP& source, unsigned char *data, int len) {
 	mutex.lock();

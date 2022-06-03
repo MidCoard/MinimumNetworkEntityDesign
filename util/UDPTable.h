@@ -10,6 +10,7 @@ class AppLayer;
 #include "map"
 #include "vector"
 #include "Block.h"
+#include "BlockingCollection.h"
 
 class UDPTable {
 public:

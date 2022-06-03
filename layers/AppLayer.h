@@ -36,11 +36,18 @@ private:
 	void sendUDPData0(const IP& ip, unsigned char *data, int len);
 	std::thread * thread = nullptr;
 	code_machina::BlockingQueue<std::pair<unsigned char*, std::pair<IP,long long>>*> queue;
+	code_machina::BlockingQueue<
+	std::pair<std::pair<IP,int>,long long>*
+	> queue2;
+	std::map<std::pair<IP,int>, long long> timeMap;
 	UDPPreTable table = UDPPreTable(this);
 	UDPTable udpTable = UDPTable(this);
 	bool shouldThreadStop = false;
 
 	void resendPre(const IP &ip, std::pair<int, int> pair, int len);
+
+	std::thread *queueThread;
+
 };
 
 

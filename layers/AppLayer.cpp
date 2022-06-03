@@ -9,6 +9,8 @@
 #include "NetworkEntity.h"
 #include "UDPRequestPacket.h"
 
+const long long kPacketTime = 2LL * 60 * 1000 * 1000;
+
 std::string AppLayer::getRawName() {
 	return "APP";
 }
@@ -33,6 +35,8 @@ void AppLayer::handleReceive(int id, Block *block) {
 			int count = block->readInt();
 			int length = this->udpTable.add(block, ip, count, index);
 			log("Receive UDP Packet index: " + std::to_string(index) + " count: " + std::to_string(count) + " length: " + std::to_string(length));
+			auto time = std::chrono::system_clock::now().time_since_epoch().count();
+			this->queue2.emplace(new std::pair(std::pair(ip,count), time + kPacketTime));
 			break;
 		}
 		case 0x65: {
@@ -47,6 +51,8 @@ void AppLayer::handleReceive(int id, Block *block) {
 			auto* newBlock = packet->createBlock();
 			delete packet;
 			this->send(newBlock);
+			auto time = std::chrono::system_clock::now().time_since_epoch().count();
+			this->queue2.emplace(new std::pair{std::pair{ip,count}, time + kPacketTime * 3});
 			break;
 		}
 		case 0x66: {
@@ -65,6 +71,8 @@ void AppLayer::handleReceive(int id, Block *block) {
 			int count = block->readInt();
 			this->log("Receive UDP ACK Packet ip " + ip.str() + " pre_id " + std::to_string(count));
 			this->udpTable.ack(ip,count);
+			auto time = std::chrono::system_clock::now().time_since_epoch().count();
+			this->queue2.emplace(new std::pair(std::pair(ip,count), time + kPacketTime));
 			break;
 		}
 		case 0x91:{
@@ -118,6 +126,31 @@ void AppLayer::handleUDPData(unsigned char *data, long long length) {
 
 void AppLayer::start() {
 	Layer::start();
+	this->queueThread = new std::thread(
+			[this]() {
+				while(true) {
+					if (this->shouldThreadStop)
+						break;
+					std::pair<std::pair<IP,int>,long long>* pair = nullptr;
+					code_machina::BlockingCollectionStatus status = this->queue2.try_take(pair);
+					while (status == code_machina::BlockingCollectionStatus::Ok) {
+						this->timeMap.insert_or_assign(pair->first, pair->second);
+						delete pair;
+						pair = nullptr;
+						status = this->queue2.try_take(pair);
+					}
+					std::this_thread::sleep_for(std::chrono::milliseconds(100));
+					auto now = std::chrono::system_clock::now().time_since_epoch().count();
+					for (auto it = this->timeMap.begin(); it != this->timeMap.end();) {
+						if (it->second < now) {
+							this->udpTable.ack(it->first.first, it->first.second);
+							it = this->timeMap.erase(it);
+						} else {
+							it++;
+						}
+					}
+				}}
+			);
 	this->thread = new std::thread([this]() {
 		while (true) {
 			if (this->shouldThreadStop)
@@ -140,11 +173,16 @@ void AppLayer::sendUDPData(const IP &ip, unsigned char *data, long long length) 
 }
 
 void AppLayer::stop() {
+	this->shouldThreadStop = true;
 	if (this->thread != nullptr) {
-		this->shouldThreadStop = true;
 		this->thread->join();
 		delete this->thread;
 		this->thread = nullptr;
+	}
+	if (this->queueThread != nullptr) {
+		this->queueThread->join();
+		delete this->queueThread;
+		this->queueThread = nullptr;
 	}
 	Layer::stop();
 }
