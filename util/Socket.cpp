@@ -4,6 +4,7 @@
 
 #include "Socket.h"
 #include "PhysicalLayer.h"
+#include "unistd.h"
 
 Socket::Socket(int port) : port(port) {
 	this->temp = new unsigned char[1024];
@@ -40,7 +41,8 @@ void Socket::run(PhysicalLayer *physicalLayer) const {
 		while ((len = recv(client, temp, sizeof(temp), 0)) != 0)
 			block->write(temp, len);
 		block->flip();
-		shutdown(client, SHUT_RD);
+		shutdown(client, SHUT_RDWR);
+		::close(client);
 		physicalLayer->receive(physicalLayer->getID(), block);
 	}
 }
@@ -51,22 +53,29 @@ void Socket::listen(PhysicalLayer *physicalLayer) {
 
 void Socket::send(const INetAddress &address, Block *block) {
 	int client = socket(AF_INET, SOCK_STREAM, 0);
-	if (client == -1)
-		throw std::runtime_error("create socket failed");
+	if (client == -1) {
+		std::cerr << "create socket failed" << std::endl;
+		return;
+	}
 	struct sockaddr_in addr{};
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(address.getPort());
 	addr.sin_addr.s_addr = htonl(address.getIp().intValue());
 	if (connect(client, (struct sockaddr *) &addr, sizeof(addr))) {
+		shutdown(client, SHUT_RDWR);
+		::close(client);
 		std::cerr << "connect to " << address.str() << " failed" << std::endl;
 		return;
 	}
 	while (block->getRemaining() > 0) {
 		int len = block->read(temp, sizeof(temp));
-		if (::send(client, temp, len, 0) == -1)
-			throw std::runtime_error("send socket failed");
+		if (::send(client, temp, len, 0) == -1) {
+			std::cerr << "send socket failed" << std::endl;
+			break;
+		}
 	}
-	shutdown(client, SHUT_WR);
+	shutdown(client, SHUT_RDWR);
+	::close(client);
 }
 
 void Socket::close() {

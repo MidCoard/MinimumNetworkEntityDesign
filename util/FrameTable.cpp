@@ -3,7 +3,6 @@
 //
 
 #include "FrameTable.h"
-#include "LinkLayer.h"
 
 const unsigned char kFrameHeader = 0xf8;
 const unsigned char kFrameFooter = 0xc6;
@@ -90,7 +89,7 @@ Block *FrameTable::readFrame(Block *block) {
 	int index = b->readInt();// index
 	int count = b->readInt();// count
 	int wholeLength = b->readInt();
-	if (b->getRemaining() < 5) {
+	if (b->getRemaining() < 5 || (b->getRemaining() - 5) % 13 != 0) {
 		delete b;
 		return nullptr;
 	}
@@ -98,11 +97,6 @@ Block *FrameTable::readFrame(Block *block) {
 	auto * content = new unsigned char[rest - 5];
 	b->read(content, rest - 5);
 	unsigned int crc = b->readInt();
-	if (util::CRC(content, rest -5) != crc) {
-		delete[] content;
-		delete b;
-		return nullptr;
-	}
 	b->read(&header, 1);
 	if (header != kFrameFooter) {
 		delete[] content;
@@ -111,9 +105,11 @@ Block *FrameTable::readFrame(Block *block) {
 	}
 	delete b;
 	std::vector<bool> newbits;
+	std::vector<bool> newbits2;
 	for (int i = 0;i < rest - 5;i++)
 		util::put(&newbits, content[i]);
 	bool temp[13];
+	bool flag = false;
 	for (int i = 0; i < newbits.size(); i+=13) {
 		temp[0] = newbits[i];
 		temp[1] = newbits[i + 1];
@@ -133,12 +129,39 @@ Block *FrameTable::readFrame(Block *block) {
 		bool b3 = temp[3] ^ temp[4] ^ temp[5] ^ temp[6] ^ temp[11] ^ temp[12];
 		bool b4 = temp[7] ^ temp[8] ^ temp[9] ^ temp[10] ^ temp[11] ^ temp[12];
 		unsigned char status = b1 | (b2 << 1) | (b3 << 2) | (b4 << 3);
-		if (status != 0)
+		if (status != 0 && status < 13) {
 			temp[status - 1] = !temp[status - 1];
+			flag = true;
+		}
 		if (temp[12] != (temp[2] ^ temp[4] ^ temp[5] ^ temp[6] ^ temp[8] ^ temp[9] ^ temp[10] ^ temp[11])) {
 			delete[] content;
 			return nullptr;
 		}
+		for (bool j : temp)
+			newbits2.push_back(j);
+	}
+	for (int i = 0; i < newbits2.size(); i+=8) {
+		content[i/8] = util::get(&newbits2, i);
+	}
+	if (util::CRC(content, rest -5) != crc) {
+		delete[] content;
+		return nullptr;
+	} else if (flag)
+		fprintf(stderr, "Hamming code correct!\n");
+	for (int i = 0; i < newbits2.size(); i+=13) {
+		temp[0] = newbits2[i];
+		temp[1] = newbits2[i + 1];
+		temp[2] = newbits2[i + 2];
+		temp[3] = newbits2[i + 3];
+		temp[4] = newbits2[i + 4];
+		temp[5] = newbits2[i + 5];
+		temp[6] = newbits2[i + 6];
+		temp[7] = newbits2[i + 7];
+		temp[8] = newbits2[i + 8];
+		temp[9] = newbits2[i + 9];
+		temp[10] = newbits2[i + 10];
+		temp[11] = newbits2[i + 11];
+		temp[12] = newbits2[i + 12];
 		unsigned char c = (temp[2] << 7) | (temp[4] << 6) | (temp[5] << 5) | (temp[6] << 4) | (temp[8] << 3) | (temp[9] << 2) | (temp[10] << 1) | temp[11];
 		content[i / 13] = c;
 	}
