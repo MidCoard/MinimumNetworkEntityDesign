@@ -30,6 +30,8 @@ public:
 
 	void receive(int id, Block *block) override;
 
+	void resend(const IP &ip, int count, std::vector<int> ids);
+
 private:
 	void sendUDPData0(const IP& ip, unsigned char *data, int len);
 	std::thread * thread = nullptr;
@@ -38,7 +40,7 @@ private:
 	UDPTable udpTable = UDPTable(this);
 	bool shouldThreadStop = false;
 
-	void resend(const IP &ip, std::pair<int, int> pair, int len);
+	void resendPre(const IP &ip, std::pair<int, int> pair, int len);
 };
 
 

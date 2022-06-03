@@ -42,3 +42,7 @@ void UDPPacket::init(int count) {
 Block *UDPPacket::createBlock() {
 	return nullptr;
 }
+
+int UDPPacket::getCount() {
+	return this->count;
+}

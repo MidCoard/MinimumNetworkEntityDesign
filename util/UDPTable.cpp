@@ -64,7 +64,7 @@ void UDPTable::ack(const IP& ip,int count) {
 		for (int i = 0; i< size;i ++)
 			if (this->table[count].find(i) == this->table[count].end())
 				ids.push_back(i);
-		auto * packet = new UDPRequestPacket();
+		this->layer->resend(ip, count, ids);
 	}
 	mutex.unlock();
 }

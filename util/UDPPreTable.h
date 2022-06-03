@@ -16,9 +16,11 @@ class UDPPreTable {
 public:
 	explicit UDPPreTable(AppLayer* layer);
 	std::pair<int, int> tryAllocate(const IP& ip,const IP& source, unsigned char* data, int len);
-	void send(int count, int target, const IP& ip, const IP& source);
+	void send(const IP &ip, const IP &source, int count, int target);
 
 	bool requestResendPre(const IP &ip, int count);
+
+	void resend(const IP &ip, const IP &source, int count, const std::vector<int> &ids);
 
 private:
 	int count = 0;

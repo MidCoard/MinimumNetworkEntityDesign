@@ -7,6 +7,7 @@
 #include "UDPPreACKPacket.h"
 #include "NetworkLayer.h"
 #include "NetworkEntity.h"
+#include "UDPRequestPacket.h"
 
 std::string AppLayer::getRawName() {
 	return "APP";
@@ -55,7 +56,7 @@ void AppLayer::handleReceive(int id, Block *block) {
 			this->log("Receive UDP Pre ACK Packet ip " + ip.str() + " pre_id " + std::to_string(count) + " packet_id " + std::to_string(target));
 			this->log("Send UDP Packet to ip " + ip.str() + " pre_id " + std::to_string(count) + " packet_id " + std::to_string(target));
 			auto* networkLayer = (NetworkLayer*)this->lowerLayers[0];
-			this->table.send(count,target,networkLayer->getIP(0), ip);
+			this->table.send(ip,networkLayer->getIP(0), count, target);
 			break;
 		}
 		case 0x90:{
@@ -64,6 +65,18 @@ void AppLayer::handleReceive(int id, Block *block) {
 			int count = block->readInt();
 			this->log("Receive UDP ACK Packet ip " + ip.str() + " pre_id " + std::to_string(count));
 			this->udpTable.ack(ip,count);
+			break;
+		}
+		case 0x91:{
+			IP ip = block->readIP();
+			int count = block->readInt();
+			std::vector<int> ids;
+			while(block->getRemaining())
+				ids.push_back(block->readInt());
+			this->log("Receive Request Resend Packet ip " + ip.str() + " pre_id " + std::to_string(count) + " ids " + std::to_string(ids.size()));
+			auto* networkLayer = (NetworkLayer*)this->lowerLayers[0];
+			this->table.resend(ip,networkLayer->getIP(0),count,ids);
+			break;
 		}
 		default:{
 			error("Unknown protocol: " + std::to_string(header));
@@ -71,7 +84,7 @@ void AppLayer::handleReceive(int id, Block *block) {
 	}
 }
 
-void AppLayer::resend(const IP& ip, std::pair<int,int> pair, int len) {
+void AppLayer::resendPre(const IP& ip, std::pair<int,int> pair, int len) {
 	kExecutor.submit(
 			[this,ip,pair,len]() {
 				if (this->table.requestResendPre(ip, pair.first)) {
@@ -81,7 +94,7 @@ void AppLayer::resend(const IP& ip, std::pair<int,int> pair, int len) {
 					auto* block = packet->createBlock();
 					delete packet;
 					this->send(block);
-					this->resend(ip,pair,len);
+					this->resendPre(ip, pair, len);
 				}
 			}, std::chrono::milliseconds(2000));
 }
@@ -95,7 +108,7 @@ void AppLayer::sendUDPData0(const IP& ip, unsigned char* data, int len) {
 	auto* block = packet->createBlock();
 	delete packet;
 	this->send(block);
-	this->resend(ip,pair,len);
+	this->resendPre(ip, pair, len);
 }
 
 void AppLayer::handleUDPData(unsigned char *data, long long length) {
@@ -138,6 +151,14 @@ void AppLayer::stop() {
 
 void AppLayer::receive(int id, Block *block) {
 	Layer::receive(id, block);
+}
+
+void AppLayer::resend(const IP &ip, int count, std::vector<int> ids) {
+	auto layer = (NetworkLayer*)this->lowerLayers[0];
+	auto* packet = new UDPRequestPacket(ip,layer->getIP(0), count, ids);
+	auto* block = packet->createBlock();
+	delete packet;
+	this->send(block);
 }
 
 

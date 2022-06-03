@@ -16,6 +16,8 @@ public:
 	unsigned char getHeader() override;
 	void init(int count);
 
+	int getCount();
+
 private:
 	std::vector<unsigned char> data;
 	int count = -1;

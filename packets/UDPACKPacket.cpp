@@ -21,4 +21,4 @@ Block *UDPACKPacket::createBlock() {
 	return block;
 }
 
-UDPACKPacket::UDPACKPacket(IP ip,IP sourcce, int count) : ip(std::move(ip)),count(count),source(source) {}
+UDPACKPacket::UDPACKPacket(IP ip,IP source, int count) : ip(std::move(ip)),count(count),source(std::move(source)) {}

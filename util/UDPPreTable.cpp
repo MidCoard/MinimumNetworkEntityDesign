@@ -20,7 +20,7 @@ std::pair<int, int> UDPPreTable::tryAllocate(const IP& ip,const IP& source, unsi
 	return ret;
 }
 
-void UDPPreTable::send(int count, int target, const IP& ip, const IP& source) {
+void UDPPreTable::send(const IP &ip, const IP &source, int count, int target) {
 	mutex.lock();
 	this->check();
 	auto it = this->table.find(count);
@@ -28,15 +28,13 @@ void UDPPreTable::send(int count, int target, const IP& ip, const IP& source) {
 		mutex.unlock();
 		return;
 	}
-	it->second.second.first = -1;
+	it->second.second.first = 0;
 	auto* packet = it->second.first;
 	packet->init(target);
 	int size = packet->getSize();
 	for (int i = 0; i < size; i++) {
 		this->layer->send(packet->createBlock(i));
 	}
-	this->table.erase(count);
-	delete packet;
 	auto* ack = new UDPACKPacket(ip,source, target);
 	this->layer->send( ack->createBlock());
 	delete ack;
@@ -67,9 +65,7 @@ bool UDPPreTable::requestResendPre(const IP &ip, int count) {
 		mutex.unlock();
 		return false;
 	}
-	if (it->second.second.first == 0) {
-		this->table.erase(it);
-		delete it->second.first;
+	if (it->second.second.first <= 0) {
 		mutex.unlock();
 		return false;
 	} else {
@@ -77,4 +73,22 @@ bool UDPPreTable::requestResendPre(const IP &ip, int count) {
 		mutex.unlock();
 		return true;
 	}
+}
+
+void UDPPreTable::resend(const IP& ip,const IP& source, int count, const std::vector<int>& ids) {
+	mutex.lock();
+	this->check();
+	auto it = this->table.find(count);
+	if (it == this->table.end()) {
+		mutex.unlock();
+		return;
+	}
+	auto* packet = it->second.first;
+	for (auto id : ids) {
+		this->layer->send(packet->createBlock(id));
+	}
+	auto* ack = new UDPACKPacket(ip,source, packet->getCount());
+	this->layer->send( ack->createBlock());
+	delete ack;
+	mutex.unlock();
 }
