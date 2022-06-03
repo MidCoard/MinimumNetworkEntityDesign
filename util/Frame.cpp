@@ -9,7 +9,7 @@ const unsigned char kFrameHeader = 0xf8;
 const unsigned char kFrameFooter = 0xc6;
 const unsigned char kFrameEscape = '\\';
 
-const int kFramePacketSize = 1300; // byte
+const int kFramePacketSize = 13000; // byte
 
 /**
  * one byte header 1byte

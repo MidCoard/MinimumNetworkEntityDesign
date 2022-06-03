@@ -64,15 +64,18 @@ void Network::build(const std::string &graphFile) {
 	std::vector<std::string> lines = {};
 	std::map<int, std::vector<std::string>> all;
 	std::vector<bool> visited(this->nodes.size(), false);
+	lines.emplace_back("==========================");
 	for (int i = 0; i < this->nodes.size(); i++)
 		if (!visited[i])
 			this->dfs(i, &visited, &all);
 	for (int i = 0; i < this->nodes.size(); i++)
 		lines.insert(lines.end(), all[i].begin(), all[i].end());
+	lines.emplace_back("==========================");
 	visited = std::vector<bool>(this->links.size(), false);
 	for (int i = 0; i < this->nodes.size(); i++)
 		if (!visited[i])
 			this->dfs2(i, &visited, &lines);
+	lines.emplace_back("==========================");
 	util::writeFile(graphFile, lines);
 }
 
