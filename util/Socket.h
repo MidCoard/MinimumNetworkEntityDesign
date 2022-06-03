@@ -46,7 +46,7 @@ private:
 
 	int port;
 
-	bool shouldStop = false;
+	volatile bool shouldStop = false;
 };
 
 

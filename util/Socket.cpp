@@ -80,15 +80,13 @@ void Socket::send(const INetAddress &address, Block *block) {
 
 void Socket::close() {
 	if (this->thread != nullptr) {
+		this->shouldStop = true;
 #ifdef WINDOWS
 		shutdown(this->internal, SD_BOTH);
 #else
 		shutdown(this->internal, SHUT_RDWR);
 #endif
-		this->shouldStop = true;
-		auto *block = new Block();
-		send(INetAddress(LOCAL0, this->port), block);
-		delete block;
+		::close(this->internal);
 		this->thread->join();
 		delete this->thread;
 		this->thread = nullptr;
