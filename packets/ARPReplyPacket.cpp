@@ -20,5 +20,5 @@ Block *ARPReplyPacket::createBlock() {
 	return block;
 }
 
-ARPReplyPacket::ARPReplyPacket(IP ip, IP reply,MAC destination) : ip(std::move(ip)), reply(std::move(reply)),
-                                                                               destination(std::move(destination)) {}
+ARPReplyPacket::ARPReplyPacket(IP ip, IP reply, MAC destination) : ip(std::move(ip)), reply(std::move(reply)),
+                                                                   destination(std::move(destination)) {}

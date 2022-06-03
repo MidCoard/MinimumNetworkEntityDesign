@@ -113,7 +113,7 @@ Block *Block::copy() {
 	auto *block = new Block(this->sendCount);
 	block->pos = this->pos;
 	block->remaining = this->remaining;
-	for (unsigned char i : this->temp)
+	for (unsigned char i: this->temp)
 		block->temp.push_back(i);
 	return block;
 }
@@ -193,7 +193,7 @@ void Block::clear() {
 }
 
 void Block::print() {
-	for (unsigned char i : this->temp)
+	for (unsigned char i: this->temp)
 		std::cout << "0x" << util::toHex(i) << ",";
 	std::cout << std::endl;
 }

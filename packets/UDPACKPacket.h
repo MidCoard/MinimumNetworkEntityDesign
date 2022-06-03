@@ -10,11 +10,12 @@
 
 class UDPACKPacket : Packet {
 public:
-	UDPACKPacket(IP ip,IP source, int count);
+	UDPACKPacket(IP ip, IP source, int count);
 
-	Block * createBlock() override;
+	Block *createBlock() override;
 
 	unsigned char getHeader() override;
+
 private:
 	int count;
 	IP ip;

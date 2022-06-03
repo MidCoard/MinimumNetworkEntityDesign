@@ -38,12 +38,14 @@ DHCPRequestPacket::DHCPRequestPacket(IP segment, IP mask, MAC mac, int dhcpID, b
 		                                                                                                  useSegment),
                                                                                                   gateway(BROADCAST_IP) {}
 
-DHCPRequestPacket::DHCPRequestPacket(IP segment, IP mask, IP gateway, MAC mac,MAC target, bool useSegment) : segment(
+DHCPRequestPacket::DHCPRequestPacket(IP segment, IP mask, IP gateway, MAC mac, MAC target, bool useSegment) : segment(
 		std::move(segment)), mask(std::move(mask)),
-                                                                                                  gateway(std::move(
-		                                                                                                  gateway)),
-                                                                                                  mac(std::move(mac)),
-																								  target(std::move(target)),
-                                                                                                  useSegment(
-		                                                                                                  useSegment),
-                                                                                                  dhcpID(-1) {}
+                                                                                                              gateway(std::move(
+		                                                                                                              gateway)),
+                                                                                                              mac(std::move(
+		                                                                                                              mac)),
+                                                                                                              target(std::move(
+		                                                                                                              target)),
+                                                                                                              useSegment(
+		                                                                                                              useSegment),
+                                                                                                              dhcpID(-1) {}

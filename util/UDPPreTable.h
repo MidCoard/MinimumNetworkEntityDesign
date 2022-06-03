@@ -4,7 +4,9 @@
 
 #ifndef NETWORKDESIGN_UDPPRETABLE_H
 #define NETWORKDESIGN_UDPPRETABLE_H
+
 class AppLayer;
+
 class UDPPacket;
 
 #include "map"
@@ -14,8 +16,10 @@ class UDPPacket;
 class UDPPreTable {
 
 public:
-	explicit UDPPreTable(AppLayer* layer);
-	std::pair<int, int> tryAllocate(const IP& ip,const IP& source, unsigned char* data, int len);
+	explicit UDPPreTable(AppLayer *layer);
+
+	std::pair<int, int> tryAllocate(const IP &ip, const IP &source, unsigned char *data, int len);
+
 	void send(const IP &ip, const IP &source, int count, int target);
 
 	bool requestResendPre(const IP &ip, int count);
@@ -24,7 +28,7 @@ public:
 
 private:
 	int count = 0;
-	std::map<int,std::pair<UDPPacket*,std::pair<int,long long>>> table;
+	std::map<int, std::pair<UDPPacket *, std::pair<int, long long>>> table;
 	std::mutex mutex;
 	AppLayer *layer;
 

@@ -27,7 +27,7 @@ void LinkLayer::handleSend(Block *block) {
 	auto *frame = new Frame(newBlock);
 	delete newBlock;
 	int size = frame->getSize();
-	for (int i = 0;i<size;i++) {
+	for (int i = 0; i < size; i++) {
 		this->lowerLayers[0]->send(frame->createBlock(i));
 	}
 	this->frameTable.add(frame);
@@ -35,7 +35,7 @@ void LinkLayer::handleSend(Block *block) {
 
 // the id for PC this should always be 0
 void LinkLayer::handleReceive(int id, Block *block0) {
-	Block * block = this->frameTable.readFrame(block0);
+	Block *block = this->frameTable.readFrame(block0);
 	if (block == nullptr)
 		return;
 	if (block->getRemaining() < 12)
@@ -77,7 +77,7 @@ void LinkLayer::handleReceive(int id, Block *block0) {
 					networkLayer->handleARP(ip, source);
 				}
 				break;
-			default:{
+			default: {
 				error("Unknown protocol type: " + std::to_string(header));
 			}
 		}

@@ -29,9 +29,10 @@ void ISP::generateIP() {
 			dfsAllocateIP(subNode, &visited, &configurations);
 		IP defaultIP = IP(255, 255, 255, 255);
 		IP defaultMask = IP(255, 255, 255, 255);
-		IP * defaultGateway = ipConfiguration.getGateway();
+		IP *defaultGateway = ipConfiguration.getGateway();
 		for (auto &configuration: configurations) {
-			defaultMask = defaultMask & *configuration.getMask() & defaultIP.mix(*configuration.getSegment() & *configuration.getMask());
+			defaultMask = defaultMask & *configuration.getMask() &
+			              defaultIP.mix(*configuration.getSegment() & *configuration.getMask());
 			defaultIP = defaultIP & (*configuration.getSegment() & *configuration.getMask());
 			if (configuration.getGateway() != nullptr && defaultGateway == nullptr)
 				defaultGateway = configuration.getGateway();
@@ -107,7 +108,7 @@ void ISP::start() {
 			delete configuration.getMask();
 			bool flag = this->networkLayer->tables[0]->applyIt(&segment, &mask, layer->getMAC(), -1);
 			if (!flag) {
-				std::pair<IP,IP> pair = this->networkLayer->tables[0]->directApplySegment(layer->getMAC());
+				std::pair<IP, IP> pair = this->networkLayer->tables[0]->directApplySegment(layer->getMAC());
 				if (pair.first.isBroadcast())
 					throw std::runtime_error("no ip segment available");
 				delete configuration.getGateway();
@@ -124,7 +125,7 @@ void ISP::start() {
 					if (gateway.isBroadcast())
 						throw std::runtime_error("no gateway available");
 					this->networkLayer->setIPConfiguration(i, new IP(segment), new IP(mask),
-					                         new IP(gateway));
+					                                       new IP(gateway));
 				} else {
 					this->networkLayer->tables.push_back(
 							new DHCPTable(segment, mask));
@@ -135,17 +136,17 @@ void ISP::start() {
 							throw std::runtime_error("no gateway available");
 						delete configuration.getGateway();
 						this->networkLayer->setIPConfiguration(i, new IP(segment), new IP(mask),
-						                         new IP(gateway));
+						                                       new IP(gateway));
 					} else {
 						this->networkLayer->setIPConfiguration(i, new IP(segment), new IP(mask),
-						                         configuration.getGateway());
+						                                       configuration.getGateway());
 					}
 				}
 			}
 		}
 		IPConfiguration ipConfig = this->networkLayer->getIPConfiguration(i);
 		this->networkLayer->routeTable.updateLong(*ipConfig.getSegment(), *ipConfig.getMask(), 0,
-		                            *ipConfig.getSegment(), i);
+		                                          *ipConfig.getSegment(), i);
 	}
 	NetworkEntity::start();
 }

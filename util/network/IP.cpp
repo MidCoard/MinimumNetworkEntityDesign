@@ -107,7 +107,7 @@ int IP::getRightZero() const {
 	return i;
 }
 
-IP IP::mix(const IP& ip) {
+IP IP::mix(const IP &ip) {
 	// find their first different bit from right
 	unsigned int a = this->intValue();
 	unsigned int b = ip.intValue();
@@ -117,7 +117,7 @@ IP IP::mix(const IP& ip) {
 	while ((a & (1u << i)) == (b & (1u << i)) && i < 32)
 		i++;
 	// return mask
-	return IP((~((1u << i) - 1))<<1);
+	return IP((~((1u << i) - 1)) << 1);
 }
 
 IP LOCALHOST = IP("127.0.0.1");

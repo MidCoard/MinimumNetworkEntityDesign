@@ -11,8 +11,11 @@
 class UDPPreACKPacket : public Packet {
 public:
 	UDPPreACKPacket(IP ip, IP source, int count, int target);
-	Block * createBlock() override;
+
+	Block *createBlock() override;
+
 	unsigned char getHeader() override;
+
 private:
 	IP ip;
 	int count;

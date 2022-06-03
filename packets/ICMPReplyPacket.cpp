@@ -6,10 +6,14 @@
 
 #include <utility>
 
-ICMPReplyPacket::ICMPReplyPacket(IP ip,IP query, IP destination, ICMPReplyStatus status) : ip(std::move(ip)), query(std::move(query)),destination(std::move(destination)),status(status) {}
+ICMPReplyPacket::ICMPReplyPacket(IP ip, IP query, IP destination, ICMPReplyStatus status) : ip(std::move(ip)),
+                                                                                            query(std::move(query)),
+                                                                                            destination(std::move(
+		                                                                                            destination)),
+                                                                                            status(status) {}
 
 Block *ICMPReplyPacket::createBlock() {
-	auto* block = new Block();
+	auto *block = new Block();
 	block->writeIP(destination);
 	block->writeHeader(this);
 	block->writeIP(this->ip);

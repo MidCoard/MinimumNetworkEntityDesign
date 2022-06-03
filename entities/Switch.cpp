@@ -52,7 +52,7 @@ SwitchConfiguration::~SwitchConfiguration() {
 SwitchLinkLayer::SwitchLinkLayer(NetworkEntity *networkEntity) : LinkLayer(networkEntity) {}
 
 void SwitchLinkLayer::handleReceive(int id, Block *block0) {
-	Block * block = this->frameTable.readFrame(block0);
+	Block *block = this->frameTable.readFrame(block0);
 	if (block == nullptr)
 		return;
 	if (block->getRemaining() < 12)
@@ -68,11 +68,11 @@ void SwitchLinkLayer::handleReceive(int id, Block *block0) {
 	if (destination.isBroadcast()) {
 		for (auto layer: this->lowerLayers)
 			if (layer->getID() != id) {
-				auto* b = newBlock->copy();
+				auto *b = newBlock->copy();
 				auto *frame = new Frame(b);
 				delete b;
 				int size = frame->getSize();
-				for (int i = 0;i<size;i++) {
+				for (int i = 0; i < size; i++) {
 					layer->send(frame->createBlock(i));
 				}
 				this->frameTable.add(frame);
@@ -82,21 +82,21 @@ void SwitchLinkLayer::handleReceive(int id, Block *block0) {
 		if (interface == -1) {
 			for (auto layer: this->lowerLayers)
 				if (layer->getID() != id) {
-					auto* b = newBlock->copy();
+					auto *b = newBlock->copy();
 					auto *frame = new Frame(b);
 					delete b;
 					int size = frame->getSize();
-					for (int i = 0;i<size;i++) {
+					for (int i = 0; i < size; i++) {
 						layer->send(frame->createBlock(i));
 					}
 					this->frameTable.add(frame);
 				}
 		} else {
-			auto* b = newBlock->copy();
+			auto *b = newBlock->copy();
 			auto *frame = new Frame(b);
 			delete b;
 			int size = frame->getSize();
-			for (int i = 0;i<size;i++) {
+			for (int i = 0; i < size; i++) {
 				this->lowerLayers.at(interface)->send(frame->createBlock(i));
 			}
 			this->frameTable.add(frame);

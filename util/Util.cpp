@@ -84,24 +84,25 @@ std::string util::completeWith(std::string str, int length, char c) {
 		str = c + str;
 	return str;
 }
+
 std::pair<
-unsigned char*,long long> util::readBinaryFile(const std::string& filename) {
+		unsigned char *, long long> util::readBinaryFile(const std::string &filename) {
 	std::ifstream file(filename, std::ios::binary);
 	if (!file.is_open())
-		return {nullptr,0};
+		return {nullptr, 0};
 	file.seekg(0, std::ios::end);
 	unsigned long long size = file.tellg();
-	auto * buffer = new unsigned char[size];
+	auto *buffer = new unsigned char[size];
 	file.seekg(0, std::ios::beg);
-	file.read((char*) buffer, size);
+	file.read((char *) buffer, size);
 	file.close();
-	return {buffer,size};
+	return {buffer, size};
 }
 
 
 void util::writeBinaryFile(const std::string &filename, const unsigned char *data, long long size) {
 	std::ofstream file(filename, std::ios::binary);
-	file.write((char*) data, size);
+	file.write((char *) data, size);
 	file.close();
 }
 
@@ -115,7 +116,7 @@ bool util::inDebugMode() {
 	return debugMode;
 }
 
-unsigned int util::CRC(const unsigned char* data, int length) {
+unsigned int util::CRC(const unsigned char *data, int length) {
 	unsigned int crc = 0xffffffff;
 	for (int i = 0; i < length; i++) {
 		crc = crc ^ data[i];

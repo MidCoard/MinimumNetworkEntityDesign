@@ -12,7 +12,7 @@
 class Task {
 
 public:
-	Task(std::function<void()> func,std::chrono::milliseconds delay);
+	Task(std::function<void()> func, std::chrono::milliseconds delay);
 
 	void run();
 
@@ -29,7 +29,7 @@ public:
 
 	void stop();
 
-	void submit(std::function<void()> func,std::chrono::milliseconds delay);
+	void submit(std::function<void()> func, std::chrono::milliseconds delay);
 
 private:
 	std::vector<std::thread> threads;

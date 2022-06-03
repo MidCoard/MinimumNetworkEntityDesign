@@ -21,7 +21,7 @@ std::vector<std::string> PC::createLayers(int node, std::vector<int> ids) {
 	                                 this->gateway);
 	if (networkLayer->getIPConfiguration(0).isValid()) {
 		networkLayer->isIPValid = true;
-		networkLayer->routeTable.updateShort(LOCAL0,LOCAL0,10,*this->gateway,0);
+		networkLayer->routeTable.updateShort(LOCAL0, LOCAL0, 10, *this->gateway, 0);
 	}
 	this->layer->addLowerLayer(networkLayer);
 	auto *linkLayer = new LinkLayer(ids[0], this);
@@ -82,7 +82,7 @@ void PC::applyIP() {
 	this->networkLayer->sendDHCP();
 }
 
-void PC::send(const IP& ip,unsigned char *buffer, long long int size) {
+void PC::send(const IP &ip, unsigned char *buffer, long long int size) {
 	auto appLayer = (AppLayer *) this->layer;
 	appLayer->sendUDPData(ip, buffer, size);
 }

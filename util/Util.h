@@ -41,9 +41,9 @@ namespace util {
 	std::string completeWith(std::string str, int length, char c);
 
 	// must delete after use!!!
-	std::pair<unsigned char *,long long> readBinaryFile(const std::string& filename);
+	std::pair<unsigned char *, long long> readBinaryFile(const std::string &filename);
 
-	void writeBinaryFile(const std::string& filename, const unsigned char* data, long long size);
+	void writeBinaryFile(const std::string &filename, const unsigned char *data, long long size);
 
 	bool inDebugMode();
 

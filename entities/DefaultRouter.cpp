@@ -12,7 +12,7 @@ const int kWanPort = 0;
 void DefaultRouter::generateIP() {
 	if (generatedIP)
 		return;
-	auto* networkLayer = (RouterNetworkLayer *) this->layer;
+	auto *networkLayer = (RouterNetworkLayer *) this->layer;
 	std::vector<bool> visited(this->network->getNodes().size(), false);
 	visited.at(this->node) = true;
 	for (int i = this->network->getHeads()[node]; i != -1; i = this->network->getLinks()[i]->next) {
@@ -33,9 +33,10 @@ void DefaultRouter::generateIP() {
 			dfsAllocateIP(subNode, &visited, &configurations);
 		IP defaultIP = IP(255, 255, 255, 255);
 		IP defaultMask = IP(255, 255, 255, 255);
-		IP * defaultGateway = ipConfiguration.getGateway();
+		IP *defaultGateway = ipConfiguration.getGateway();
 		for (auto &configuration: configurations) {
-			defaultMask = defaultMask & *configuration.getMask() & defaultIP.mix(*configuration.getSegment() & *configuration.getMask());
+			defaultMask = defaultMask & *configuration.getMask() &
+			              defaultIP.mix(*configuration.getSegment() & *configuration.getMask());
 			defaultIP = defaultIP & (*configuration.getSegment() & *configuration.getMask());
 			if (configuration.getGateway() != nullptr && defaultGateway == nullptr)
 				defaultGateway = configuration.getGateway();
@@ -48,13 +49,14 @@ void DefaultRouter::generateIP() {
 			networkLayer->setIPConfiguration(port, new IP(defaultIP), new IP(defaultMask), new IP(*defaultGateway));
 	}
 	std::vector<IPConfiguration> configurations;
-	for (int i = 0; i<networkLayer->lowerLayers.size(); i++)
+	for (int i = 0; i < networkLayer->lowerLayers.size(); i++)
 		if (networkLayer->getIPConfiguration(i).isConfigurable())
 			configurations.push_back(networkLayer->getIPConfiguration(i));
 	IP defaultIP = IP(255, 255, 255, 255);
 	IP defaultMask = IP(255, 255, 255, 255);
 	for (auto &configuration: configurations) {
-		defaultMask = defaultMask & *configuration.getMask() & defaultIP.mix(*configuration.getSegment() & *configuration.getMask());
+		defaultMask = defaultMask & *configuration.getMask() &
+		              defaultIP.mix(*configuration.getSegment() & *configuration.getMask());
 		defaultIP = defaultIP & (*configuration.getSegment() & *configuration.getMask());
 	}
 	IPConfiguration ipConfiguration = networkLayer->getIPConfiguration(kWanPort);

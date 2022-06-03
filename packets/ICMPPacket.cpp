@@ -20,4 +20,5 @@ unsigned char ICMPPacket::getHeader() {
 	return 0x20;
 }
 
-ICMPPacket::ICMPPacket(IP ip,IP query, IP gateway) : ip(std::move(ip)), query(std::move(query)), gateway(std::move(gateway)){}
+ICMPPacket::ICMPPacket(IP ip, IP query, IP gateway) : ip(std::move(ip)), query(std::move(query)),
+                                                      gateway(std::move(gateway)) {}

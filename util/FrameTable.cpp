@@ -46,7 +46,7 @@ Block *FrameTable::readFrame(Block *block) {
 		util::put(&bits, block->readUnsignChar());
 	bool isStart = false;
 	bool isEscape = false;
-	auto* b = new Block();
+	auto *b = new Block();
 	for (int i = 0; i + 8 <= bits.size(); i++) {
 		unsigned char c = util::get(&bits, i);
 		if (isEscape) {
@@ -94,7 +94,7 @@ Block *FrameTable::readFrame(Block *block) {
 		return nullptr;
 	}
 	int rest = b->getRemaining();
-	auto * content = new unsigned char[rest - 5];
+	auto *content = new unsigned char[rest - 5];
 	b->read(content, rest - 5);
 	unsigned int crc = b->readInt();
 	b->read(&header, 1);
@@ -106,11 +106,11 @@ Block *FrameTable::readFrame(Block *block) {
 	delete b;
 	std::vector<bool> newbits;
 	std::vector<bool> newbits2;
-	for (int i = 0;i < rest - 5;i++)
+	for (int i = 0; i < rest - 5; i++)
 		util::put(&newbits, content[i]);
 	bool temp[13];
 	bool flag = false;
-	for (int i = 0; i < newbits.size(); i+=13) {
+	for (int i = 0; i < newbits.size(); i += 13) {
 		temp[0] = newbits[i];
 		temp[1] = newbits[i + 1];
 		temp[2] = newbits[i + 2];
@@ -137,18 +137,18 @@ Block *FrameTable::readFrame(Block *block) {
 			delete[] content;
 			return nullptr;
 		}
-		for (bool j : temp)
+		for (bool j: temp)
 			newbits2.push_back(j);
 	}
-	for (int i = 0; i < newbits2.size(); i+=8) {
-		content[i/8] = util::get(&newbits2, i);
+	for (int i = 0; i < newbits2.size(); i += 8) {
+		content[i / 8] = util::get(&newbits2, i);
 	}
-	if (util::CRC(content, rest -5) != crc) {
+	if (util::CRC(content, rest - 5) != crc) {
 		delete[] content;
 		return nullptr;
 	} else if (flag)
 		fprintf(stderr, "Hamming code correct!\n");
-	for (int i = 0; i < newbits2.size(); i+=13) {
+	for (int i = 0; i < newbits2.size(); i += 13) {
 		temp[0] = newbits2[i];
 		temp[1] = newbits2[i + 1];
 		temp[2] = newbits2[i + 2];
@@ -162,7 +162,9 @@ Block *FrameTable::readFrame(Block *block) {
 		temp[10] = newbits2[i + 10];
 		temp[11] = newbits2[i + 11];
 		temp[12] = newbits2[i + 12];
-		unsigned char c = (temp[2] << 7) | (temp[4] << 6) | (temp[5] << 5) | (temp[6] << 4) | (temp[8] << 3) | (temp[9] << 2) | (temp[10] << 1) | temp[11];
+		unsigned char c =
+				(temp[2] << 7) | (temp[4] << 6) | (temp[5] << 5) | (temp[6] << 4) | (temp[8] << 3) | (temp[9] << 2) |
+				(temp[10] << 1) | temp[11];
 		content[i / 13] = c;
 	}
 	int rawLength = newbits.size() / 13;
@@ -171,18 +173,18 @@ Block *FrameTable::readFrame(Block *block) {
 	return ret;
 }
 
-Block * FrameTable::write(int sequence, int index, int count, unsigned char *buffer, int len, int wholeLength) {
+Block *FrameTable::write(int sequence, int index, int count, unsigned char *buffer, int len, int wholeLength) {
 	this->check();
 	auto time = std::chrono::system_clock::now().time_since_epoch().count() + kFrameTime;
 	if (this->table.find(sequence) == this->table.end())
-		this->table.insert_or_assign(sequence, std::make_pair(time, std::map<int,std::vector<unsigned char>>()));
+		this->table.insert_or_assign(sequence, std::make_pair(time, std::map<int, std::vector<unsigned char>>()));
 	std::vector<unsigned char> vector(buffer, buffer + len);
-	auto& pair = this->table[sequence];
-	auto& map = pair.second;
+	auto &pair = this->table[sequence];
+	auto &map = pair.second;
 	map.insert_or_assign(index, vector);
 	if (map.size() == count) {
-		auto* block = new Block();
-		for (auto& p : map)
+		auto *block = new Block();
+		for (auto &p: map)
 			block->write(p.second.data(), p.second.size());
 		block->flip(wholeLength);
 		return block;

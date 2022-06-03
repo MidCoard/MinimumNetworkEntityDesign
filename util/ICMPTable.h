@@ -14,19 +14,19 @@
 class ICMPTable {
 public:
 
-	void add(const IP& ip, const IP& query);
+	void add(const IP &ip, const IP &query);
 
-	void remove(const IP& ip,const IP& query);
+	void remove(const IP &ip, const IP &query);
 
-	void update(const IP& ip, const IP& query, bool flag);
+	void update(const IP &ip, const IP &query, bool flag);
 
-	int lookup(const IP& ip, const IP& query);
+	int lookup(const IP &ip, const IP &query);
 
-	int lookupAndUpdate(const IP& ip, const IP& query, bool flag);
+	int lookupAndUpdate(const IP &ip, const IP &query, bool flag);
 
 private:
 	// multithreading safe should be considered
-	std::map<std::pair<IP,IP>,int> map;
+	std::map<std::pair<IP, IP>, int> map;
 	std::mutex mtx;
 };
 

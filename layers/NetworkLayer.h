@@ -48,7 +48,8 @@ public:
 
 	void sendICMP(IP ip);
 
-	void handleICMP(const IP& ip, ICMPReplyStatus status);
+	void handleICMP(const IP &ip, ICMPReplyStatus status);
+
 	RouteTable routeTable;
 
 	virtual IP getIP(int id);

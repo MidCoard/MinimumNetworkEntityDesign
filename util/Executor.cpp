@@ -36,4 +36,4 @@ void Task::run() {
 	func();
 }
 
-Task::Task(std::function<void()> func,std::chrono::milliseconds delay) : func(std::move(func)),delay(delay) {}
+Task::Task(std::function<void()> func, std::chrono::milliseconds delay) : func(std::move(func)), delay(delay) {}

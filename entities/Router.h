@@ -54,6 +54,7 @@ public:
 	bool isIPAvailable() override;
 
 	void start() override;
+
 protected:
 	std::map<int, RouterConfiguration *> routerConfigurations;
 	bool generatedIP = false;

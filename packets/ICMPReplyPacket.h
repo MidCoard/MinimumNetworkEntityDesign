@@ -14,12 +14,15 @@ enum ICMPReplyStatus {
 	kICMPReplyStatusUnreachable,
 };
 
-class ICMPReplyPacket : public Packet{
+class ICMPReplyPacket : public Packet {
 
 public:
 	ICMPReplyPacket(IP ip, IP query, IP destination, ICMPReplyStatus status);
-	Block * createBlock() override;
+
+	Block *createBlock() override;
+
 	unsigned char getHeader() override;
+
 private:
 	IP ip;
 	IP query;

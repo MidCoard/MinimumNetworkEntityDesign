@@ -44,7 +44,7 @@ Frame::Frame(Block *block) {
 	while (block->getRemaining())
 		util::put(&bits, block->readUnsignChar());
 	bool temp[13];
-	for (int i = 0; i < bits.size(); i+=8) {
+	for (int i = 0; i < bits.size(); i += 8) {
 		temp[2] = bits[i]; //high bit
 		temp[4] = bits[i + 1];
 		temp[5] = bits[i + 2];
@@ -58,24 +58,25 @@ Frame::Frame(Block *block) {
 		temp[1] = temp[2] ^ temp[5] ^ temp[6] ^ temp[9] ^ temp[10];
 		temp[3] = temp[4] ^ temp[5] ^ temp[6] ^ temp[11] ^ temp[12];
 		temp[7] = temp[8] ^ temp[9] ^ temp[10] ^ temp[11] ^ temp[12];
-		for (bool & j : temp)
+		for (bool &j: temp)
 			newbits.push_back(j);
 	}
-	while(newbits.size() < newLength * 8)
+	while (newbits.size() < newLength * 8)
 		newbits.push_back(false);
-	for (int i = 0; i < newLength; i ++) {
+	for (int i = 0; i < newLength; i++) {
 		unsigned char c = 0;
 		for (int j = 0; j < 8; j++)
 			c |= newbits[i * 8 + j] << (7 - j);
 		this->data.push_back(c);
 	}
-	this->size = this->data.size() % kFramePacketSize == 0 ? this->data.size() / kFramePacketSize : this->data.size() / kFramePacketSize + 1;
+	this->size = this->data.size() % kFramePacketSize == 0 ? this->data.size() / kFramePacketSize :
+	             this->data.size() / kFramePacketSize + 1;
 }
 
 Block *Frame::createBlock(int pos) {
 	if (pos >= this->size)
 		return nullptr;
-	auto* block = new Block();
+	auto *block = new Block();
 	int actualSize = pos != this->size - 1 ? kFramePacketSize : this->data.size() - pos * kFramePacketSize;
 	block->writeInt(this->startSequenceNumber);
 	block->writeInt(pos);
@@ -84,7 +85,7 @@ Block *Frame::createBlock(int pos) {
 	block->write(this->data.data() + pos * kFramePacketSize, actualSize);
 	block->writeInt(util::CRC(this->data.data() + pos * kFramePacketSize, actualSize));
 	block->flip();
-	auto* ret = new Block();
+	auto *ret = new Block();
 	ret->write(kFrameHeader);
 	while (block->getRemaining()) {
 		unsigned char c = block->readUnsignChar();

@@ -6,6 +6,7 @@
 #define NETWORKDESIGN_FRAMETABLE_H
 
 class LinkLayer;
+
 #include "map"
 #include "Frame.h"
 
@@ -18,12 +19,13 @@ public:
 	Block *readFrame(Block *block);
 
 private:
-	std::map<int, std::pair<Frame *,long long>> frameTable;
+	std::map<int, std::pair<Frame *, long long>> frameTable;
 
 	void check();
 
 	Frame *get(int start);
-	std::map<int,std::pair<long long, std::map<int,std::vector<unsigned char>>>> table;
+
+	std::map<int, std::pair<long long, std::map<int, std::vector<unsigned char>>>> table;
 
 	Block *write(int sequence, int index, int count, unsigned char *buffer, int len, int i);
 };

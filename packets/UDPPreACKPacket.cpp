@@ -11,7 +11,7 @@ unsigned char UDPPreACKPacket::getHeader() {
 }
 
 Block *UDPPreACKPacket::createBlock() {
-	auto* block = new Block();
+	auto *block = new Block();
 	block->writeIP(this->ip);
 	block->write(0);
 	block->writeHeader(this);
@@ -22,4 +22,6 @@ Block *UDPPreACKPacket::createBlock() {
 	return block;
 }
 
-UDPPreACKPacket::UDPPreACKPacket(IP ip, IP source, int count, int target) : ip(std::move(ip)), source(std::move(source)), count(count), target(target) {}
+UDPPreACKPacket::UDPPreACKPacket(IP ip, IP source, int count, int target) : ip(std::move(ip)),
+                                                                            source(std::move(source)), count(count),
+                                                                            target(target) {}

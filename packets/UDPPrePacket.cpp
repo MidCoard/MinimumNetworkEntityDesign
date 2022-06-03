@@ -23,4 +23,6 @@ unsigned char UDPPrePacket::getHeader() {
 	return 0x65;
 }
 
-UDPPrePacket::UDPPrePacket(IP ip,IP source, int count, int size, int len) :ip(std::move(ip)),source(std::move(source)),count(count),size(size),len(len) {}
+UDPPrePacket::UDPPrePacket(IP ip, IP source, int count, int size, int len) : ip(std::move(ip)),
+                                                                             source(std::move(source)), count(count),
+                                                                             size(size), len(len) {}

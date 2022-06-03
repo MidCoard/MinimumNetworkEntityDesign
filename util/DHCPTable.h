@@ -39,43 +39,46 @@ public:
 	std::pair<IP, long long int> apply0();
 
 	std::pair<std::pair<IP, IP>, long long int> applySegment();
+
 	std::pair<std::pair<IP, IP>, long long int> applySegment0();
 
-	unsigned long long int apply(const IP& ip);
+	unsigned long long int apply(const IP &ip);
 
-	std::pair<IP, IP>directApplySegment0(const MAC& mac);
-	std::pair<IP, IP>directApplySegment(const MAC& mac);
+	std::pair<IP, IP> directApplySegment0(const MAC &mac);
 
-	bool directApplySegment(const IP&ip, const IP&mask, const MAC& mac);
+	std::pair<IP, IP> directApplySegment(const MAC &mac);
+
+	bool directApplySegment(const IP &ip, const IP &mask, const MAC &mac);
 
 	long long int apply(const IP &ip, const IP &mask);
 
-	IP directApply0(const MAC& mac);
-	IP directApply(const MAC& mac);
+	IP directApply0(const MAC &mac);
 
-	bool directApply(const IP&ip, const MAC& mac);
+	IP directApply(const MAC &mac);
 
-	bool applyIt(IP* ip, IP* mask, const MAC& mac, int id);
+	bool directApply(const IP &ip, const MAC &mac);
 
-	bool applyIt(const IP& ip, const MAC& mac, int id);
+	bool applyIt(IP *ip, IP *mask, const MAC &mac, int id);
 
-	bool renewal(const IP& ip, const IP& mask, const MAC& mac);
+	bool applyIt(const IP &ip, const MAC &mac, int id);
 
-	bool renewal(const IP& ip, const MAC& mac);
+	bool renewal(const IP &ip, const IP &mask, const MAC &mac);
+
+	bool renewal(const IP &ip, const MAC &mac);
 
 	std::pair<IP, long long int> apply();
 
 	void print();
 
-	void release(const IP& ip, const IP& mask, const MAC& mac, bool useSegment);
+	void release(const IP &ip, const IP &mask, const MAC &mac, bool useSegment);
 
-	void decline(const IP& ip, const IP& mask, const MAC& mac);
+	void decline(const IP &ip, const IP &mask, const MAC &mac);
 
 	void decline(IP ip, MAC mac);
 
-	bool applyItOrMAC(IP *ip, IP *mask, const MAC& mac, int id);
+	bool applyItOrMAC(IP *ip, IP *mask, const MAC &mac, int id);
 
-	bool applyItOrMAC(const IP& ip, const MAC& mac, int id);
+	bool applyItOrMAC(const IP &ip, const MAC &mac, int id);
 
 private:
 

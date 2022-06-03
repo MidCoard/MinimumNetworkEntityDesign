@@ -63,7 +63,7 @@ Router::~Router() {
 
 void Router::start() {
 	NetworkEntity::start();
-	auto* networkLayer = (RouterNetworkLayer *) this->layer;
+	auto *networkLayer = (RouterNetworkLayer *) this->layer;
 	networkLayer->sendDHCP();
 	dhcp::request(networkLayer);
 }
@@ -134,7 +134,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 					block->read(&useSegment, 1);
 					log("Receive DHCP discover from " + mac.str() + " useSegment: " + std::to_string(useSegment));
 					if (useSegment) {
-						std::pair<std::pair<IP, IP>,long long int> apply = this->tables[id]->applySegment();
+						std::pair<std::pair<IP, IP>, long long int> apply = this->tables[id]->applySegment();
 						if (apply.second != -1) {
 							auto *packet = new DHCPOfferPacket(mac, apply.first.first, apply.first.second,
 							                                   *ipConfiguration.getGateway(), apply.second);
@@ -163,11 +163,14 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 					int dhcpID = block->readInt();
 					unsigned char useSegment;
 					block->read(&useSegment, 1);
-					log("DHCP request from with segment " + segment.str() + " and mask " + mask.str() + " and mac " + mac.str() + " and dhcpID " + std::to_string(dhcpID));
+					log("DHCP request from with segment " + segment.str() + " and mask " + mask.str() + " and mac " +
+					    mac.str() + " and dhcpID " + std::to_string(dhcpID));
 					if (useSegment) {
 						if (this->tables[id]->applyItOrMAC(&segment, &mask, mac, dhcpID)) {
-							log("Send DHCPACK(Segment) to " + segment.str() + " from " + ipConfiguration.getSegment()->str() + " with segment " + segment.str() + " and mask " + mask.str() + " and mac " + mac.str() + " and dhcpID " + std::to_string(dhcpID));
-							this->routeTable.updateLong(segment, mask,0,segment,id);
+							log("Send DHCPACK(Segment) to " + segment.str() + " from " +
+							    ipConfiguration.getSegment()->str() + " with segment " + segment.str() + " and mask " +
+							    mask.str() + " and mac " + mac.str() + " and dhcpID " + std::to_string(dhcpID));
+							this->routeTable.updateLong(segment, mask, 0, segment, id);
 							auto *packet = new DHCPACKPacket(mac, *ipConfiguration.getSegment(), segment, mask,
 							                                 *ipConfiguration.getGateway(),
 							                                 kDHCPTime);
@@ -175,7 +178,10 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 							delete packet;
 							this->lowerLayers[id]->send(newBlock);
 						} else {
-							error("Send DHCPNAK(Segment) to " + segment.str() + " from " + ipConfiguration.getSegment()->str() + " with segment " + segment.str() + " and mask " + mask.str() + " and mac " + mac.str() + " and dhcpID " + std::to_string(dhcpID));
+							error("Send DHCPNAK(Segment) to " + segment.str() + " from " +
+							      ipConfiguration.getSegment()->str() + " with segment " + segment.str() +
+							      " and mask " + mask.str() + " and mac " + mac.str() + " and dhcpID " +
+							      std::to_string(dhcpID));
 							this->tables[id]->print();
 							auto *packet = new DHCPNAKPacket(mac, *ipConfiguration.getSegment());
 							auto *newBlock = packet->createBlock();
@@ -184,7 +190,9 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 						}
 					} else {
 						if (this->tables[id]->applyItOrMAC(segment, mac, dhcpID)) {
-							log("Send DHCPACK to " + segment.str() + " from " + ipConfiguration.getSegment()->str()  + " with segment " + segment.str() + " and mask " + mask.str() + " and mac " + mac.str() + " and dhcpID " + std::to_string(dhcpID));
+							log("Send DHCPACK to " + segment.str() + " from " + ipConfiguration.getSegment()->str() +
+							    " with segment " + segment.str() + " and mask " + mask.str() + " and mac " + mac.str() +
+							    " and dhcpID " + std::to_string(dhcpID));
 							auto *packet = new DHCPACKPacket(mac, *ipConfiguration.getSegment(), segment, mask,
 							                                 *ipConfiguration.getGateway(),
 							                                 kDHCPTime);
@@ -192,7 +200,9 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 							delete packet;
 							this->lowerLayers[id]->send(newBlock);
 						} else {
-							error("Send DHCPNAK to " + segment.str() + " from " + ipConfiguration.getSegment()->str()  + " with segment " + segment.str() + " and mask " + mask.str() + " and mac " + mac.str() + " and dhcpID " + std::to_string(dhcpID));
+							error("Send DHCPNAK to " + segment.str() + " from " + ipConfiguration.getSegment()->str() +
+							      " with segment " + segment.str() + " and mask " + mask.str() + " and mac " +
+							      mac.str() + " and dhcpID " + std::to_string(dhcpID));
 							this->tables[id]->print();
 							auto *packet = new DHCPNAKPacket(mac, *ipConfiguration.getSegment());
 							auto *newBlock = packet->createBlock();
@@ -210,7 +220,8 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 					MAC mac = block->readMAC();
 					unsigned char useSegment;
 					block->read(&useSegment, 1);
-					log("Receiving DHCP decline from " + segment.str() + " with segment " + segment.str() + " and mask " + mask.str() + " and mac " + mac.str());
+					log("Receiving DHCP decline from " + segment.str() + " with segment " + segment.str() +
+					    " and mask " + mask.str() + " and mac " + mac.str());
 					if (useSegment)
 						this->tables[id]->decline(segment, mask, mac);
 					else
@@ -285,7 +296,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 					this->startDHCP = std::chrono::system_clock::now().time_since_epoch().count();
 					this->duration = block->readLong();
 					this->isIPValid = true;
-					for (auto & table : this->tables)
+					for (auto &table: this->tables)
 						delete table;
 					this->tables.clear();
 					this->tables.push_back(new DHCPTable(segment, mask));
@@ -316,7 +327,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 							delete configuration.getMask();
 							bool flag = this->tables[0]->applyIt(&segment, &mask, layer->getMAC(), -1);
 							if (!flag) {
-								std::pair<IP,IP> pair = this->tables[0]->directApplySegment(layer->getMAC());
+								std::pair<IP, IP> pair = this->tables[0]->directApplySegment(layer->getMAC());
 								if (pair.first.isBroadcast())
 									throw std::runtime_error("no ip segment available");
 								delete configuration.getGateway();
@@ -333,7 +344,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 									if (gateway.isBroadcast())
 										throw std::runtime_error("no gateway available");
 									this->setIPConfiguration(i, new IP(segment), new IP(mask),
-									                                       new IP(gateway));
+									                         new IP(gateway));
 								} else {
 									this->tables.push_back(
 											new DHCPTable(segment, mask));
@@ -344,10 +355,10 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 											throw std::runtime_error("no gateway available");
 										delete configuration.getGateway();
 										this->setIPConfiguration(i, new IP(segment), new IP(mask),
-										                                       new IP(gateway));
+										                         new IP(gateway));
 									} else {
 										this->setIPConfiguration(i, new IP(segment), new IP(mask),
-										                                       configuration.getGateway());
+										                         configuration.getGateway());
 									}
 								}
 							}
@@ -440,7 +451,8 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 					MAC mac = block->readMAC();
 					unsigned char useSegment;
 					block->read(&useSegment, 1);
-					log("receive DHCP_RELEASE get segment: " + segment.str() + " mask: " + mask.str() + " mac: " + mac.str());
+					log("receive DHCP_RELEASE get segment: " + segment.str() + " mask: " + mask.str() + " mac: " +
+					    mac.str());
 					this->tables[id]->release(segment, mask, mac, useSegment);
 				}
 				break;
@@ -496,7 +508,8 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 				break;
 			}
 			default: {
-				error("Unknown protocol type " + std::to_string(header) + " from " + source.str() + " to " + destination.str());
+				error("Unknown protocol type " + std::to_string(header) + " from " + source.str() + " to " +
+				      destination.str());
 			}
 		}
 
@@ -510,7 +523,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 		// find the next hop
 		IPConfiguration configuration = this->configurations.at(nextHop.second);
 		if (nextHop.first == *configuration.getSegment() && nextHop.first == destination) {
-			auto* newBlock = new Block();
+			auto *newBlock = new Block();
 			newBlock->writeIP(source);
 			newBlock->writeIP(destination);
 			newBlock->writeBlock(block);
@@ -547,7 +560,7 @@ void RouterNetworkLayer::sendDHCP() {
 }
 
 RouterNetworkLayer::~RouterNetworkLayer() {
-	for (auto &table : this->tables)
+	for (auto &table: this->tables)
 		delete table;
 }
 

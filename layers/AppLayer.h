@@ -26,20 +26,21 @@ public:
 
 	void stop() override;
 
-	void sendUDPData(const IP& ip, unsigned char *data, long long length);
+	void sendUDPData(const IP &ip, unsigned char *data, long long length);
 
 	void receive(int id, Block *block) override;
 
 	void resend(const IP &ip, int count, std::vector<int> ids);
 
 private:
-	void sendUDPData0(const IP& ip, unsigned char *data, int len);
-	std::thread * thread = nullptr;
-	code_machina::BlockingQueue<std::pair<unsigned char*, std::pair<IP,long long>>*> queue;
+	void sendUDPData0(const IP &ip, unsigned char *data, int len);
+
+	std::thread *thread = nullptr;
+	code_machina::BlockingQueue<std::pair<unsigned char *, std::pair<IP, long long>> *> queue;
 	code_machina::BlockingQueue<
-	std::pair<std::pair<IP,int>,long long>*
+			std::pair<std::pair<IP, int>, long long> *
 	> queue2;
-	std::map<std::pair<IP,int>, long long> timeMap;
+	std::map<std::pair<IP, int>, long long> timeMap;
 	UDPPreTable table = UDPPreTable(this);
 	UDPTable udpTable = UDPTable(this);
 	bool shouldThreadStop = false;

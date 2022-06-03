@@ -10,10 +10,14 @@
 
 class UDPPacket : public Packet {
 public:
-	UDPPacket(IP ip,IP source, unsigned char*data,int len);
+	UDPPacket(IP ip, IP source, unsigned char *data, int len);
+
 	Block *createBlock(int pos);
+
 	[[nodiscard]] int getSize() const;
+
 	unsigned char getHeader() override;
+
 	void init(int count);
 
 	int getCount();
@@ -24,7 +28,8 @@ private:
 	IP ip;
 	IP source;
 	int size;
-	Block * createBlock() override;
+
+	Block *createBlock() override;
 
 };
 

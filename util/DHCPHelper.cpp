@@ -24,9 +24,9 @@ void dhcp::start() {
 			else {
 				NetworkLayer *layer = nullptr;
 				code_machina::BlockingCollectionStatus status = layers.take(layer);
-				if (status == code_machina::BlockingCollectionStatus::Ok && !layer->isIPValid ) {
+				if (status == code_machina::BlockingCollectionStatus::Ok && !layer->isIPValid) {
 					layer->sendDHCP();
-					std::this_thread::sleep_for(std::chrono::milliseconds (1100));
+					std::this_thread::sleep_for(std::chrono::milliseconds(1100));
 					if (!layer->isIPValid)
 						layers.emplace(layer);
 				}

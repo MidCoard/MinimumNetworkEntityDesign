@@ -9,13 +9,13 @@
 
 const long long kPacketTime = 2LL * 60 * 1000 * 1000;
 
-std::pair<int, int> UDPPreTable::tryAllocate(const IP& ip,const IP& source, unsigned char *data, int len) {
+std::pair<int, int> UDPPreTable::tryAllocate(const IP &ip, const IP &source, unsigned char *data, int len) {
 	mutex.lock();
 	this->check();
 	auto time = std::chrono::system_clock::now().time_since_epoch().count();
-	auto* packet = new UDPPacket(ip,source,data,len);
-	this->table.insert_or_assign(this->count, std::pair{packet,std::pair{5,time + kPacketTime}});
-	std::pair<int,int> ret = {this->count++, packet->getSize()};
+	auto *packet = new UDPPacket(ip, source, data, len);
+	this->table.insert_or_assign(this->count, std::pair{packet, std::pair{5, time + kPacketTime}});
+	std::pair<int, int> ret = {this->count++, packet->getSize()};
 	mutex.unlock();
 	return ret;
 }
@@ -33,14 +33,14 @@ void UDPPreTable::send(const IP &ip, const IP &source, int count, int target) {
 		return;
 	}
 	it->second.second.first = -1;
-	auto* packet = it->second.first;
+	auto *packet = it->second.first;
 	packet->init(target);
 	int size = packet->getSize();
 	for (int i = 0; i < size; i++) {
 		this->layer->send(packet->createBlock(i));
 	}
-	auto* ack = new UDPACKPacket(ip,source, target);
-	this->layer->send( ack->createBlock());
+	auto *ack = new UDPACKPacket(ip, source, target);
+	this->layer->send(ack->createBlock());
 	delete ack;
 	mutex.unlock();
 }
@@ -79,7 +79,7 @@ bool UDPPreTable::requestResendPre(const IP &ip, int count) {
 	}
 }
 
-void UDPPreTable::resend(const IP& ip,const IP& source, int count, const std::vector<int>& ids) {
+void UDPPreTable::resend(const IP &ip, const IP &source, int count, const std::vector<int> &ids) {
 	mutex.lock();
 	this->check();
 	auto it = this->table.find(count);
@@ -87,12 +87,12 @@ void UDPPreTable::resend(const IP& ip,const IP& source, int count, const std::ve
 		mutex.unlock();
 		return;
 	}
-	auto* packet = it->second.first;
-	for (auto id : ids) {
+	auto *packet = it->second.first;
+	for (auto id: ids) {
 		this->layer->send(packet->createBlock(id));
 	}
-	auto* ack = new UDPACKPacket(ip,source, packet->getCount());
-	this->layer->send( ack->createBlock());
+	auto *ack = new UDPACKPacket(ip, source, packet->getCount());
+	this->layer->send(ack->createBlock());
 	delete ack;
 	mutex.unlock();
 }

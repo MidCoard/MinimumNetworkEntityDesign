@@ -44,7 +44,7 @@ public:
 
 	[[nodiscard]] int getRightZero() const;
 
-	IP mix(const IP& ip);
+	IP mix(const IP &ip);
 
 private:
 	std::string ip;

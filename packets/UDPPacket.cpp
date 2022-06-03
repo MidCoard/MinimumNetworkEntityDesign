@@ -11,7 +11,7 @@ unsigned char UDPPacket::getHeader() {
 Block *UDPPacket::createBlock(int pos) {
 	if (pos >= this->size)
 		return nullptr;
-	auto* block = new Block();
+	auto *block = new Block();
 	block->writeIP(this->ip);
 	block->write(0);
 	block->writeHeader(this);
@@ -25,10 +25,12 @@ Block *UDPPacket::createBlock(int pos) {
 	return block;
 }
 
-UDPPacket::UDPPacket(IP ip,IP source, unsigned char* data,int len) :ip(std::move(ip)),source(std::move(source)) {
+UDPPacket::UDPPacket(IP ip, IP source, unsigned char *data, int len) : ip(std::move(ip)), source(std::move(source)) {
 	for (int i = 0; i < len; i++)
 		this->data.push_back(data[i]);
-	this->size = this->data.size() % kPacketSize == 0 ? this->data.size() / kPacketSize : this->data.size() / kPacketSize + 1;
+	this->size =
+			this->data.size() % kPacketSize == 0 ? this->data.size() / kPacketSize : this->data.size() / kPacketSize +
+			                                                                         1;
 }
 
 int UDPPacket::getSize() const {

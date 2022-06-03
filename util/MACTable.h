@@ -20,6 +20,7 @@ public:
 
 private:
 	void check();
+
 	std::map<MAC, std::pair<int, long long>> table;
 	std::mutex mutex;
 };

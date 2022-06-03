@@ -21,8 +21,10 @@ MAC::MAC(const unsigned char *bytes) {
 		this->bytes[i] = bytes[i];
 	}
 	this->mac =
-			util::completeWith(util::toHex(bytes[0]), 2, '0') + ":" + util::completeWith(util::toHex(bytes[1]), 2, '0') + ":" +
-			util::completeWith(util::toHex(bytes[2]), 2, '0') + ":" + util::completeWith(util::toHex(bytes[3]), 2, '0') + ":" +
+			util::completeWith(util::toHex(bytes[0]), 2, '0') + ":" +
+			util::completeWith(util::toHex(bytes[1]), 2, '0') + ":" +
+			util::completeWith(util::toHex(bytes[2]), 2, '0') + ":" +
+			util::completeWith(util::toHex(bytes[3]), 2, '0') + ":" +
 			util::completeWith(util::toHex(bytes[4]), 2, '0') + ":" + util::completeWith(util::toHex(bytes[5]), 2, '0');
 }
 
@@ -34,8 +36,10 @@ MAC::MAC(unsigned char i, unsigned char i1, unsigned char i2, unsigned char i3, 
 	this->bytes[4] = i4;
 	this->bytes[5] = i5;
 	this->mac =
-			util::completeWith(util::toHex(bytes[0]), 2, '0') + ":" + util::completeWith(util::toHex(bytes[1]), 2, '0') + ":" +
-			util::completeWith(util::toHex(bytes[2]), 2, '0') + ":" + util::completeWith(util::toHex(bytes[3]), 2, '0') + ":" +
+			util::completeWith(util::toHex(bytes[0]), 2, '0') + ":" +
+			util::completeWith(util::toHex(bytes[1]), 2, '0') + ":" +
+			util::completeWith(util::toHex(bytes[2]), 2, '0') + ":" +
+			util::completeWith(util::toHex(bytes[3]), 2, '0') + ":" +
 			util::completeWith(util::toHex(bytes[4]), 2, '0') + ":" + util::completeWith(util::toHex(bytes[5]), 2, '0');
 }
 

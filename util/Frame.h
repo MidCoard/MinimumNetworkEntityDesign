@@ -14,7 +14,7 @@
 class Frame {
 public:
 
-	explicit Frame(Block* block);
+	explicit Frame(Block *block);
 
 	[[nodiscard]] int getSize() const;
 

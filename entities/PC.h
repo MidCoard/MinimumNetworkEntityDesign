@@ -37,7 +37,7 @@ public:
 
 	void applyIP();
 
-	void send(const IP& ip,unsigned char *buffer, long long size);
+	void send(const IP &ip, unsigned char *buffer, long long size);
 
 public:
 	IP *ip;
