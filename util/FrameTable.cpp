@@ -149,6 +149,7 @@ Block *FrameTable::readFrame(Block *block) {
 }
 
 Block * FrameTable::write(int sequence, int index, int count, unsigned char *buffer, int len, int wholeLength) {
+	this->check();
 	auto time = std::chrono::system_clock::now().time_since_epoch().count() + kFrameTime;
 	if (this->table.find(sequence) == this->table.end())
 		this->table.insert_or_assign(sequence, std::make_pair(time, std::map<int,std::vector<unsigned char>>()));
@@ -161,7 +162,6 @@ Block * FrameTable::write(int sequence, int index, int count, unsigned char *buf
 		for (auto& p : map)
 			block->write(p.second.data(), p.second.size());
 		block->flip(wholeLength);
-		block->flip();
 		return block;
 	}
 	return nullptr;

@@ -73,7 +73,7 @@ void SwitchLinkLayer::handleReceive(int id, Block *block0) {
 				delete b;
 				int size = frame->getSize();
 				for (int i = 0;i<size;i++) {
-					this->lowerLayers[0]->send(frame->createBlock(i));
+					layer->send(frame->createBlock(i));
 				}
 				this->frameTable.add(frame);
 			}
@@ -87,7 +87,7 @@ void SwitchLinkLayer::handleReceive(int id, Block *block0) {
 					delete b;
 					int size = frame->getSize();
 					for (int i = 0;i<size;i++) {
-						this->lowerLayers[0]->send(frame->createBlock(i));
+						layer->send(frame->createBlock(i));
 					}
 					this->frameTable.add(frame);
 				}
@@ -100,7 +100,6 @@ void SwitchLinkLayer::handleReceive(int id, Block *block0) {
 				this->lowerLayers.at(interface)->send(frame->createBlock(i));
 			}
 			this->frameTable.add(frame);
-
 		}
 	}
 	delete newBlock;
