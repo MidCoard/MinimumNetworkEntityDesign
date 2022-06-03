@@ -7,7 +7,6 @@
 
 int UDPTable::add(Block *block, const IP &ip, int count, int index) {
 	mutex.lock();
-	this->check();
 	auto it = this->idTable.find(std::pair{ip, count});
 	if (this->table.find(count) == this->table.end() || it == this->idTable.end()) {
 		mutex.unlock();
@@ -21,7 +20,6 @@ int UDPTable::add(Block *block, const IP &ip, int count, int index) {
 
 int UDPTable::tryAllocate(const IP &ip, int count, int size, int wholeLength) {
 	mutex.lock();
-	this->check();
 	auto item = std::pair{ip, count};
 	auto it = this->idTable.find(item);
 	if (it != this->idTable.end()) {
@@ -37,13 +35,12 @@ int UDPTable::tryAllocate(const IP &ip, int count, int size, int wholeLength) {
 
 UDPTable::UDPTable(AppLayer *layer) : layer(layer) {}
 
-void UDPTable::ack(const IP &ip, int count) {
+bool UDPTable::ack(const IP &ip, int count) {
 	mutex.lock();
-	this->check();
 	auto it = this->idTable.find(std::pair{ip, count});
 	if (this->table.find(count) == this->table.end() || it == this->idTable.end()) {
 		mutex.unlock();
-		return;
+		return false;
 	}
 	int size = it->second.second.first;
 	int wholeLength = it->second.second.second;
@@ -57,18 +54,27 @@ void UDPTable::ack(const IP &ip, int count) {
 		}
 		this->table.erase(count);
 		this->idTable.erase(it);
+		this->resendTable.erase(std::pair{ip, count});
 		this->layer->handleUDPData(buffer, wholeLength);
 		delete[] buffer;
 	} else {
-		std::vector<int> ids;
-		for (int i = 0; i < size; i++)
-			if (this->table[count].find(i) == this->table[count].end())
-				ids.push_back(i);
-		this->layer->resend(ip, count, ids);
+		auto it2 = this->resendTable.find(std::pair{ip, count});
+		if (it2 == this->resendTable.end())
+			this->resendTable.insert_or_assign(std::pair{ip, count}, 10);
+		int resendCount = this->resendTable[std::pair{ip, count}];
+		if (resendCount > 0) {
+			std::vector<int> ids;
+			for (int i = 0; i < size; i++)
+				if (this->table[count].find(i) == this->table[count].end())
+					ids.push_back(i);
+			this->layer->resend(ip, count, ids);
+			this->resendTable[std::pair{ip, count}] = resendCount - 1;
+		} else {
+			this->table.erase(count);
+			this->idTable.erase(it);
+			this->resendTable.erase(std::pair{ip, count});
+		}
 	}
 	mutex.unlock();
-}
-
-void UDPTable::check() {
-
+	return true;
 }

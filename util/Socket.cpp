@@ -35,8 +35,8 @@ void Socket::run(PhysicalLayer *physicalLayer) const {
 		socklen_t addrlen = sizeof(addr);
 		if (shouldStop)
 			break;
-		int len = recvfrom(this->internal, reinterpret_cast<char *>(temp),kBlockSize, 0,
-		                       reinterpret_cast<sockaddr *>(&addr), &addrlen);
+		int len = recvfrom(this->internal, reinterpret_cast<char *>(temp), kBlockSize, 0,
+		                   reinterpret_cast<sockaddr *>(&addr), &addrlen);
 		if (len == -1) {
 			std::cerr << "recvfrom failed" << std::endl;
 			continue;
@@ -66,7 +66,8 @@ void Socket::send(const INetAddress &address, Block *block) {
 		std::cerr << "send block too large" << std::endl;
 	} else {
 		int len = block->read(temp, kBlockSize);
-		if (sendto(client, reinterpret_cast<const char *>(temp), len, 0 , reinterpret_cast<const sockaddr *>(&addr), sizeof(addr)) == -1) {
+		if (sendto(client, reinterpret_cast<const char *>(temp), len, 0, reinterpret_cast<const sockaddr *>(&addr),
+		           sizeof(addr)) == -1) {
 			std::cerr << "send socket failed" << std::endl;
 		}
 	}

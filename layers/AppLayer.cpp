@@ -9,7 +9,7 @@
 #include "NetworkEntity.h"
 #include "UDPRequestPacket.h"
 
-const long long kPacketTime = 4LL * 1000 * 1000;
+const long long kPacketTime = 2LL * 1000 * 1000;
 
 std::string AppLayer::getRawName() {
 	return "APP";
@@ -37,7 +37,7 @@ void AppLayer::handleReceive(int id, Block *block) {
 			log("Receive UDP Packet index: " + std::to_string(index) + " count: " + std::to_string(count) +
 			    " length: " + std::to_string(length));
 			auto time = std::chrono::system_clock::now().time_since_epoch().count();
-			this->queue2.emplace(new std::pair{std::pair{ip, count}, time + kPacketTime});
+			this->queue2.emplace(new std::pair{std::pair{ip, count}, time + kPacketTime * 2});
 			break;
 		}
 		case 0x65: {
@@ -151,8 +151,11 @@ void AppLayer::start() {
 					auto now = std::chrono::system_clock::now().time_since_epoch().count();
 					for (auto it = this->timeMap.begin(); it != this->timeMap.end();) {
 						if (it->second < now) {
-							this->udpTable.ack(it->first.first, it->first.second);
-							it = this->timeMap.erase(it);
+							log("Receive timer request ack");
+							if (this->udpTable.ack(it->first.first, it->first.second))
+								it->second += kPacketTime;
+							else
+								it = this->timeMap.erase(it);
 						} else {
 							it++;
 						}

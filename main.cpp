@@ -233,55 +233,55 @@ int main(int argc, char *argv[]) {
 	dhcp::start();
 	while (true) {
 		int op;
-		std::cin>>op;
+		std::cin >> op;
 		if (op == -1) {
 			break;
 		} else if (op == 1) {
 			int node;
-			std::cin>>node;
-			std::cout<<network->getNodes()[node]->getName()<<std::endl;
+			std::cin >> node;
+			std::cout << network->getNodes()[node]->getName() << std::endl;
 		} else if (op == 2) {
 			int node;
-			std::cin>>node;
+			std::cin >> node;
 			std::string s;
-			std::cin>>s;
+			std::cin >> s;
 			IP ip = IP(s);
-			auto* pc = (PC*)network->getNodes()[node];
+			auto *pc = (PC *) network->getNodes()[node];
 			pc->ping(ip);
 		} else if (op == 3) {
 			int node;
-			std::cin>>node;
-			auto* pc = (PC*)network->getNodes()[node];
-			std::cout<<pc->ip->str()<<std::endl;
+			std::cin >> node;
+			auto *pc = (PC *) network->getNodes()[node];
+			std::cout << pc->ip->str() << std::endl;
 		} else if (op == 4) {
 			int node;
-			std::cin>>node;
-			auto* entity = network->getNodes()[node];
+			std::cin >> node;
+			auto *entity = network->getNodes()[node];
 			std::vector<IPConfiguration> ipConfiguration = entity->getIPConfiguration();
 			if (ipConfiguration.empty())
-				std::cout<< "No IP configuration"<<std::endl;
-			else std::cout<< ipConfiguration[0].getSegment()->str()<<std::endl;
+				std::cout << "No IP configuration" << std::endl;
+			else std::cout << ipConfiguration[0].getSegment()->str() << std::endl;
 		} else if (op == 5) {
 			int node;
-			std::cin>>node;
-			auto* pc = (PC*)network->getNodes()[node];
+			std::cin >> node;
+			auto *pc = (PC *) network->getNodes()[node];
 			pc->releaseIP();
 		} else if (op == 6) {
 			int node;
-			std::cin>>node;
-			auto* pc = (PC*)network->getNodes()[node];
+			std::cin >> node;
+			auto *pc = (PC *) network->getNodes()[node];
 			pc->applyIP();
 		} else if (op == 7) {
 			int a, b;
-			std::cin>>a>>b;
-			PC* pc1 = (PC*)network->getNodes()[a];
-			PC* pc2 = (PC*)network->getNodes()[b];
+			std::cin >> a >> b;
+			PC *pc1 = (PC *) network->getNodes()[a];
+			PC *pc2 = (PC *) network->getNodes()[b];
 			auto pair = util::readBinaryFile("network.jpeg");
 			if (pair.first != nullptr) {
-				pc1->send(*pc2->ip, pair.first,pair.second);
+				pc1->send(*pc2->ip, pair.first, pair.second);
 				delete[] pair.first;
 			} else
-				std::cerr<<"File not found"<<std::endl;
+				std::cerr << "File not found" << std::endl;
 		}
 	}
 	if (network != nullptr) {
