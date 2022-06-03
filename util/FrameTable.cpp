@@ -42,7 +42,6 @@ Frame *FrameTable::get(int start) {
 }
 
 Block *FrameTable::readFrame(Block *block) {
-	int size = block->getRemaining();
 	std::vector<bool> bits;
 	while (block->getRemaining())
 		util::put(&bits, block->readUnsignChar());
@@ -53,7 +52,9 @@ Block *FrameTable::readFrame(Block *block) {
 		unsigned char c = util::get(&bits, i);
 		if (isEscape) {
 			isEscape = false;
-			b->write(c);
+			if (isStart) {
+				b->write(c);
+			}
 			i += 7;
 		} else if (c == kFrameEscape && isStart) {
 			isEscape = true;
@@ -68,95 +69,86 @@ Block *FrameTable::readFrame(Block *block) {
 			b->write(c);
 			if (isStart)
 				break;
+			i += 7;
 		} else if (isStart) {
 			b->write(c);
 			i += 7;
 		}
 	}
 	b->flip();
-	if (b->getRemaining() < 21)
+	if (b->getRemaining() < 17) {
+		delete b;
 		return nullptr;
+	}
 	unsigned char header;
 	b->read(&header, 1);
-	if (header != kFrameHeader)
+	if (header != kFrameHeader) {
+		delete b;
 		return nullptr;
+	}
 	int sequence = b->readInt();// sequence
 	int index = b->readInt();// index
 	int count = b->readInt();// count
-	int length = b->readInt();
 	int wholeLength = b->readInt();
-	if (b->getRemaining() < length)
-		return nullptr;
-	auto * content = new unsigned char[length];
-	b->read(content, length);
-	std::vector<bool> newbits;
-	for (int i = 0;i<length;i++)
-		util::put(&newbits, content[i]);
-	bool temp[13];
-	for (int i = 0; i < length * 8; i+=13) {
-		bool q1 = newbits[i];
-		bool q2 = newbits[i + 1];
-		bool a9 = newbits.test(i + 2);
-		bool q3 = newbits.test(i + 3);
-		bool a8 = newbits.test(i + 4);
-		bool a7 = newbits.test(i + 5);
-		bool a6 = newbits.test(i + 6);
-		bool q4 = newbits.test(i + 7);
-		bool a5 = newbits.test(i + 8);
-		bool a4 = newbits.test(i + 9);
-		bool a3 = newbits.test(i + 10);
-		bool a2 = newbits.test(i + 11);
-		bool a1 = newbits.test(i + 12);
-		bool b1 = q1 ^ a9 ^ a8 ^ a6 ^ a5 ^ a3 ^ a1;
-		bool b2 = q2 ^ a9 ^ a7 ^ a6 ^ a4 ^ a3;
-		bool b3 = q3 ^ a8 ^ a7 ^ a6 ^ a2 ^ a1;
-		bool b4 = q4 ^ a5 ^ a4 ^ a3 ^ a2 ^ a1;
-		unsigned char status = b1 | (b2 << 1) | (b3 << 2) | (b4 << 3);
-		temp[0] = q1;
-		temp[1] = q2;
-		temp[2] = a9;
-		temp[3] = q3;
-		temp[4] = a8;
-		temp[5] = a7;
-		temp[6] = a6;
-		temp[7] = q4;
-		temp[8] = a5;
-		temp[9] = a4;
-		temp[10] = a3;
-		temp[11] = a2;
-		temp[12] = a1;
-
-		if (status != 0)
-			temp[status - 1] = !temp[status - 1];
-		//todo modify
-		if (temp[2] != (a1 ^ a2 ^ a3 ^ a4 ^ a5 ^ a6 ^ a7 ^ a8)) {
-			std::cout<<"Hello?"<<std::endl;
-			delete[] content;
-			return nullptr;
-		}
-		unsigned char c = (a1 << 7) | (a2 << 6) | (a3 << 5) | (a4 << 4) | (a5 << 3) | (a6 << 2) | (a7 << 1) | a8;
-		content[i / 13] = c;
-	}
 	if (b->getRemaining() < 5) {
-		delete[] content;
+		delete b;
 		return nullptr;
 	}
+	int rest = b->getRemaining();
+	auto * content = new unsigned char[rest - 5];
+	b->read(content, rest - 5);
 	unsigned int crc = b->readInt();
-	if (util::CRC(content, length) != crc) {
+	if (util::CRC(content, rest -5) != crc) {
 		delete[] content;
+		delete b;
 		return nullptr;
 	}
 	b->read(&header, 1);
 	if (header != kFrameFooter) {
 		delete[] content;
+		delete b;
 		return nullptr;
 	}
-	auto *ret = this->write(sequence, index, count, content, length);
+	delete b;
+	std::vector<bool> newbits;
+	for (int i = 0;i < rest - 5;i++)
+		util::put(&newbits, content[i]);
+	bool temp[13];
+	for (int i = 0; i < newbits.size(); i+=13) {
+		temp[0] = newbits[i];
+		temp[1] = newbits[i + 1];
+		temp[2] = newbits[i + 2];
+		temp[3] = newbits[i + 3];
+		temp[4] = newbits[i + 4];
+		temp[5] = newbits[i + 5];
+		temp[6] = newbits[i + 6];
+		temp[7] = newbits[i + 7];
+		temp[8] = newbits[i + 8];
+		temp[9] = newbits[i + 9];
+		temp[10] = newbits[i + 10];
+		temp[11] = newbits[i + 11];
+		temp[12] = newbits[i + 12];
+		bool b1 = temp[0] ^ temp[2] ^ temp[4] ^ temp[6] ^ temp[8] ^ temp[10] ^ temp[12];
+		bool b2 = temp[1] ^ temp[2] ^ temp[5] ^ temp[6] ^ temp[9] ^ temp[10];
+		bool b3 = temp[3] ^ temp[4] ^ temp[5] ^ temp[6] ^ temp[11] ^ temp[12];
+		bool b4 = temp[7] ^ temp[8] ^ temp[9] ^ temp[10] ^ temp[11] ^ temp[12];
+		unsigned char status = b1 | (b2 << 1) | (b3 << 2) | (b4 << 3);
+		if (status != 0)
+			temp[status - 1] = !temp[status - 1];
+		if (temp[12] != (temp[2] ^ temp[4] ^ temp[5] ^ temp[6] ^ temp[8] ^ temp[9] ^ temp[10] ^ temp[11])) {
+			delete[] content;
+			return nullptr;
+		}
+		unsigned char c = (temp[2] << 7) | (temp[4] << 6) | (temp[5] << 5) | (temp[6] << 4) | (temp[8] << 3) | (temp[9] << 2) | (temp[10] << 1) | temp[11];
+		content[i / 13] = c;
+	}
+	int rawLength = newbits.size() / 13;
+	auto *ret = this->write(sequence, index, count, content, rawLength, wholeLength);
 	delete[] content;
 	return ret;
 }
 
-Block * FrameTable::write(int sequence, int index, int count, unsigned char *buffer, int len) {
+Block * FrameTable::write(int sequence, int index, int count, unsigned char *buffer, int len, int wholeLength) {
 	auto time = std::chrono::system_clock::now().time_since_epoch().count() + kFrameTime;
 	if (this->table.find(sequence) == this->table.end())
 		this->table.insert_or_assign(sequence, std::make_pair(time, std::map<int,std::vector<unsigned char>>()));
@@ -168,6 +160,7 @@ Block * FrameTable::write(int sequence, int index, int count, unsigned char *buf
 		auto* block = new Block();
 		for (auto& p : map)
 			block->write(p.second.data(), p.second.size());
+		block->flip(wholeLength);
 		block->flip();
 		return block;
 	}

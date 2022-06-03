@@ -25,7 +25,7 @@ private:
 	Frame *get(int start);
 	std::map<int,std::pair<long long, std::map<int,std::vector<unsigned char>>>> table;
 
-	Block * write(int sequence, int index, int count, unsigned char *buffer, int len);
+	Block *write(int sequence, int index, int count, unsigned char *buffer, int len, int i);
 };
 
 

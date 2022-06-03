@@ -72,6 +72,8 @@ public:
 
 	unsigned char readUnsignChar();
 
+	void flip(int wholeLength);
+
 private:
 	// avoid use pointer
 	std::vector<unsigned char> temp;

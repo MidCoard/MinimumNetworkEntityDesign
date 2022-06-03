@@ -212,108 +212,69 @@ Network *initialize() {
 Network *network = nullptr;
 
 int main() {
-//	util::setDebugMode(true);
-//	network = initialize();
-//	dhcp::start();
-//	while (true) {
-//		int op;
-//		std::cin>>op;
-//		if (op == -1) {
-//			break;
-//		} else if (op == 1) {
-//			int node;
-//			std::cin>>node;
-//			std::cout<<network->getNodes()[node]->getName()<<std::endl;
-//		} else if (op == 2) {
-//			int node;
-//			std::cin>>node;
-//			std::string s;
-//			std::cin>>s;
-//			IP ip = IP(s);
-//			auto* pc = (PC*)network->getNodes()[node];
-//			pc->ping(ip);
-//		} else if (op == 3) {
-//			int node;
-//			std::cin>>node;
-//			auto* pc = (PC*)network->getNodes()[node];
-//			std::cout<<pc->ip->str()<<std::endl;
-//		} else if (op == 4) {
-//			int node;
-//			std::cin>>node;
-//			auto* entity = network->getNodes()[node];
-//			std::vector<IPConfiguration> ipConfiguration = entity->getIPConfiguration();
-//			if (ipConfiguration.empty())
-//				std::cout<< "No IP configuration"<<std::endl;
-//			else std::cout<< ipConfiguration[0].getSegment()->str()<<std::endl;
-//		} else if (op == 5) {
-//			int node;
-//			std::cin>>node;
-//			auto* pc = (PC*)network->getNodes()[node];
-//			pc->releaseIP();
-//		} else if (op == 6) {
-//			int node;
-//			std::cin>>node;
-//			auto* pc = (PC*)network->getNodes()[node];
-//			pc->applyIP();
-//		} else if (op == 7) {
-//			int a, b;
-//			std::cin>>a>>b;
-//			PC* pc1 = (PC*)network->getNodes()[a];
-//			PC* pc2 = (PC*)network->getNodes()[b];
-//			auto pair = util::readBinaryFile("network.jpeg");
-//			if (pair.first != nullptr) {
-//				pc1->send(*pc2->ip, pair.first,pair.second);
-//				delete[] pair.first;
-//			} else
-//				std::cerr<<"File not found"<<std::endl;
-//		}
-//	}
-//	if (network != nullptr) {
-//		// join
-//		for (auto node: network->getNodes())
-//			node->stop();
-//	}
-//	dhcp::stop();
-//	delete network;
-
-
-//	auto* block = new Block();
-//	MAC a = generateMAC();
-//	MAC b = generateMAC();
-//	std::cout<<a.str()<<std::endl;
-//	std::cout<<b.str()<<std::endl;
-//	block->writeMAC(a);
-//	block->writeMAC(b);
-//	block->flip();
-//	block->print();
-//	auto* frame = new Frame(block);
-//	delete block;
-//	FrameTable table = FrameTable();
-//
-//	for (int i = 0;i<frame->getSize();i++) {
-//		Block * block1 = frame->createBlock(i);
-//		auto* ret = table.readFrame(block1);
-//		if (ret != nullptr) {
-//			std::cout<<ret->readMAC().str()<<std::endl;
-//			std::cout<<ret->readMAC().str()<<std::endl;
-//		}
-//	}
-	std::cout<<util::toHex('\\')<<std::endl;
-	unsigned char source[12] = {0x58,0x16,0x29,0x15,0x5c,0x13,0x3f,0x4b,0x78,0x3f,0x1d,0xb6};
-	auto* b = new Block();
-	b->write(source, 12);
-	b->flip();
-	Frame * frame = new Frame(b);
-	Block* a = frame->createBlock(0);
-	using std::cout, std::endl;
-	cout<<(a==nullptr)<<endl;
-	unsigned char data[48] = {0xf8,0x70,0x38,0x47,0x43,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1,0x0,0x0,0x0,0xd,0x31,0xd1,0x3a,0xe,0x29,0xd6,0x80,0x3d,0x1,0xe9,0xb5,0x3,0xfc,0x5c,0x90,0x87,0x87,0xf9,0x15,0x87,0x76,0x80,0x0,0x0,0x0,0x0,0x3a,0x75,0xb0,0x60,0xc6};
-	auto* block = new Block();
-	block->write(data, 48);
-	block->flip();
-	FrameTable frameTable;
-	frameTable.readFrame(block);
-	frameTable.readFrame(a);
+	util::setDebugMode(true);
+	network = initialize();
+	dhcp::start();
+	while (true) {
+		int op;
+		std::cin>>op;
+		if (op == -1) {
+			break;
+		} else if (op == 1) {
+			int node;
+			std::cin>>node;
+			std::cout<<network->getNodes()[node]->getName()<<std::endl;
+		} else if (op == 2) {
+			int node;
+			std::cin>>node;
+			std::string s;
+			std::cin>>s;
+			IP ip = IP(s);
+			auto* pc = (PC*)network->getNodes()[node];
+			pc->ping(ip);
+		} else if (op == 3) {
+			int node;
+			std::cin>>node;
+			auto* pc = (PC*)network->getNodes()[node];
+			std::cout<<pc->ip->str()<<std::endl;
+		} else if (op == 4) {
+			int node;
+			std::cin>>node;
+			auto* entity = network->getNodes()[node];
+			std::vector<IPConfiguration> ipConfiguration = entity->getIPConfiguration();
+			if (ipConfiguration.empty())
+				std::cout<< "No IP configuration"<<std::endl;
+			else std::cout<< ipConfiguration[0].getSegment()->str()<<std::endl;
+		} else if (op == 5) {
+			int node;
+			std::cin>>node;
+			auto* pc = (PC*)network->getNodes()[node];
+			pc->releaseIP();
+		} else if (op == 6) {
+			int node;
+			std::cin>>node;
+			auto* pc = (PC*)network->getNodes()[node];
+			pc->applyIP();
+		} else if (op == 7) {
+			int a, b;
+			std::cin>>a>>b;
+			PC* pc1 = (PC*)network->getNodes()[a];
+			PC* pc2 = (PC*)network->getNodes()[b];
+			auto pair = util::readBinaryFile("network.jpeg");
+			if (pair.first != nullptr) {
+				pc1->send(*pc2->ip, pair.first,pair.second);
+				delete[] pair.first;
+			} else
+				std::cerr<<"File not found"<<std::endl;
+		}
+	}
+	if (network != nullptr) {
+		// join
+		for (auto node: network->getNodes())
+			node->stop();
+	}
+	dhcp::stop();
+	delete network;
 	kExecutor.stop();
 	return 0;
 }

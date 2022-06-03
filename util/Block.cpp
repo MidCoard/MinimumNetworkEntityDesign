@@ -198,3 +198,8 @@ void Block::print() {
 	std::cout << std::endl;
 }
 
+void Block::flip(int wholeLength) {
+	this->remaining = wholeLength;
+	this->pos = 0;
+}
+
