@@ -5,35 +5,76 @@
 #include "AppLayer.h"
 #include "UDPPreTable.h"
 #include "UDPPacket.h"
+#include "UDPACKPacket.h"
 
-int UDPPreTable::tryAllocate(unsigned char *data, int len) {
+const int kPacketTime = 2LL * 60 * 1000 * 1000;
+
+std::pair<int, int> UDPPreTable::tryAllocate(const IP& ip,const IP& source, unsigned char *data, int len) {
 	mutex.lock();
-	std::vector<unsigned char> v(data, data + len);
-	this->table.insert_or_assign(this->count, v);
-	int ret = this->count++;
+	this->check();
+	auto time = std::chrono::system_clock::now().time_since_epoch().count();
+	auto* packet = new UDPPacket(ip,source,data,len);
+	this->table.insert_or_assign(this->count, std::pair{packet,std::pair{5,time + kPacketTime}});
+	std::pair<int,int> ret = {this->count++, packet->getSize()};
 	mutex.unlock();
 	return ret;
 }
 
-void UDPPreTable::send(int count, int target, const IP& ip) {
+void UDPPreTable::send(int count, int target, const IP& ip, const IP& source) {
 	mutex.lock();
-	if (this->table.find(count) == this->table.end()) {
+	this->check();
+	auto it = this->table.find(count);
+	if (it == this->table.end()) {
 		mutex.unlock();
 		return;
 	}
-	std::vector<unsigned char> v = this->table[count];
-	auto* packet = new UDPPacket(ip, target);
-	packet->write(v);
-	packet->init();
+	it->second.second.first = -1;
+	auto* packet = it->second.first;
+	packet->init(target);
 	int size = packet->getSize();
 	for (int i = 0; i < size; i++) {
-		this->layer->send(packet->createBlock());
+		this->layer->send(packet->createBlock(i));
 	}
-	delete packet;
 	this->table.erase(count);
+	delete packet;
+	auto* ack = new UDPACKPacket(ip,source, target);
+	this->layer->send( ack->createBlock());
+	delete ack;
 	mutex.unlock();
+}
+
+void UDPPreTable::check() {
+	auto time = std::chrono::system_clock::now().time_since_epoch().count();
+	for (auto it = this->table.begin(); it != this->table.end();) {
+		if (time > it->second.second.second) {
+			delete it->second.first;
+			it = this->table.erase(it);
+		} else {
+			it++;
+		}
+	}
 }
 
 UDPPreTable::UDPPreTable(AppLayer *layer) {
 	this->layer = layer;
+}
+
+bool UDPPreTable::requestResendPre(const IP &ip, int count) {
+	mutex.lock();
+	this->check();
+	auto it = this->table.find(count);
+	if (it == this->table.end()) {
+		mutex.unlock();
+		return false;
+	}
+	if (it->second.second.first == 0) {
+		this->table.erase(it);
+		delete it->second.first;
+		mutex.unlock();
+		return false;
+	} else {
+		it->second.second.first--;
+		mutex.unlock();
+		return true;
+	}
 }

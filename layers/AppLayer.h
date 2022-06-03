@@ -37,6 +37,8 @@ private:
 	UDPPreTable table = UDPPreTable(this);
 	UDPTable udpTable = UDPTable(this);
 	bool shouldThreadStop = false;
+
+	void resend(const IP &ip, std::pair<int, int> pair, int len);
 };
 
 

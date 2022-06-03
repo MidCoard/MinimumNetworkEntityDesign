@@ -1,5 +1,5 @@
 //
-// Created by 周蜀杰 on 2022/5/29.
+// Created by 周蜀杰 on 2022/6/3.
 //
 
 #ifndef NETWORKDESIGN_UDPACKPACKET_H
@@ -8,15 +8,16 @@
 
 #include "Packet.h"
 
-class UDPACKPacket : public Packet {
+class UDPACKPacket : Packet {
 public:
-	UDPACKPacket(IP ip, IP source, int count,int target);
+	UDPACKPacket(IP ip,IP source, int count);
+
 	Block * createBlock() override;
+
 	unsigned char getHeader() override;
 private:
-	IP ip;
 	int count;
-	int target;
+	IP ip;
 	IP source;
 };
 

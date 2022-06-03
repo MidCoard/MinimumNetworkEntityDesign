@@ -13,6 +13,8 @@ Block *UDPPrePacket::createBlock() {
 	block->writeHeader(this);
 	block->writeIP(this->source);
 	block->writeInt(this->count);
+	block->writeInt(this->size);
+	block->writeInt(this->len);
 	block->flip();
 	return block;
 }
@@ -21,4 +23,4 @@ unsigned char UDPPrePacket::getHeader() {
 	return 0x65;
 }
 
-UDPPrePacket::UDPPrePacket(IP ip,IP source, int count) :ip(std::move(ip)),source(std::move(source)),count(count) {}
+UDPPrePacket::UDPPrePacket(IP ip,IP source, int count, int size, int len) :ip(std::move(ip)),source(std::move(source)),count(count),size(size),len(len) {}

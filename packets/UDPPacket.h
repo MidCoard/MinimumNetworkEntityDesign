@@ -10,21 +10,20 @@
 
 class UDPPacket : public Packet {
 public:
-	UDPPacket(IP ip,int count);
-	Block * createBlock() override;
+	UDPPacket(IP ip,IP source, unsigned char*data,int len);
+	Block *createBlock(int pos);
 	[[nodiscard]] int getSize() const;
 	unsigned char getHeader() override;
-	void write(const std::vector<unsigned char>& data);
-
-	void init();
+	void init(int count);
 
 private:
 	std::vector<unsigned char> data;
-	int count;
+	int count = -1;
 	IP ip;
-	int offset = 0;
-	int size = 0;
-	int pos = 0;
+	IP source;
+	int size;
+	Block * createBlock() override;
+
 };
 
 

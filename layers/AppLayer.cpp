@@ -4,8 +4,9 @@
 
 #include "AppLayer.h"
 #include "UDPPrePacket.h"
-#include "UDPACKPacket.h"
+#include "UDPPreACKPacket.h"
 #include "NetworkLayer.h"
+#include "NetworkEntity.h"
 
 std::string AppLayer::getRawName() {
 	return "APP";
@@ -26,21 +27,22 @@ void AppLayer::handleReceive(int id, Block *block) {
 	block->read(&header, 1);
 	switch (header) {
 		case 0x60: {
+			IP ip = block->readIP();
 			int index = block->readInt();
-			int size = block->readInt();
 			int count = block->readInt();
-			int wholeLength = block->readInt();
-			int length = this->udpTable.add(block, index, size,count, wholeLength);
-			log("Receive UDP Packet index: " + std::to_string(index) + " size: " + std::to_string(size) + " count: " + std::to_string(count) + " length: " + std::to_string(length));
+			int length = this->udpTable.add(block, ip, count, index);
+			log("Receive UDP Packet index: " + std::to_string(index) + " count: " + std::to_string(count) + " length: " + std::to_string(length));
 			break;
 		}
 		case 0x65: {
 			IP ip = block->readIP();
 			int count = block->readInt();
-			int target = this->udpTable.tryAllocate();
-			this->log("Receive UDP Pre Packet ip " + ip.str() + " pre_id " + std::to_string(count) + " packet_id " + std::to_string(target));
+			int size = block->readInt();
+			int wholeLength = block->readInt();
+			int target = this->udpTable.tryAllocate(ip, count, size, wholeLength);
+			this->log("Receive UDP Pre Packet ip " + ip.str() + " pre_id " + std::to_string(count) + " packet_id " + std::to_string(target) + " packets: " + std::to_string(size) + " bytes: " + std::to_string(wholeLength));
 			auto* networkLayer = (NetworkLayer*)this->lowerLayers[0];
-			auto* packet = new UDPACKPacket(ip, networkLayer->getIP(0),  count, target);
+			auto* packet = new UDPPreACKPacket(ip, networkLayer->getIP(0), count, target);
 			auto* newBlock = packet->createBlock();
 			delete packet;
 			this->send(newBlock);
@@ -50,10 +52,18 @@ void AppLayer::handleReceive(int id, Block *block) {
 			IP ip = block->readIP();
 			int count = block->readInt();
 			int target = block->readInt();
-			this->log("Receive UDP ACK Packet ip " + ip.str() + " pre_id " + std::to_string(count) + " packet_id " + std::to_string(target));
+			this->log("Receive UDP Pre ACK Packet ip " + ip.str() + " pre_id " + std::to_string(count) + " packet_id " + std::to_string(target));
 			this->log("Send UDP Packet to ip " + ip.str() + " pre_id " + std::to_string(count) + " packet_id " + std::to_string(target));
-			this->table.send(count,target, ip);
+			auto* networkLayer = (NetworkLayer*)this->lowerLayers[0];
+			this->table.send(count,target,networkLayer->getIP(0), ip);
 			break;
+		}
+		case 0x90:{
+			// udp ack
+			IP ip = block->readIP();
+			int count = block->readInt();
+			this->log("Receive UDP ACK Packet ip " + ip.str() + " pre_id " + std::to_string(count));
+			this->udpTable.ack(ip,count);
 		}
 		default:{
 			error("Unknown protocol: " + std::to_string(header));
@@ -61,15 +71,31 @@ void AppLayer::handleReceive(int id, Block *block) {
 	}
 }
 
+void AppLayer::resend(const IP& ip, std::pair<int,int> pair, int len) {
+	kExecutor.submit(
+			[this,ip,pair,len]() {
+				if (this->table.requestResendPre(ip, pair.first)) {
+					auto* networkLayer = (NetworkLayer*)this->lowerLayers[0];
+					IP source = networkLayer->getIP(0);
+					auto* packet = new UDPPrePacket(ip,source,pair.first,pair.second,len);
+					auto* block = packet->createBlock();
+					delete packet;
+					this->send(block);
+					this->resend(ip,pair,len);
+				}
+			}, std::chrono::milliseconds(2000));
+}
+
 void AppLayer::sendUDPData0(const IP& ip, unsigned char* data, int len) {
 	auto* networkLayer = (NetworkLayer*)this->lowerLayers[0];
 	IP source = networkLayer->getIP(0);
-	int count = this->table.tryAllocate(data,len);
-	this->log("Ready to send UDP data to " + ip.str() + " from " + source.str() + " pre_id " + std::to_string(count) + " bytes: " + std::to_string(len));
-	auto* packet = new UDPPrePacket(ip,source,count);
+	auto pair = this->table.tryAllocate(ip,source, data,len);
+	this->log("Ready to send UDP data to " + ip.str() + " from " + source.str() + " pre_id " + std::to_string(pair.first) + " packets: " + std::to_string(pair.second) + " bytes: " + std::to_string(len));
+	auto* packet = new UDPPrePacket(ip,source,pair.first,pair.second,len);
 	auto* block = packet->createBlock();
 	delete packet;
 	this->send(block);
+	this->resend(ip,pair,len);
 }
 
 void AppLayer::handleUDPData(unsigned char *data, long long length) {

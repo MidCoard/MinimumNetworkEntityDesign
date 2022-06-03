@@ -14,13 +14,19 @@ class AppLayer;
 class UDPTable {
 public:
 	explicit UDPTable(AppLayer *layer);
-	int add(Block *block, int index, int size, int count, int wholeLength);
-	int tryAllocate();
+	int add(Block *block,const IP& ip,int count, int index);
+	int tryAllocate(const IP& ip, int count, int size, int wholeLength);
+
+	void ack(const IP &ip, int count);
 private:
+	std::map<std::pair<IP, int>, std::pair<int,std::pair<int,int>>>idTable;
 	std::map<int,std::map<int,std::vector<unsigned char>>> table;
 	std::mutex mutex;
 	int count = 0;
 	AppLayer *layer;
+
+	void check();
+
 };
 
 

@@ -1,5 +1,5 @@
 //
-// Created by 周蜀杰 on 2022/5/29.
+// Created by 周蜀杰 on 2022/6/3.
 //
 
 #include "UDPACKPacket.h"
@@ -7,7 +7,7 @@
 #include <utility>
 
 unsigned char UDPACKPacket::getHeader() {
-	return 0x66;
+	return 0x90;
 }
 
 Block *UDPACKPacket::createBlock() {
@@ -16,10 +16,9 @@ Block *UDPACKPacket::createBlock() {
 	block->write(0);
 	block->writeHeader(this);
 	block->writeIP(this->source);
-	block->writeInt(this->count);
-	block->writeInt(this->target);
+	block->write(count);
 	block->flip();
 	return block;
 }
 
-UDPACKPacket::UDPACKPacket(IP ip,IP source, int count, int target) : ip(std::move(ip)),source(std::move(source)), count(count), target(target) {}
+UDPACKPacket::UDPACKPacket(IP ip,IP sourcce, int count) : ip(std::move(ip)),count(count),source(source) {}
