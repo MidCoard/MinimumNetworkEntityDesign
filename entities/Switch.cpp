@@ -10,7 +10,7 @@ std::vector<std::string> Switch::createLayers(int node, std::vector<int> ids) {
 			SwitchConfiguration *switchConfiguration = this->switchConfigurations.at(id);
 			auto *physicalLayer = new PhysicalLayer(id, this,
 			                                        switchConfiguration->getLinkAddress() == nullptr
-			                                        ? generateLinkAddress(node, id)
+			                                        ? generateLinkAddress(node, 0)
 			                                        : *switchConfiguration->getLinkAddress(),
 			                                        switchConfiguration->getPhysicalAddress() == nullptr
 			                                        ? generatePhysicalAddress(node, id)
@@ -18,7 +18,9 @@ std::vector<std::string> Switch::createLayers(int node, std::vector<int> ids) {
 			this->layer->addLowerLayer(physicalLayer);
 		} else
 			this->layer->addLowerLayer(
-					new PhysicalLayer(id, this, generateLinkAddress(node, id), generatePhysicalAddress(node, id)));
+					new PhysicalLayer(id, this, generateLinkAddress(node, 0), generatePhysicalAddress(node, id)));
+		// why generate link address using 0
+		// because they are from the same layer
 	}
 	return this->layer->generateGraph(node);
 }

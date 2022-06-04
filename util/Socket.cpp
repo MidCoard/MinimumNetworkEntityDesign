@@ -53,11 +53,6 @@ void Socket::listen(PhysicalLayer *physicalLayer) {
 }
 
 void Socket::send(const INetAddress &address, Block *block) {
-	int client = socket(AF_INET, SOCK_DGRAM, 0);
-	if (client == -1) {
-		std::cerr << "create socket failed" << std::endl;
-		return;
-	}
 	struct sockaddr_in addr{};
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(address.getPort());
@@ -66,17 +61,11 @@ void Socket::send(const INetAddress &address, Block *block) {
 		std::cerr << "send block too large" << std::endl;
 	} else {
 		int len = block->read(temp, kBlockSize);
-		if (sendto(client, reinterpret_cast<const char *>(temp), len, 0, reinterpret_cast<const sockaddr *>(&addr),
+		if (sendto(this->internal, reinterpret_cast<const char *>(temp), len, 0, reinterpret_cast<const sockaddr *>(&addr),
 		           sizeof(addr)) == -1) {
 			std::cerr << "send socket failed" << std::endl;
 		}
 	}
-#ifdef WINDOWS
-	shutdown(client, SD_BOTH);
-#else
-	shutdown(client, SHUT_RDWR);
-#endif
-	::close(client);
 }
 
 void Socket::close() {

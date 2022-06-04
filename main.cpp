@@ -21,6 +21,7 @@
 #include "NetworkEntity.h"
 #include "DHCPHelper.h"
 #include "BlockingCollection.h"
+#include "GraphWidget.h"
 
 std::vector<std::string>
 availableLine(std::vector<std::string>::iterator *begin, std::vector<std::string>::iterator end) {
@@ -283,6 +284,8 @@ int main(int argc, char *argv[]) {
 		QPushButton button("Hello world!", nullptr);
 		button.resize(200, 100);
 		button.show();
+		GraphWidget graphWidget;
+		graphWidget.show();
 		QApplication::exec();
 		for (auto node: network->getNodes())
 			node->stop();
