@@ -45,6 +45,9 @@ void Socket::run(PhysicalLayer *physicalLayer) const {
 		block->write(temp, len);
 		block->flip();
 		physicalLayer->receive(physicalLayer->getID(), block);
+		// this way  because in the course design, the id should be considered by the ip address, however, in face there is no udp tunnel in the layer-communication
+		// so the id should come from the layer itself not by the ip address
+		// I should use the multiply link-layers to avoid this problem
 	}
 }
 

@@ -10,7 +10,7 @@ std::vector<std::string> Switch::createLayers(int node, std::vector<int> ids) {
 			SwitchConfiguration *switchConfiguration = this->switchConfigurations.at(id);
 			auto *physicalLayer = new PhysicalLayer(id, this,
 			                                        switchConfiguration->getLinkAddress() == nullptr
-			                                        ? generateLinkAddress(node, 0)
+			                                        ? generateLinkAddress(node, id)
 			                                        : *switchConfiguration->getLinkAddress(),
 			                                        switchConfiguration->getPhysicalAddress() == nullptr
 			                                        ? generatePhysicalAddress(node, id)
@@ -18,11 +18,25 @@ std::vector<std::string> Switch::createLayers(int node, std::vector<int> ids) {
 			this->layer->addLowerLayer(physicalLayer);
 		} else
 			this->layer->addLowerLayer(
-					new PhysicalLayer(id, this, generateLinkAddress(node, 0), generatePhysicalAddress(node, id)));
+					new PhysicalLayer(id, this, generateLinkAddress(node, id), generatePhysicalAddress(node, id)));
 		// why generate link address using 0
 		// because they are from the same layer
+
+		// it should be id
+		// because we determine the packet from which physical-layer by the id
+		// so we need to change the graph generation
 	}
-	return this->layer->generateGraph(node);
+	std::vector<std::string> lines;
+	bool first = true;
+	for (int id : ids) {
+		if (first) {
+			first = false;
+			lines.push_back(std::to_string(node + 1) + " PHY" + std::to_string(id) + " LNK" + std::to_string(id));
+		}
+		else
+			lines.push_back(" PHY" + std::to_string(id) + " LNK" + std::to_string(id));
+	}
+	return lines;
 }
 
 Switch::~Switch() {
