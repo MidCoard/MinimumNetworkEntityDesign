@@ -27,6 +27,7 @@ std::vector<std::string> PC::createLayers(int node, std::vector<int> ids) {
 	auto *linkLayer = new LinkLayer(ids[0], this);
 	if (mac == nullptr)
 		mac = new MAC(generateMAC());
+    std::cout<<this->node<<" MAC address:"<< mac->str()<<std::endl;
 	linkLayer->setMAC(ids[0], *mac);
 	networkLayer->addLowerLayer(linkLayer);
 	if (linkAddress == nullptr)

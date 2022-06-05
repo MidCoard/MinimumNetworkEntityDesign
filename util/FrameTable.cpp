@@ -8,37 +8,15 @@
 const unsigned char kFrameHeader = 0xf8;
 const unsigned char kFrameFooter = 0xc6;
 const unsigned char kFrameEscape = '\\';
-const int kFramePacketSize = 800; // byte
-
 const long long kFrameTime = 2LL * 60 * 1000 * 1000;
 
-void FrameTable::add(Frame *frame) {
-	this->check();
-	auto time = std::chrono::system_clock::now().time_since_epoch().count() + kFrameTime;
-	this->frameTable.insert_or_assign(frame->getStart(), std::pair{frame, time});
-}
-
 void FrameTable::check() {
-	auto now = std::chrono::system_clock::now().time_since_epoch().count();
-	for (auto it = this->frameTable.begin(); it != this->frameTable.end();)
-		if (now > it->second.second) {
-			delete it->second.first;
-			it = this->frameTable.erase(it);
-		} else
-			++it;
+	auto now = util::getNowTime();
 	for (auto it = this->table.begin(); it != this->table.end();)
 		if (now > it->second.first)
 			it = this->table.erase(it);
 		else
 			++it;
-}
-
-Frame *FrameTable::get(int start) {
-	this->check();
-	auto it = this->frameTable.find(start);
-	if (it == this->frameTable.end())
-		return nullptr;
-	return it->second.first;
 }
 
 Block *FrameTable::readFrame(Block *block) {
@@ -176,7 +154,7 @@ Block *FrameTable::readFrame(Block *block) {
 
 Block *FrameTable::write(int sequence, int index, int count, unsigned char *buffer, int len, int wholeLength) {
 	this->check();
-	auto time = std::chrono::system_clock::now().time_since_epoch().count() + kFrameTime;
+	auto time = util::getNowTime() + kFrameTime;
 	if (this->table.find(sequence) == this->table.end())
 		this->table.insert_or_assign(sequence, std::make_pair(time, std::map<int, std::vector<unsigned char>>()));
 	std::vector<unsigned char> vector(buffer, buffer + len);

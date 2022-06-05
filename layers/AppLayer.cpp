@@ -36,7 +36,7 @@ void AppLayer::handleReceive(int id, Block *block) {
 			int length = this->udpTable.add(block, ip, count, index);
 			log("Receive UDP Packet index: " + std::to_string(index) + " count: " + std::to_string(count) +
 			    " length: " + std::to_string(length));
-			auto time = std::chrono::system_clock::now().time_since_epoch().count();
+			auto time = util::getNowTime();
 			this->queue2.emplace(new std::pair{std::pair{ip, count}, time + kPacketTime * 2});
 			break;
 		}
@@ -54,7 +54,7 @@ void AppLayer::handleReceive(int id, Block *block) {
 			auto *newBlock = packet->createBlock();
 			delete packet;
 			this->send(newBlock);
-			auto time = std::chrono::system_clock::now().time_since_epoch().count();
+			auto time = util::getNowTime();
 			this->queue2.emplace(new std::pair{std::pair{ip, count}, time + kPacketTime * 3});
 			break;
 		}
@@ -75,7 +75,7 @@ void AppLayer::handleReceive(int id, Block *block) {
 			IP ip = block->readIP();
 			int count = block->readInt();
 			this->log("Receive UDP ACK Packet ip " + ip.str() + " pre_id " + std::to_string(count));
-			auto time = std::chrono::system_clock::now().time_since_epoch().count();
+			auto time = util::getNowTime();
 			this->queue2.emplace(new std::pair{std::pair{ip, count}, time + kPacketTime});
 			this->udpTable.ack(ip, count);
 			break;
@@ -148,7 +148,7 @@ void AppLayer::start() {
 						status = this->queue2.try_take(pair);
 					}
 					std::this_thread::sleep_for(std::chrono::milliseconds(100));
-					auto now = std::chrono::system_clock::now().time_since_epoch().count();
+					auto now = util::getNowTime();
 					for (auto it = this->timeMap.begin(); it != this->timeMap.end();) {
 						if (it->second < now) {
 							log("Receive timer request ack");

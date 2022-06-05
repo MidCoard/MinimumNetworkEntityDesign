@@ -18,13 +18,13 @@ int MACTable::lookup(const MAC &mac) {
 void MACTable::update(const MAC &mac, int port) {
 	this->mutex.lock();
 	check();
-	auto time = std::chrono::system_clock::now().time_since_epoch().count();
+	auto time = util::getNowTime();
 	this->table.insert_or_assign(mac, std::pair{port, time + 5LL * 60 * 1000 * 1000});
 	this->mutex.unlock();
 }
 
 void MACTable::check() {
-	auto time = std::chrono::system_clock::now().time_since_epoch().count();
+	auto time = util::getNowTime();
 	for (auto it = this->table.begin(); it != this->table.end();)
 		if (it->second.second < time)
 			it = this->table.erase(it);

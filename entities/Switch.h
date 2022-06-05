@@ -40,6 +40,8 @@ public:
 
 	std::string getName() override;
 
+	bool isSwitch() override;
+
 private:
 	std::map<int, SwitchConfiguration *> switchConfigurations;
 };

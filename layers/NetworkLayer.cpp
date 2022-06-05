@@ -79,7 +79,7 @@ void NetworkLayer::handleReceive(int id, Block *block) {
 				pc->mask = new IP(mask);
 				pc->gateway = new IP(gateway);
 				this->setIPConfiguration(0, pc->ip, pc->mask, pc->gateway);
-				this->startDHCP = std::chrono::system_clock::now().time_since_epoch().count();
+				this->startDHCP = util::getNowTime();
 				this->duration = block->readLong();
 				this->isIPValid = true;
 				this->routeTable.updateShort(LOCAL0, LOCAL0, 10, gateway, 0);
@@ -124,9 +124,13 @@ void NetworkLayer::handleReceive(int id, Block *block) {
 				IP mask = block->readIP();
 				IP gateway = block->readIP();
 				auto *linkLayer = (LinkLayer *) this->lowerLayers[id];
-				linkLayer->sendARP(ip, ip);
-				std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-				MAC mac = this->arpTable.lookup(ip);
+                MAC mac = this->arpTable.lookup(ip);
+                int count = 0;
+                while(mac.isBroadcast() && count < 5) {
+                    linkLayer->sendARP(ip, ip);
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                    count++;
+                }
 				if (!mac.isBroadcast()) {
 					this->error("DHCP offer a address that has been used");
 					// one have already got the ip (maybe static ip)
@@ -162,7 +166,7 @@ void NetworkLayer::handleReceive(int id, Block *block) {
 				pc->mask = new IP(mask);
 				pc->gateway = new IP(gateway);
 				this->setIPConfiguration(0, pc->ip, pc->mask, pc->gateway);
-				this->startDHCP = std::chrono::system_clock::now().time_since_epoch().count();
+				this->startDHCP = util::getNowTime();
 				this->duration = block->readLong();
 				this->isIPValid = true;
 				this->routeTable.updateShort(LOCAL0, LOCAL0, 10, gateway, 0);
@@ -285,6 +289,7 @@ void NetworkLayer::sendDHCP0(bool useSegment) {
 	IPConfiguration ipConfiguration = configurations.at(0);
 	auto *linkLayer = (LinkLayer *) this->lowerLayers[0];
 	if (!ipConfiguration.isConfigurable()) {
+        log("Send DHCP Discover");
 		auto *packet = new DHCPDiscoverPacket(linkLayer->getMAC(), useSegment);
 		Block *block = packet->createBlock();
 		delete packet;
@@ -348,7 +353,7 @@ void NetworkLayer::sendDHCPRenewal() {
 void NetworkLayer::checkDHCP() {
 	if (this->startDHCP == 0 && this->duration == 0)
 		return;
-	auto now = std::chrono::system_clock::now().time_since_epoch().count();
+	auto now = util::getNowTime();
 	if (now > this->startDHCP + this->duration) {
 		this->isIPValid = false;
 		this->startDHCP = 0;

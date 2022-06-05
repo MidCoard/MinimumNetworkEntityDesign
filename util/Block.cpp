@@ -199,6 +199,8 @@ void Block::print() {
 }
 
 void Block::flip(int wholeLength) {
+    if (wholeLength > this->temp.size())
+        wholeLength = this->temp.size();
 	this->remaining = wholeLength;
 	this->pos = 0;
 }

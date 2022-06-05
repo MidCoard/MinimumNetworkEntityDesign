@@ -27,6 +27,8 @@ public:
 	bool generatedIP = false;
 
 	void dfsAllocateIP(int node, std::vector<bool> *visited, std::vector<IPConfiguration> *configurations);
+
+	bool isISP() override;
 };
 
 class RootAppLayer : public AppLayer {

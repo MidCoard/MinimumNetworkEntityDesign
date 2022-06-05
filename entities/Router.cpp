@@ -23,6 +23,7 @@ std::vector<std::string> Router::createLayers(int node, std::vector<int> ids) {
 				linkLayer->setMAC(id, *routerConfiguration->getMAC());
 			else
 				linkLayer->setMAC(id, generateMAC());
+            std::cout<<"Router "<<this->node<<" "<<id<<" MAC ADDRESS "<<linkLayer->getMAC().str()<<std::endl;
 			this->layer->addLowerLayer(linkLayer);
 			auto *physicalLayer = new PhysicalLayer(id, this, routerConfiguration->getLinkAddress() == nullptr
 			                                                  ? generateLinkAddress(node, id)
@@ -66,6 +67,10 @@ void Router::start() {
 	auto *networkLayer = (RouterNetworkLayer *) this->layer;
 	networkLayer->sendDHCP();
 	dhcp::request(networkLayer);
+}
+
+bool Router::isRouter() {
+	return true;
 }
 
 RouterConfiguration::RouterConfiguration(IP *segment, IP *mask, IP *gateway, MAC *mac, INetAddress *linkAddress,
@@ -262,9 +267,13 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 					IP mask = block->readIP();
 					IP gateway = block->readIP();
 					auto *linkLayer = (LinkLayer *) this->lowerLayers[id];
-					linkLayer->sendARP(segment, segment);
-					std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-					MAC mac = this->arpTable.lookup(segment);
+                    MAC mac = this->arpTable.lookup(segment);
+                    int count = 0;
+                    while(mac.isBroadcast() && count < 5) {
+                        linkLayer->sendARP(segment, segment);
+                        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                        count++;
+                    }
 					if (!mac.isBroadcast()) {
 						// one have already got the ip (maybe static ip)
 						auto *packet = new DHCPDeclinePacket(segment, mask, mac, true);
@@ -293,7 +302,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 					delete ipConfiguration.getMask();
 					delete ipConfiguration.getGateway();
 					this->setIPConfiguration(0, new IP(segment), new IP(mask), new IP(gateway));
-					this->startDHCP = std::chrono::system_clock::now().time_since_epoch().count();
+					this->startDHCP = util::getNowTime();
 					this->duration = block->readLong();
 					this->isIPValid = true;
 					for (auto &table: this->tables)
@@ -438,7 +447,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 					delete ipConfiguration.getMask();
 					delete ipConfiguration.getGateway();
 					this->setIPConfiguration(0, new IP(segment), new IP(mask), new IP(gateway));
-					this->startDHCP = std::chrono::system_clock::now().time_since_epoch().count();
+					this->startDHCP = util::getNowTime();
 					this->duration = block->readLong();
 					this->isIPValid = true;
 				}
@@ -572,4 +581,8 @@ IP RouterNetworkLayer::getIP(int id) {
 
 void RouterNetworkLayer::sendDHCPRelease() {
 	this->sendDHCPRelease0(true);
+}
+
+void RouterNetworkLayer::sendDHCPRenewal() {
+    this->sendDHCPRenewal0(true);
 }

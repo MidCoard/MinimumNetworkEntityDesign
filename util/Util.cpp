@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <chrono>
 #include "Util.h"
 #include "iostream"
 
@@ -146,4 +147,12 @@ unsigned char util::get(std::vector<bool> *vector, int index) {
 		byte |= vector->at(index + i);
 	}
 	return byte;
+}
+
+long long util::getNowTime() {
+#ifdef WINDOWS
+    return std::chrono::system_clock::now().time_since_epoch().count() / 1000;
+#else
+    return std::chrono::system_clock::now().time_since_epoch().count();
+#endif
 }

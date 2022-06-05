@@ -12,8 +12,8 @@ void Network::addNode(NetworkEntity *entity) {
 
 // add node1 -> node2 edge i.e. PC -> SWITCH
 void Network::addUndirectedLink(int node1, int node2, std::pair<int, int> weight) {
-	Link *link = new Link(this->heads[node1], node2, this->links.size() + 1, weight);
-	Link *otherLink = new Link(this->heads[node2], node1, this->links.size(), {weight.second, weight.first});
+	Link *link = new Link(node1, this->heads[node1], node2, this->links.size() + 1, weight);
+	Link *otherLink = new Link(node2, this->heads[node2], node1, this->links.size(), {weight.second, weight.first});
 	this->links.push_back(link);
 	this->heads[node1] = this->links.size() - 1;
 	this->links.push_back(otherLink);
@@ -116,7 +116,8 @@ std::vector<int> Network::getHeads() {
 	return this->heads;
 }
 
-Link::Link(int next, int self, int undirected, std::pair<int, int> weight) {
+Link::Link(int father, int next, int self, int undirected, std::pair<int, int> weight) {
+	this->father = father;
 	this->next = next;
 	this->node = self;
 	this->weight = weight;

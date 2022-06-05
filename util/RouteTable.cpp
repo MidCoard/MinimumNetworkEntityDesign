@@ -23,7 +23,7 @@ std::pair<IP, int> RouteTable::lookup(const IP &ip) {
 }
 
 void RouteTable::check() {
-	auto time = std::chrono::system_clock::now().time_since_epoch().count();
+	auto time = util::getNowTime();
 	for (auto it = this->table.begin(); it != this->table.end();)
 		if (it->time < time)
 			it = this->table.erase(it);
@@ -33,13 +33,13 @@ void RouteTable::check() {
 
 void RouteTable::updateShort(const IP &ip, const IP &mask, int cost, const IP &nextHop, int id) {
 	this->check();
-	auto time = std::chrono::system_clock::now().time_since_epoch().count();
+	auto time = util::getNowTime();
 	this->table.insert(TableItem(ip, mask, cost, nextHop, id, time + kShortDuration));
 }
 
 void RouteTable::updateLong(const IP &ip, const IP &mask, int cost, const IP &nextHop, int id) {
 	this->check();
-	auto time = std::chrono::system_clock::now().time_since_epoch().count();
+	auto time = util::getNowTime();
 	this->table.insert(TableItem(ip, mask, cost, nextHop, id, time + kLongDuration));
 }
 

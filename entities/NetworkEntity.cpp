@@ -32,3 +32,15 @@ int NetworkEntity::getNode() const {
 }
 
 void NetworkEntity::generateIP() {}
+
+bool NetworkEntity::isISP() {
+	return false;
+}
+
+bool NetworkEntity::isRouter() {
+	return false;
+}
+
+bool NetworkEntity::isSwitch() {
+	return false;
+}

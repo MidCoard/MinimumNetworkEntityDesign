@@ -51,12 +51,12 @@ public:
 	[[nodiscard]] int getID() const;
 
 	std::vector<Layer *> lowerLayers;
+    NetworkEntity *networkEntity;
 protected:
 	std::vector<Layer *> upperLayers;
 
 	code_machina::BlockingQueue<Block *> sendBlockQueue;
 	code_machina::BlockingQueue<std::pair<int, Block *>> receiveBlockQueue;
-	NetworkEntity *networkEntity;
 	bool shouldStop = false;
 private:
 	// this two pointer will be deleted when closing

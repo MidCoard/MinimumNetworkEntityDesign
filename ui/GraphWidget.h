@@ -6,6 +6,7 @@
 #define NETWORKDESIGN_GRAPHWIDGET_H
 
 class Node;
+class Network;
 
 #include <QGraphicsView>
 
@@ -13,7 +14,8 @@ class GraphWidget : public QGraphicsView {
 Q_OBJECT
 
 public:
-	explicit GraphWidget(QWidget *parent = nullptr);
+
+	GraphWidget(QWidget *parent, Network *network);
 
 	void itemMoved();
 

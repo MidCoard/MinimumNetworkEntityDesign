@@ -30,7 +30,7 @@ void LinkLayer::handleSend(Block *block) {
 	for (int i = 0; i < size; i++) {
 		this->lowerLayers[0]->send(frame->createBlock(i));
 	}
-	this->frameTable.add(frame);
+	delete frame;
 }
 
 // the id for PC this should always be 0

@@ -14,16 +14,10 @@ class FrameTable {
 
 public:
 
-	void add(Frame *frame);
-
 	Block *readFrame(Block *block);
 
 private:
-	std::map<int, std::pair<Frame *, long long>> frameTable;
-
 	void check();
-
-	Frame *get(int start);
 
 	std::map<int, std::pair<long long, std::map<int, std::vector<unsigned char>>>> table;
 

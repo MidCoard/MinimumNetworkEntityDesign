@@ -2,6 +2,7 @@
 // Created by 周蜀杰 on 2022/5/23.
 //
 
+#include <thread>
 #include "MAC.h"
 #include "chrono"
 
@@ -83,6 +84,7 @@ bool MAC::operator!=(const MAC &mac) const {
 
 MAC generateMAC() {
 	std::default_random_engine e(std::chrono::system_clock::now().time_since_epoch().count());
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	std::uniform_int_distribution<int> u(0, 255);
 	std::string mac;
 	for (int i = 0; i < 6; ++i) {

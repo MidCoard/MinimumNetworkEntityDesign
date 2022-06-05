@@ -5,9 +5,10 @@
 #include "Node.h"
 #include "Edge.h"
 #include "GraphWidget.h"
+#include "NetworkEntity.h"
 
-Node::Node(GraphWidget *graphWidget)
-		: graph(graphWidget) {
+Node::Node(GraphWidget *graphWidget, NetworkEntity *entity)
+		: graph(graphWidget),entity(entity) {
 	setFlag(ItemIsMovable);
 	setFlag(ItemSendsGeometryChanges);
 	setCacheMode(DeviceCoordinateCache);
@@ -89,17 +90,49 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 	painter->drawEllipse(-7, -7, 20, 20);
 
 	QRadialGradient gradient(-3, -3, 10);
-	if (option->state & QStyle::State_Sunken) {
-		gradient.setCenter(3, 3);
-		gradient.setFocalPoint(3, 3);
-		gradient.setColorAt(1, QColor(Qt::yellow).lighter(120));
-		gradient.setColorAt(0, QColor(Qt::darkYellow).lighter(120));
-	} else {
-		gradient.setColorAt(0, Qt::yellow);
-		gradient.setColorAt(1, Qt::darkYellow);
+	if (this->entity->isISP()) {
+		if (option->state & QStyle::State_Sunken) {
+			gradient.setCenter(3, 3);
+			gradient.setFocalPoint(3, 3);
+			gradient.setColorAt(1, QColor(Qt::yellow).lighter(120));
+			gradient.setColorAt(0, QColor(Qt::darkYellow).lighter(120));
+		} else {
+			gradient.setColorAt(0, Qt::yellow);
+			gradient.setColorAt(1, Qt::darkYellow);
+		}
+	} else if (this->entity->isRouter()) {
+		if (option->state & QStyle::State_Sunken) {
+			gradient.setCenter(3, 3);
+			gradient.setFocalPoint(3, 3);
+			gradient.setColorAt(1, QColor(Qt::blue).lighter(120));
+			gradient.setColorAt(0, QColor(Qt::darkBlue).lighter(120));
+		} else {
+			gradient.setColorAt(0, Qt::blue);
+			gradient.setColorAt(1, Qt::darkBlue);
+		}
+	} else if (this->entity->isSwitch()) {
+		if (option->state & QStyle::State_Sunken) {
+			gradient.setCenter(3, 3);
+			gradient.setFocalPoint(3, 3);
+			gradient.setColorAt(1, QColor(Qt::green).lighter(120));
+			gradient.setColorAt(0, QColor(Qt::darkGreen).lighter(120));
+		} else {
+			gradient.setColorAt(0, Qt::green);
+			gradient.setColorAt(1, Qt::darkGreen);
+		}
+	}  else {
+		if (option->state & QStyle::State_Sunken) {
+			gradient.setCenter(3, 3);
+			gradient.setFocalPoint(3, 3);
+			gradient.setColorAt(1, QColor(Qt::white).lighter(120));
+			gradient.setColorAt(0, QColor(Qt::gray).lighter(120));
+		} else {
+			gradient.setColorAt(0, Qt::white);
+			gradient.setColorAt(1, Qt::gray);
+		}
 	}
-	painter->setBrush(gradient);
 
+	painter->setBrush(gradient);
 	painter->setPen(QPen(Qt::black, 0));
 	painter->drawEllipse(-10, -10, 20, 20);
 }

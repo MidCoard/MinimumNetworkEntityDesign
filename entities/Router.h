@@ -55,6 +55,8 @@ public:
 
 	void start() override;
 
+	bool isRouter() override;
+
 protected:
 	std::map<int, RouterConfiguration *> routerConfigurations;
 	bool generatedIP = false;
@@ -78,6 +80,8 @@ public:
 	std::vector<DHCPTable *> tables;
 
 	void sendDHCPRelease() override;
+
+    void sendDHCPRenewal() override;
 };
 
 

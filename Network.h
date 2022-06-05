@@ -10,11 +10,12 @@
 class Link {
 
 public:
-	Link(int next, int self, int undirected, std::pair<int, int> weight);
+	Link(int father, int next, int self, int undirected, std::pair<int, int> weight);
 
 	int undirected;
 	int node;
 	int next;
+	int father;
 	std::pair<int, int> weight;
 };
 

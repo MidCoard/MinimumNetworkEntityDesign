@@ -40,7 +40,7 @@ std::pair<IP, long long int> DHCPTable::apply0() {
 		if (it2->first.right() >= item.left())
 			return {BROADCAST_IP, -1};
 	}
-	auto time = std::chrono::system_clock::now().time_since_epoch().count();
+	auto time = util::getNowTime();
 	this->tempSegments.insert_or_assign(item, std::pair{time + kTempTime, dhcpID});
 	return {IP(this->ip.intValue() + item.left()), this->dhcpID++};
 }
@@ -62,7 +62,7 @@ unsigned long long DHCPTable::apply(const IP &ip) {
 		if (it2->first.right() >= item.left())
 			return -1;
 	}
-	auto time = std::chrono::system_clock::now().time_since_epoch().count();
+	auto time = util::getNowTime();
 	this->tempSegments.insert_or_assign(item, std::pair{time + kTempTime, dhcpID});
 	return this->dhcpID++;
 }
@@ -95,7 +95,7 @@ long long int DHCPTable::apply(const IP &ip, const IP &mask) {
 		if (it2 != this->tempSegments.end() && it2->first.left() <= item.right())
 			return -1;
 	}
-	auto time = std::chrono::system_clock::now().time_since_epoch().count();
+	auto time = util::getNowTime();
 	this->tempSegments.insert_or_assign(item, std::pair{time + kTempTime, dhcpID});
 	return dhcpID++;
 }
@@ -148,7 +148,7 @@ std::pair<std::pair<IP, IP>, long long int> DHCPTable::tryApply(const IP &ip, co
 			i++;
 		IP retMask = IP(~((1LL << (i - 1)) - 1));
 		TableItem newItem = TableItem(min, length);
-		auto time = std::chrono::system_clock::now().time_since_epoch().count();
+		auto time = util::getNowTime();
 		this->tempSegments.insert_or_assign(newItem, std::pair{time + kTempTime, dhcpID});
 		return {std::pair<IP, IP>{ip1, retMask}, this->dhcpID++};
 	}
@@ -182,7 +182,7 @@ std::pair<std::pair<IP, IP>, long long int> DHCPTable::applySegment0() {
 		if (it2 != this->tempSegments.end() && it2->first.left() <= item.right())
 			return {std::pair{BROADCAST_IP, BROADCAST_IP}, -1};
 	}
-	auto time = std::chrono::system_clock::now().time_since_epoch().count();
+	auto time = util::getNowTime();
 	this->tempSegments.insert_or_assign(item, std::pair{time + kTempTime, dhcpID});
 	return {{IP(this->ip.intValue() + item.left()), IP(0xffu, 0xffu, 0xffu, 0xf0u)}, this->dhcpID++};
 }
@@ -198,7 +198,7 @@ std::pair<std::pair<IP, IP>, long long int> DHCPTable::applySegment() {
 }
 
 void DHCPTable::check() {
-	auto time = std::chrono::system_clock::now().time_since_epoch().count();
+	auto time = util::getNowTime();
 	for (auto it = this->segments.begin(); it != this->segments.end();)
 		if (it->second.first < time)
 			this->segments.erase(it++);
@@ -244,7 +244,7 @@ std::pair<IP, IP> DHCPTable::directApplySegment0(const MAC &mac) {
 		if (it2 != this->tempSegments.end() && it2->first.left() <= item.right())
 			return {std::pair{BROADCAST_IP, BROADCAST_IP}};
 	}
-	auto time = std::chrono::system_clock::now().time_since_epoch().count();
+	auto time = util::getNowTime();
 	this->segments.insert_or_assign(item, std::pair{time + kDHCPTime * 1000LL, mac});
 
 	return {IP(this->ip.intValue() + item.left()), IP(0xffu, 0xffu, 0xffu, 0xf0u)};
@@ -277,7 +277,7 @@ IP DHCPTable::directApply0(const MAC &mac) {
 		if (it2->first.right() >= item.left())
 			return BROADCAST_IP;
 	}
-	auto time = std::chrono::system_clock::now().time_since_epoch().count();
+	auto time = util::getNowTime();
 	this->segments.insert_or_assign(item, std::pair{time + kDHCPTime * 1000LL, mac});
 	return IP(this->ip.intValue() + item.left());
 }
@@ -325,7 +325,7 @@ bool DHCPTable::directApplySegment(const IP &ip, const IP &mask, const MAC &mac)
 		if (it2 != this->tempSegments.end() && it2->first.left() <= item.right())
 			return false;
 	}
-	auto time = std::chrono::system_clock::now().time_since_epoch().count();
+	auto time = util::getNowTime();
 	this->segments.insert_or_assign(item, std::pair{time + kDHCPTime * 1000LL, mac});
 	return true;
 }
@@ -347,7 +347,7 @@ bool DHCPTable::directApply(const IP &ip, const MAC &mac) {
 		if (it2->first.right() >= item.left())
 			return false;
 	}
-	auto time = std::chrono::system_clock::now().time_since_epoch().count();
+	auto time = util::getNowTime();
 	this->segments.insert_or_assign(item, std::pair{time + kDHCPTime * 1000LL, mac});
 	return true;
 }
@@ -370,7 +370,7 @@ bool DHCPTable::applyIt(IP *ip, IP *mask, const MAC &mac, int id) {
 	auto it = this->tempSegments.at(item);
 	if (it.second != id)
 		return false;
-	auto time = std::chrono::system_clock::now().time_since_epoch().count();
+	auto time = util::getNowTime();
 	this->segments.insert_or_assign(item, std::pair{time + kDHCPTime, mac});
 	this->tempSegments.erase(item);
 	return true;
@@ -389,7 +389,7 @@ bool DHCPTable::applyIt(const IP &ip, const MAC &mac, int id) {
 	auto it = this->tempSegments.at(item);
 	if (it.second != id)
 		return false;
-	auto time = std::chrono::system_clock::now().time_since_epoch().count();
+	auto time = util::getNowTime();
 	this->segments.insert_or_assign(item, std::pair{time + kDHCPTime, mac});
 	this->tempSegments.erase(item);
 	return true;
@@ -410,7 +410,7 @@ bool DHCPTable::renewal(const IP &ip, const IP &mask, const MAC &mac) {
 		return false;
 	if (it->second.second != mac)
 		return false;
-	auto time = std::chrono::system_clock::now().time_since_epoch().count();
+	auto time = util::getNowTime();
 	this->segments.insert_or_assign(item, std::pair{time + kDHCPTime, mac});
 	return true;
 }
@@ -425,7 +425,7 @@ bool DHCPTable::renewal(const IP &ip, const MAC &mac) {
 		return false;
 	if (it->second.second != mac)
 		return false;
-	auto time = std::chrono::system_clock::now().time_since_epoch().count();
+	auto time = util::getNowTime();
 	this->segments.insert_or_assign(item, std::pair{time + kDHCPTime, mac});
 	return true;
 }

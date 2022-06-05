@@ -281,10 +281,7 @@ int main(int argc, char *argv[]) {
 //	}
 	if (network != nullptr) {
 		QApplication a(argc, argv);
-		QPushButton button("Hello world!", nullptr);
-		button.resize(200, 100);
-		button.show();
-		GraphWidget graphWidget;
+		GraphWidget graphWidget(nullptr, network);
 		graphWidget.show();
 		QApplication::exec();
 		for (auto node: network->getNodes())

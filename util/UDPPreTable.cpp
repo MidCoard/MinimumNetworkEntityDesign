@@ -12,7 +12,7 @@ const long long kPacketTime = 2LL * 60 * 1000 * 1000;
 std::pair<int, int> UDPPreTable::tryAllocate(const IP &ip, const IP &source, unsigned char *data, int len) {
 	mutex.lock();
 	this->check();
-	auto time = std::chrono::system_clock::now().time_since_epoch().count();
+	auto time = util::getNowTime();
 	auto *packet = new UDPPacket(ip, source, data, len);
 	this->table.insert_or_assign(this->count, std::pair{packet, std::pair{5, time + kPacketTime}});
 	std::pair<int, int> ret = {this->count++, packet->getSize()};
@@ -46,7 +46,7 @@ void UDPPreTable::send(const IP &ip, const IP &source, int count, int target) {
 }
 
 void UDPPreTable::check() {
-	auto time = std::chrono::system_clock::now().time_since_epoch().count();
+	auto time = util::getNowTime();
 	for (auto it = this->table.begin(); it != this->table.end();) {
 		if (time > it->second.second.second) {
 			delete it->second.first;

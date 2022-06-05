@@ -14,10 +14,11 @@ class GraphWidget;
 #include <QtWidgets/qstyle.h>
 #include <QPainter>
 #include "QStyleOption"
+#include "NetworkEntity.h"
 
 class Node : public QGraphicsItem {
 public:
-	explicit Node(GraphWidget *graphWidget);
+	explicit Node(GraphWidget *graphWidget, NetworkEntity *entity);
 
 	void addEdge(Edge *edge);
 
@@ -50,6 +51,7 @@ private:
 	QList<Edge *> edgeList;
 	QPointF newPos;
 	GraphWidget *graph;
+	NetworkEntity *entity;
 };
 
 #endif //NETWORKDESIGN_NODE_H

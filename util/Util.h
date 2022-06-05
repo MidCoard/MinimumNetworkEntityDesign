@@ -54,6 +54,8 @@ namespace util {
 	void put(std::vector<bool> *vector, unsigned char byte);
 
 	unsigned char get(std::vector<bool> *vector, int index);
+
+    long long int getNowTime();
 }
 
 #endif //NETWORKDESIGN_UTIL_H

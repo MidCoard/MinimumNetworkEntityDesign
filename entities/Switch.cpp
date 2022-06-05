@@ -48,6 +48,10 @@ std::string Switch::getName() {
 	return "Switch";
 }
 
+bool Switch::isSwitch() {
+	return true;
+}
+
 SwitchConfiguration::SwitchConfiguration(INetAddress *linkAddress, INetAddress *physicalAddress)
 		: linkAddress(linkAddress), physicalAddress(physicalAddress) {}
 
@@ -75,6 +79,7 @@ void SwitchLinkLayer::handleReceive(int id, Block *block0) {
 		return;
 	MAC source = block->readMAC();
 	MAC destination = block->readMAC();
+    this->log("I have receive a packet from " + source.str() + " to " + destination.str());
 	macTable.update(source, id);
 	auto *newBlock = new Block();
 	newBlock->writeMAC(source);
@@ -82,6 +87,7 @@ void SwitchLinkLayer::handleReceive(int id, Block *block0) {
 	newBlock->writeBlock(block);
 	newBlock->flip();
 	if (destination.isBroadcast()) {
+        this->log("transfer it to all");
 		for (auto layer: this->lowerLayers)
 			if (layer->getID() != id) {
 				auto *b = newBlock->copy();
@@ -91,10 +97,11 @@ void SwitchLinkLayer::handleReceive(int id, Block *block0) {
 				for (int i = 0; i < size; i++) {
 					layer->send(frame->createBlock(i));
 				}
-				this->frameTable.add(frame);
+				delete frame;
 			}
 	} else {
 		int interface0 = macTable.lookup(destination);
+        this->log("transfer it to" + std::to_string(interface0));
 		if (interface0 == -1) {
 			for (auto layer: this->lowerLayers)
 				if (layer->getID() != id) {
@@ -105,7 +112,7 @@ void SwitchLinkLayer::handleReceive(int id, Block *block0) {
 					for (int i = 0; i < size; i++) {
 						layer->send(frame->createBlock(i));
 					}
-					this->frameTable.add(frame);
+					delete frame;
 				}
 		} else {
 			auto *b = newBlock->copy();
@@ -115,7 +122,7 @@ void SwitchLinkLayer::handleReceive(int id, Block *block0) {
 			for (int i = 0; i < size; i++) {
 				this->lowerLayers.at(interface0)->send(frame->createBlock(i));
 			}
-			this->frameTable.add(frame);
+			delete frame;
 		}
 	}
 	delete newBlock;

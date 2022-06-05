@@ -3,6 +3,7 @@
 //
 
 #include "DHCPHelper.h"
+#include "NetworkEntity.h"
 
 std::thread *dhcp::dhcpThread = nullptr;
 
@@ -26,7 +27,7 @@ void dhcp::start() {
 				code_machina::BlockingCollectionStatus status = layers.take(layer);
 				if (status == code_machina::BlockingCollectionStatus::Ok && !layer->isIPValid) {
 					layer->sendDHCP();
-					std::this_thread::sleep_for(std::chrono::milliseconds(1100));
+					std::this_thread::sleep_for(std::chrono::milliseconds(3000));
 					if (!layer->isIPValid)
 						layers.emplace(layer);
 				}

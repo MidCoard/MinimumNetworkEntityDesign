@@ -20,13 +20,13 @@ MAC ARPTable::lookup(const IP &ip) {
 void ARPTable::update(const IP &ip, const MAC &mac) {
 	mutex.lock();
 	this->check();
-	auto time = std::chrono::system_clock::now().time_since_epoch().count();
+	auto time = util::getNowTime();
 	this->table.insert_or_assign(ip, std::pair{mac, time + kARPTime});
 	mutex.unlock();
 }
 
 void ARPTable::check() {
-	auto time = std::chrono::system_clock::now().time_since_epoch().count();
+	auto time = util::getNowTime();
 	for (auto it = this->table.begin(); it != this->table.end();)
 		if (it->second.second < time)
 			it = this->table.erase(it);

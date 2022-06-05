@@ -33,6 +33,12 @@ public:
 
 	[[nodiscard]] int getNode() const;
 
+	virtual bool isISP();
+
+	virtual bool isRouter();
+
+	virtual bool isSwitch();
+
 protected:
 	Layer *layer;
 	int node;

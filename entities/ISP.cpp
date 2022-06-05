@@ -155,6 +155,10 @@ std::string ISP::getName() {
 	return "ISP";
 }
 
+bool ISP::isISP() {
+	return true;
+}
+
 RootAppLayer::RootAppLayer(NetworkEntity *networkEntity) : AppLayer(networkEntity) {
 }
 
