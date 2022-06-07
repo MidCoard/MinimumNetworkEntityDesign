@@ -73,6 +73,8 @@ bool Router::isRouter() {
 	return true;
 }
 
+Router::Router(Network *network, int node, NetworkLayer* layer) : NetworkEntity(network, node, layer) {}
+
 RouterConfiguration::RouterConfiguration(IP *segment, IP *mask, IP *gateway, MAC *mac, INetAddress *linkAddress,
                                          INetAddress *physicalAddress)
 		: segment(segment), mask(mask), gateway(gateway), mac(mac), linkAddress(linkAddress),
@@ -269,11 +271,13 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 					auto *linkLayer = (LinkLayer *) this->lowerLayers[id];
                     MAC mac = this->arpTable.lookup(segment);
                     int count = 0;
+					this->offerable = false;
                     while(mac.isBroadcast() && count < 5) {
                         linkLayer->sendARP(segment, segment);
                         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
                         count++;
                     }
+					this->offerable = true;
 					if (!mac.isBroadcast()) {
 						// one have already got the ip (maybe static ip)
 						auto *packet = new DHCPDeclinePacket(segment, mask, mac, true);

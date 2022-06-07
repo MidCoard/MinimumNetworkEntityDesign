@@ -46,6 +46,8 @@ public:
 
 	IP mix(const IP &ip);
 
+	[[nodiscard]] bool isInPrivateNetwork() const;
+
 private:
 	std::string ip;
 	unsigned char bytes[4]{};
@@ -57,5 +59,8 @@ extern IP LOCAL0;
 
 extern IP BROADCAST_IP;
 
+extern IP PRIVATE_NETWORK_IP;
+
+extern IP PRIVATE_NETWORK_MASK;
 
 #endif //NETWORKDESIGN_IP_H

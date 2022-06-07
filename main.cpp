@@ -7,9 +7,7 @@
 #include <vector>
 #include <map>
 #include <QApplication>
-#include <QtWidgets/qpushbutton.h>
 #include "Util.h"
-#include "Layer.h"
 #include "PC.h"
 #include "Switch.h"
 #include "ISP.h"
@@ -22,6 +20,7 @@
 #include "DHCPHelper.h"
 #include "BlockingCollection.h"
 #include "GraphWidget.h"
+#include "HomeRouter.h"
 
 std::vector<std::string>
 availableLine(std::vector<std::string>::iterator *begin, std::vector<std::string>::iterator end) {
@@ -90,9 +89,6 @@ NetworkEntity *createEntity(Network *network, int node, const std::string &name,
 		INetAddress *linkAddress = nullptr;
 		INetAddress *physicalAddress = nullptr;
 		bool flag = false;
-		IP *segment = nullptr;
-		IP *mask = nullptr;
-		IP *gateway = nullptr;
 		std::vector<std::string> lines = availableLine(begin, end);
 		if (!lines.empty() && lines[0] != "-")
 			segment0 = new IP(lines[0]);
@@ -108,40 +104,36 @@ NetworkEntity *createEntity(Network *network, int node, const std::string &name,
 			physicalAddress = new INetAddress(createINetAddress(lines[5]));
 		if (lines.size() >= 7 && lines[6] != "-")
 			flag = util::equalsIgnoreCase(lines[6], "true");
-		if (lines.size() >= 8 && lines[7] != "-")
-			segment = new IP(lines[7]);
-		if (lines.size() >= 9 && lines[8] != "-")
-			mask = new IP(lines[8]);
-		if (lines.size() >= 10 && lines[9] != "-")
-			gateway = new IP(lines[9]);
 		std::map<int, RouterConfiguration *> routerConfigurations;
 		routerConfigurations.insert({0, new RouterConfiguration(segment0, mask0, gateway0, mac, linkAddress,
 		                                                        physicalAddress)});
-		for (int i = 0; i < size; i++) {
-			std::vector<std::string> subVector = availableLine(begin, end);
-			IP *segmenti = nullptr;
-			IP *maski = nullptr;
-			IP *gatewayi = nullptr;
-			MAC *maci = nullptr;
-			INetAddress *linkAddress0 = nullptr;
-			INetAddress *physicalAddress0 = nullptr;
-			if (!subVector.empty() && subVector[0] != "-")
-				segmenti = new IP(subVector[0]);
-			if (subVector.size() >= 2 && subVector[1] != "-")
-				maski = new IP(subVector[1]);
-			if (subVector.size() >= 3 && subVector[2] != "-")
-				gatewayi = new IP(subVector[2]);
-			if (subVector.size() >= 4 && subVector[3] != "-")
-				maci = new MAC(subVector[3]);
-			if (subVector.size() >= 5 && subVector[4] != "-")
-				linkAddress0 = new INetAddress(createINetAddress(subVector[4]));
-			if (subVector.size() >= 6 && subVector[5] != "-")
-				physicalAddress0 = new INetAddress(createINetAddress(subVector[5]));
-			routerConfigurations.insert({i + 1, new RouterConfiguration(
-					segmenti, maski, gatewayi, maci, linkAddress0, physicalAddress0)});
-		}
+		if (!flag)
+			for (int i = 0; i < size; i++) {
+				std::vector<std::string> subVector = availableLine(begin, end);
+				IP *segmenti = nullptr;
+				IP *maski = nullptr;
+				IP *gatewayi = nullptr;
+				MAC *maci = nullptr;
+				INetAddress *linkAddress0 = nullptr;
+				INetAddress *physicalAddress0 = nullptr;
+				if (!subVector.empty() && subVector[0] != "-")
+					segmenti = new IP(subVector[0]);
+				if (subVector.size() >= 2 && subVector[1] != "-")
+					maski = new IP(subVector[1]);
+				if (subVector.size() >= 3 && subVector[2] != "-")
+					gatewayi = new IP(subVector[2]);
+				if (subVector.size() >= 4 && subVector[3] != "-")
+					maci = new MAC(subVector[3]);
+				if (subVector.size() >= 5 && subVector[4] != "-")
+					linkAddress0 = new INetAddress(createINetAddress(subVector[4]));
+				if (subVector.size() >= 6 && subVector[5] != "-")
+					physicalAddress0 = new INetAddress(createINetAddress(subVector[5]));
+				routerConfigurations.insert({i + 1, new RouterConfiguration(
+						segmenti, maski, gatewayi, maci, linkAddress0, physicalAddress0)});
+			}
 		if (!flag)
 			return (NetworkEntity *) new DefaultRouter(network, node, routerConfigurations);
+		else return new HomeRouter(network, node);
 	}
 	return nullptr;
 }

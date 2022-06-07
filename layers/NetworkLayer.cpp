@@ -126,11 +126,13 @@ void NetworkLayer::handleReceive(int id, Block *block) {
 				auto *linkLayer = (LinkLayer *) this->lowerLayers[id];
                 MAC mac = this->arpTable.lookup(ip);
                 int count = 0;
+				this->offerable = false;
                 while(mac.isBroadcast() && count < 5) {
                     linkLayer->sendARP(ip, ip);
                     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
                     count++;
                 }
+				this->offerable = true;
 				if (!mac.isBroadcast()) {
 					this->error("DHCP offer a address that has been used");
 					// one have already got the ip (maybe static ip)
@@ -289,6 +291,8 @@ void NetworkLayer::sendDHCP0(bool useSegment) {
 	IPConfiguration ipConfiguration = configurations.at(0);
 	auto *linkLayer = (LinkLayer *) this->lowerLayers[0];
 	if (!ipConfiguration.isConfigurable()) {
+		if (!offerable)
+			return;
         log("Send DHCP Discover");
 		auto *packet = new DHCPDiscoverPacket(linkLayer->getMAC(), useSegment);
 		Block *block = packet->createBlock();

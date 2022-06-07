@@ -73,6 +73,8 @@ protected:
 	void checkDHCP();
 
 	void sendDHCPRelease0(bool useSegment);
+
+	bool offerable = true;
 };
 
 

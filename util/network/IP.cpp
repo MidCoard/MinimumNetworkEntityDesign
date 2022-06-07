@@ -120,6 +120,12 @@ IP IP::mix(const IP &ip) {
 	return IP((~((1u << i) - 1)) << 1);
 }
 
+bool IP::isInPrivateNetwork() const {
+	return (*this & PRIVATE_NETWORK_MASK) == PRIVATE_NETWORK_IP;
+}
+
 IP LOCALHOST = IP("127.0.0.1");
 IP LOCAL0 = IP(0u);
 IP BROADCAST_IP = IP(0xffu, 0xffu, 0xffu, 0xffu);
+IP PRIVATE_NETWORK_IP = IP(192,168,0,0);
+IP PRIVATE_NETWORK_MASK = IP(255,255,0,0);

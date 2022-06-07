@@ -27,7 +27,7 @@ PC
 # you can specify the mac and physical_layer_ip of the port
 # you can also set the whole router's LAN ports are in a private network with flag in the WAN port setting
 # i.e. ROUTER 2
-# ip0 mask0 gateway0 mac0 link_layer_ip0 physical_layer_ip0 flag(if true, the above LAN port setting is not allowed) network_segment subnet_mask gateway(the segment,mask and gateway settings are all for private network) (for WAN port)
+# ip0 mask0 gateway0 mac0 link_layer_ip0 physical_layer_ip0 flag(if true, the above LAN port setting is not allowed) (for WAN port)
 # network_segment1 subnet_mask1*network_segment1 gateway1 mac1 link_layer_ip1 physical_layer_ip1 (for LAN port)
 # network_segment2 subnet_mask2*network_segment1 gateway2 mac2 link_layer_ip2 physical_layer_ip2 (for LAN port)
 ROUTERI 2
