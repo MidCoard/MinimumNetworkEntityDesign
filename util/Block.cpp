@@ -9,7 +9,7 @@ Block::Block() {
 	this->temp = {};
 	this->remaining = 0;
 	this->pos = 0;
-	this->sendCount = 4;
+	this->sendCount = 10;
 }
 
 void Block::write(unsigned char *data, int len) {

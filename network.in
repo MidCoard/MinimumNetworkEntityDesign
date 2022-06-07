@@ -26,6 +26,7 @@ PC
 # if it has no top level entity, you can use the network without any limitation
 # you can specify the mac and physical_layer_ip of the port
 # you can also set the whole router's LAN ports are in a private network with flag in the WAN port setting
+# if you use private network, the router's children should not contain routers
 # i.e. ROUTER 2
 # ip0 mask0 gateway0 mac0 link_layer_ip0 physical_layer_ip0 flag(if true, the above LAN port setting is not allowed) (for WAN port)
 # network_segment1 subnet_mask1*network_segment1 gateway1 mac1 link_layer_ip1 physical_layer_ip1 (for LAN port)

@@ -60,7 +60,8 @@ bool UDPTable::ack(const IP &ip, int count) {
 	} else {
 		auto it2 = this->resendTable.find(std::pair{ip, count});
 		if (it2 == this->resendTable.end())
-			this->resendTable.insert_or_assign(std::pair{ip, count}, 10);
+			this->resendTable.insert_or_assign(std::pair{ip, count}, 20);
+		//todo to modify this argument to best match what we want!
 		int resendCount = this->resendTable[std::pair{ip, count}];
 		if (resendCount > 0) {
 			std::vector<int> ids;

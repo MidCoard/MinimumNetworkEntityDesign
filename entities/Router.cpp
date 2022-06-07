@@ -1,4 +1,6 @@
 #include "Router.h"
+
+#include <utility>
 #include "DHCPHelper.h"
 #include "DHCPOfferPacket.h"
 #include "DHCPACKPacket.h"
@@ -64,7 +66,7 @@ Router::~Router() {
 
 void Router::start() {
 	NetworkEntity::start();
-	auto *networkLayer = (RouterNetworkLayer *) this->layer;
+	auto *networkLayer = (NetworkLayer *) this->layer;
 	networkLayer->sendDHCP();
 	dhcp::request(networkLayer);
 }
@@ -73,7 +75,7 @@ bool Router::isRouter() {
 	return true;
 }
 
-Router::Router(Network *network, int node, NetworkLayer* layer) : NetworkEntity(network, node, layer) {}
+Router::Router(Network *network, int node,std::map<int, RouterConfiguration *> routerConfigurations,  NetworkLayer* layer) : NetworkEntity(network, node, layer),routerConfigurations(std::move(routerConfigurations)) {}
 
 RouterConfiguration::RouterConfiguration(IP *segment, IP *mask, IP *gateway, MAC *mac, INetAddress *linkAddress,
                                          INetAddress *physicalAddress)
@@ -393,7 +395,7 @@ void RouterNetworkLayer::handleReceive(int id, Block *block) {
 				}
 				break;
 			default: {
-				error("Router is not available");
+				error("DefaultRouter is not available");
 			}
 		}
 	} else if (destination == *ipConfiguration.getSegment()) {

@@ -47,7 +47,7 @@ class Router : public NetworkEntity {
 public:
 	Router(Network *network, int node, std::map<int, RouterConfiguration *> routerConfigurations);
 
-	Router(Network *network, int node, NetworkLayer* layer);
+	Router(Network *network, int node, std::map<int, RouterConfiguration *> routerConfigurations, NetworkLayer* layer);
 
 	~Router() override;
 

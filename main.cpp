@@ -133,7 +133,7 @@ NetworkEntity *createEntity(Network *network, int node, const std::string &name,
 			}
 		if (!flag)
 			return (NetworkEntity *) new DefaultRouter(network, node, routerConfigurations);
-		else return new HomeRouter(network, node);
+		else return new HomeRouter(network, node, routerConfigurations);
 	}
 	return nullptr;
 }

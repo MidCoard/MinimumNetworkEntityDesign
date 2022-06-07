@@ -10,17 +10,33 @@
 
 class HomeRouter : public Router {
 public:
-	HomeRouter(Network *network, int node);
+	HomeRouter(Network *network, int node, std::map<int, RouterConfiguration *> map);
+
+	void generateIP() override;
 
 	std::string getName() override;
+
+	std::vector<IPConfiguration> getIPConfiguration() override;
+
+	std::vector<std::string> createLayers(int node, std::vector<int> ids) override;
 };
 
-class HomeRouterNetworkLayer : public NetworkLayer {
+class HomeRouterNetworkLayer : public RouterNetworkLayer {
 
 	void handleReceive(int id, Block *block) override;
 
+	void handleSend(Block *block) override;
+
 public:
 	explicit HomeRouterNetworkLayer(NetworkEntity * entity);
+
+private:
+	// for privateIP to publicIP
+	std::map<IP,IP> natMap;
+	// for publicIP to privateIP
+	std::map<IP,IP> natMapReverse;
+	DHCPTable* natTable = nullptr;
+
 };
 
 
