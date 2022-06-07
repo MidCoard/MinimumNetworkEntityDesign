@@ -30,7 +30,6 @@ GraphWidget::GraphWidget(QWidget *parent, Network* network)
 		auto * n = new Node(this, node);
 		nodes.push_back(n);
 		scene->addItem(n);
-		n->setPos(i * 5, i * 5);
 	}
 	std::vector<bool> visited(network->getLinks().size(), false);
 	for (int i = 0;i<network->getLinks().size();i++) {
@@ -41,6 +40,7 @@ GraphWidget::GraphWidget(QWidget *parent, Network* network)
 		auto * e = new Edge(nodes[link->father], nodes[link->node]);
 		scene->addItem(e);
 	}
+	shuffle();
 }
 
 void GraphWidget::itemMoved() {

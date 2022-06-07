@@ -74,26 +74,21 @@ bool Node::advancePosition() {
 }
 
 QRectF Node::boundingRect() const {
-	qreal adjust = 2;
+	qreal adjust = 50;
 	return {-10 - adjust, -10 - adjust, 23 + adjust, 23 + adjust};
 }
 
 QPainterPath Node::shape() const {
 	QPainterPath path;
-	path.addEllipse(-10, -10, 20, 20);
+	path.addEllipse(boundingRect());
 	return path;
 }
 
 void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *) {
-	painter->setPen(Qt::NoPen);
-	painter->setBrush(Qt::darkGray);
-	painter->drawEllipse(-7, -7, 20, 20);
-
-	QRadialGradient gradient(-3, -3, 10);
+	QRadialGradient gradient(-20, -20, 50);
+	gradient.setFocalPoint(3, 3);
 	if (this->entity->isISP()) {
 		if (option->state & QStyle::State_Sunken) {
-			gradient.setCenter(3, 3);
-			gradient.setFocalPoint(3, 3);
 			gradient.setColorAt(1, QColor(Qt::yellow).lighter(120));
 			gradient.setColorAt(0, QColor(Qt::darkYellow).lighter(120));
 		} else {
@@ -102,8 +97,6 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 		}
 	} else if (this->entity->isRouter()) {
 		if (option->state & QStyle::State_Sunken) {
-			gradient.setCenter(3, 3);
-			gradient.setFocalPoint(3, 3);
 			gradient.setColorAt(1, QColor(Qt::blue).lighter(120));
 			gradient.setColorAt(0, QColor(Qt::darkBlue).lighter(120));
 		} else {
@@ -112,8 +105,6 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 		}
 	} else if (this->entity->isSwitch()) {
 		if (option->state & QStyle::State_Sunken) {
-			gradient.setCenter(3, 3);
-			gradient.setFocalPoint(3, 3);
 			gradient.setColorAt(1, QColor(Qt::green).lighter(120));
 			gradient.setColorAt(0, QColor(Qt::darkGreen).lighter(120));
 		} else {
@@ -122,8 +113,6 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 		}
 	}  else {
 		if (option->state & QStyle::State_Sunken) {
-			gradient.setCenter(3, 3);
-			gradient.setFocalPoint(3, 3);
 			gradient.setColorAt(1, QColor(Qt::white).lighter(120));
 			gradient.setColorAt(0, QColor(Qt::gray).lighter(120));
 		} else {
@@ -134,7 +123,9 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 
 	painter->setBrush(gradient);
 	painter->setPen(QPen(Qt::black, 0));
-	painter->drawEllipse(-10, -10, 20, 20);
+	painter->drawEllipse(boundingRect());
+	painter->setPen(Qt::yellow);
+	painter->drawText(boundingRect(),QString::fromStdString(entity->getName()));
 }
 
 QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
@@ -155,6 +146,8 @@ void Node::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 	update();
 	QGraphicsItem::mousePressEvent(event);
 }
+
+
 
 void Node::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
 	update();
